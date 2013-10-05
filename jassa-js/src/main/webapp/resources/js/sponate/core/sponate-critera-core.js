@@ -95,6 +95,22 @@
 		parse_$eq: function(attrPath, val) {
 			var result = new ns.CriteriaEq(attrPath, val);
 			return result;
+		},
+		
+		parse_$regex: function(attrPath, val) {
+			var regex;
+
+			if(_(val).isString()) {
+				regex = new RegExp(val);
+			} else if (val instanceof RegExp) {
+				regex = val
+			} else {
+				console.log('[ERROR] Not a regex: ' + val);
+				throw 'Bailing out';
+			}
+			
+			var result = new ns.CriteriaRegex(attrPath, regex);
+			return result;
 		}
 		
 		
@@ -205,6 +221,24 @@
 			return result;
 		}
 	});
+
+	/**
+	 * @param the document on which to apply the criteria 
+	 */
+	ns.CriteriaRegex = Class.create(ns.CriteriaPath, {
+		initialize: function($super, attrPath, regex) {
+			$super('$regex', attrPath);
+			this.regex = regex;
+		},
+		
+		$match: function(doc, val) {
+			var result = this.regex.test(val);
+
+			return result;
+		}
+	});
+
+	
 
 
 	/**

@@ -148,11 +148,12 @@
 			
 			// Resolve references if this has not been done yet
 			// TODO Optimize this by caching prior resolution
-			//var refs = ns.PatternUtils.getRefs(pattern);
 			ns.ContextUtils.resolveMappingRefs(this.context, mapping);
 			
+
 			console.log('Refs: ', mapping.getPatternRefs());
 
+			
 			
 			//console.log('mapping:', mapping);
 			
@@ -257,8 +258,59 @@ Advanced
 Novel
 Grandiose
 Enhanced
-Library
+Library /
 Api
 for
 Magic Sparql (Marql)
+or simply: Angular + Magic Sparql = Angular Marql
 */
+
+/*
+ * Thinking about how to create the join stuff...
+ * 
+ * We need to distinguish two levels:
+ * - Projection
+ * - Selection
+ *
+ * Generic query structure:
+ * 
+ * Select projectionVars {
+ *   { Select Distinct ?s {
+ *     SelectionElement
+ *   } Limit foo Offset bar }
+ *   Optional {
+ *      Projection(?s)
+ *   }
+ * }
+ * 
+ * We can perform optimizations of the selection and projection element are isomorph, but
+ * we can add this later.
+ *   
+ * 
+ * Projection will always follow the join rules that have been configured in the references
+ * 
+ * For the selection however, whenever a criteria spans accross ref boundaries, we
+ * directly join in the referenced map's element as to perform the filter on the database
+ * 
+ * This means, we need some kind of collection where we can just add in joins as we encounter them
+ * In fact, this is the purpose of the CriteraRewriterSparql:
+ * The result of compiling a criteria is a concept - which internally has all the joins set
+ * 
+ * And how to do the projection when there is eager fetching?
+ * Again we collect all joins, however, this time we combine them with OPTIONALS
+ * 
+ * So what does the 'QueryPlan' or whatever object look like?
+ * 
+ * 
+ * Note: Each proxyObject should also have some special attribute like
+ * @proxyState or @proxyControl
+ * Which then reveals which properties are the ones being proxied
+ * 
+ * then we could do something like object['@proxyControl'].myProperty.fetch(10, 20)
+ * object['@proxyControl'].myProperty.count() // This needs to trigger a batch count though
+ * 
+ * So the goal is to be able to retrieve only parts of an relation
+ * 
+ * 
+ */
+

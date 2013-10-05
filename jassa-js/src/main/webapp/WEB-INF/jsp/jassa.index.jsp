@@ -42,13 +42,14 @@
 		template: [{
 			id: '?s',      //unprefix()
 			name: '?l',
-			owners: [{
-				ref: 'owners',
-				//attr: 'name', // Refer to this attribute on the remote side
-				//joinColumn: '?x'
-				joinColumn: '?s',
-				refJoinColumn: '?x'
-			}]
+//			owners: ['?s']
+// 			owners: [{
+// 				ref: 'owners',
+// 				//attr: 'name', // Refer to this attribute on the remote side
+// 				//joinColumn: '?x'
+// 				joinColumn: '?s',
+// 				refJoinColumn: '?x'
+// 			}]
 		}],
 		//from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Optional { ?s dbpedia-owl:owner ?x } . Filter(langMatches(lang(?l), "en"))'
 		from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))'
@@ -68,7 +69,8 @@
 	// Creating a join: 
 	
 	//var promise = store.castles.find().asList();
-	var promise = store.castles.find({id: {$eq: '<http://dbpedia.org/resource/Hume_Castle>'}}).asList();
+	//var promise = store.castles.find({id: {$eq: '<http://dbpedia.org/resource/Hume_Castle>'}}).asList();
+	var promise = store.castles.find({name: {$regex: 'Cast'}}).asList();
 	
 	
 	/*
@@ -88,6 +90,13 @@
 
 	myModule.controller('MyCtrl', function($scope, $q, myService) {
 		$scope.castles = myService.getCastles();
+		
+		$scope.filterTable = function() {
+			var filterText = $scope.filterText;
+			console.log(filterText);
+			var promise = store.castles.find({name: {$regex: filterText}}).asList();
+			$scope.castles = sponate.angular.bridgePromise(promise, $q.defer(), $scope);			
+		}
 	});
 
 	// Utility filter for comma separated values
@@ -103,11 +112,16 @@
 	</script>
 </head>
 
-<body>
-	<table ng-controller="MyCtrl">
+<body ng-controller="MyCtrl">
+	<form ng-submit="filterTable()">
+    	<input type="text" ng-model="filterText"></input>
+		<input class="btn-primary" type="submit" value="add">
+	</form>
+
+	<table>
 		<tr ng-repeat="castle in castles">
 			<td>{{castle.name}}<td>
-			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td>
+<!-- 			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td> -->
 		</tr>
 	</table>
 </body>
