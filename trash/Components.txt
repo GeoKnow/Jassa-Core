@@ -1,0 +1,24 @@
+- A JSON based language for mapping relative paths to a JSON document
+
+- The core template only makes use of variables
+
+
+
+
+The most complex part is to allow sparql variables as keys.
+
+{
+   id: '?s',
+   properties: [{key: '?p', value: '?o}]
+}
+
+
+Jamsa.createDoc(
+    {
+        id: '?s',
+        '?p': '?o'     // Possibly '?p': ['?o'] 
+    },
+    '?s ?p ?o'
+);
+
+

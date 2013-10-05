@@ -1,0 +1,13 @@
+This project uses this great plugin to minimize the JavaScript https://github.com/samaxes/minify-maven-plugin
+
+To minify, run:
+mvn package
+
+The resulting files will be created under
+
+target/jassa/webapp/resources/js/jassa.js
+target/jassa/webapp/resources/js/jassa.min.js
+
+and are ready for inclusion in other js projects or for deployment into another Java web app. Yay.
+
+
