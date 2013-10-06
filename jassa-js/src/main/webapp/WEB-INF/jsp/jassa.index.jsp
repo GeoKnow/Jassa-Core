@@ -126,14 +126,14 @@
 
 <body ng-controller="MyCtrl" data-ng-init="init()">
 	<form ng-submit="filterTable()">
-    	<input type="text" ng-model="filterText"></input>
-		<input class="btn-primary" type="submit" value="add">
+    	<input type="text" ng-model="filterText" />
+		<input class="btn-primary" type="submit" value="add" />
 	</form>
 
 	<table>
 		<tr ng-repeat="castle in castles">
 			<td>{{castle.name}}<td>
-			<td><img style="width: 300; height: 300px;"src="{{castle.depiction.slice(1, -1)}}" /></td>
+			<td><img style="width: 300; height: 300px;" src="{{castle.depiction.slice(1, -1)}}" /></td>
 <!-- 			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td> -->
 		</tr>
 	</table>
