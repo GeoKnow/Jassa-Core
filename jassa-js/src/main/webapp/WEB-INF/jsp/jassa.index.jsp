@@ -133,7 +133,7 @@
 	<table>
 		<tr ng-repeat="castle in castles">
 			<td>{{castle.name}}<td>
-			<td><img style="width: 300; height: 300px;"src="{{castle.depiction.slice(1, -1)}}"></td>
+			<td><img style="width: 300; height: 300px;"src="{{castle.depiction.slice(1, -1)}}" /></td>
 <!-- 			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td> -->
 		</tr>
 	</table>
