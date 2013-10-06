@@ -69,13 +69,14 @@
 	var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
 	var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
 	var c = sparql.ElementUtils.makeElementDistinct(a, b);
-	console.log('distinct: ' + c.element);
+	console.log('distinct: ' + c.element, c.map);
 	
 	// Creating a join: 
 	
 	//var promise = store.castles.find().asList();
 	//var promise = store.castles.find({id: {$eq: '<http://dbpedia.org/resource/Hume_Castle>'}}).asList();
-	var promise = store.castles.find({name: {$regex: 'Cast'}}).asList();
+	//var promise = store.castles.find({name: {$regex: 'Cast'}}).asList();
+	var promise = store.castles.find({id: '<http://dbpedia.org/resource/Hume_Castle>'}).asList();
 	
 	
 	/*

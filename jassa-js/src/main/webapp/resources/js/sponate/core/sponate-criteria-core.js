@@ -37,8 +37,10 @@
 			else if(_(crit).isObject()) {
 				result = this.parseObject(crit, basePath);
 			}
-			else {
+			else if(_(crit).isArray()) {
 				throw 'Not implemented';
+			} else { // Primitive value; treat as equals
+				result = this.parse_$eq(basePath, crit);				
 			}
 			
 			return result;
@@ -93,10 +95,32 @@
 		
 
 		parse_$eq: function(attrPath, val) {
-			var result = new ns.CriteriaEq(attrPath, val);
-			return result;
+			return new ns.CriteriaEq(attrPath, val);
 		},
-		
+
+		parse_$gt: function(attrPath, val) {
+			return new ns.CriteriaGt(attrPath, val);
+		},
+
+		parse_$gte: function(attrPath, val) {
+			return new ns.CriteriaGte(attrPath, val);
+		},
+
+		parse_$lt: function(attrPath, val) {
+			return new ns.CriteriaLt(attrPath, val);
+		},
+
+		parse_$lte: function(attrPath, val) {
+			return new ns.CriteriaLte(attrPath, val);
+		},
+
+		parse_$ne: function(attrPath, val) {
+			return new ns.CriteriaNe(attrPath, val);
+		},
+
+
+
+
 		parse_$regex: function(attrPath, val) {
 			var regex;
 
@@ -204,7 +228,6 @@
 	});
 
 
-
 	
 	/**
 	 * @param the document on which to apply the criteria 
@@ -216,12 +239,76 @@
 		},
 		
 		$match: function(doc, val) {
-			var result = this.value == val;
-
+			var result = val == this.value;
 			return result;
 		}
 	});
 
+	
+	ns.CriteriaGt = Class.create(ns.CriteriaPath, {
+		initialize: function($super, attrPath, value) {
+			$super('$gt', attrPath);
+			this.value = value;
+		},
+		
+		$match: function(doc, val) {
+			var result = val > this.value;
+			return result;
+		}
+	});
+
+	ns.CriteriaGte = Class.create(ns.CriteriaPath, {
+		initialize: function($super, attrPath, value) {
+			$super('$gte', attrPath);
+			this.value = value;
+		},
+		
+		$match: function(doc, val) {
+			var result = val >= this.value;
+			return result;
+		}
+	});
+
+	
+	ns.CriteriaLt = Class.create(ns.CriteriaPath, {
+		initialize: function($super, attrPath, value) {
+			$super('$lt', attrPath);
+			this.value = value;
+		},
+		
+		$match: function(doc, val) {
+			var result = val < this.value;
+			return result;
+		}
+	});
+
+	ns.CriteriaLte = Class.create(ns.CriteriaPath, {
+		initialize: function($super, attrPath, value) {
+			$super('$lte', attrPath);
+			this.value = value;
+		},
+		
+		$match: function(doc, val) {
+			var result = val <= this.value;
+			return result;
+		}
+	});
+
+	
+	ns.CriteriaNe = Class.create(ns.CriteriaPath, {
+		initialize: function($super, attrPath, value) {
+			$super('$ne', attrPath);
+			this.value = value;
+		},
+		
+		$match: function(doc, val) {
+			var result = val != this.value;
+			return result;
+		}
+	});
+	
+
+	
 	/**
 	 * @param the document on which to apply the criteria 
 	 */
