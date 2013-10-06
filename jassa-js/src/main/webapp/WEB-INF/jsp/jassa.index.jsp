@@ -22,7 +22,8 @@
 	var prefixes = {
 		'dbpedia-owl': 'http://dbpedia.org/ontology/',
 		'dbpedia': 'http://.org/resource/',
-		'rdfs': 'http://www.w3.org/2000/01/rdf-schema#'
+		'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
+		'foaf': 'http://xmlns.com/foaf/0.1/'
 	};
 
 	var rdf = Jassa.rdf;
@@ -42,6 +43,7 @@
 		template: [{
 			id: '?s',      //unprefix()
 			name: '?l',
+			depiction: '?d',
 //			owners: ['?s']
 			owners: [{
 				ref: 'owners',
@@ -52,7 +54,7 @@
 			}]
 		}],
 		//from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Optional { ?s dbpedia-owl:owner ?x } . Filter(langMatches(lang(?l), "en"))'
-		from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))'
+		from: '{ Select * { ?s a dbpedia-owl:Castle ; foaf:depiction ?d ; rdfs:label ?l . Filter(langMatches(lang(?l), "en")) } Limit 10 }'
 	});
 	
 	
@@ -131,6 +133,7 @@
 	<table>
 		<tr ng-repeat="castle in castles">
 			<td>{{castle.name}}<td>
+			<td><img style="width: 300; height: 300px;"src="{{castle.depiction.slice(1, -1)}}"></td>
 <!-- 			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td> -->
 		</tr>
 	</table>
