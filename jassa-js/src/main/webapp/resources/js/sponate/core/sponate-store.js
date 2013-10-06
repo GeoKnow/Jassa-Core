@@ -348,7 +348,7 @@ or simply: Angular + Magic Sparql = Angular Marql
  * If we hit a ref,
  * 
  * 
- * 
+ * gen = new GenSym('a');
  * while(!open is empty) {
  *    sourceMapping = open.pop();
  *    if(closed.contains(sourceMapping)) {
@@ -357,11 +357,14 @@ or simply: Angular + Magic Sparql = Angular Marql
  *    close.push(sourceMapping);
  *    
  *    refs = sourceMapping.getRefs();
+ *    var sourceAlias = gen.next(); // create a new alias for the mapping
+ *    			// or maybe the alias is less for the mapping and more for its table
  *    
  *    for(ref in ref) {
  *        if ref.joinType = immediate { // TODO align terminology with hibernate
  *            targetMapping = context.getMapping(ref.getTargetMappingName)
  *            
+ *            var targetAlias
  *            
  *            
  *            
@@ -374,6 +377,47 @@ or simply: Angular + Magic Sparql = Angular Marql
  * }
  * 
  * 
+ * owners: [{ aggColumn: '?s', joinColumn: '?x', }]
+ * 
+ * -> Aggregator {
+ *     refSpec: { targetMapping: 'owners', aggColumn: ?s, sourcColumn: ?x, targetColumn: ?z} 
+ *     
+ *     bindings: [{?s='<>'}, {   }] // The bindings that were passed to the aggregator
+ * }
+ * 
+ * 
+ * Required operations:
+ * - Find all aggregators with the same refSpec
+ * - 
+ * 
+ * castles:
+ * [{id: ?s, name:[{ref: labels, attr:name}]]
+ * ?s a Castle
+ * 
+ * 
+ * labels:
+ * [{id: ?s, name: ?l}]
+ * ?s label ?l
+ * 
+ * 
+ * 
+ * aliasToMapping: { //Note: This points to mapping objects
+ *     a: { mappingName: castles , aggregator , aggregatorRefs}
+ * }
+ * 
+ * [?s a Castle] With[] As a
+ * [?x label ?l] With [x->s] As b   | b->{s->x}    x->{b, s}
+ * 
+ * joinGraph: {
+ *   root: a,
+ *   joins: {
+ *     a: {target: b, sourceColumns, targetColumns, optional: true}
+ *   }
+ * }
+ * 
+ * For each row, k
+ * 
+ * }
  * 
  * 
  */

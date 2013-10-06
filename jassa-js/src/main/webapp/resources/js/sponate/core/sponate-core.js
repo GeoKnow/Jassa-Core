@@ -810,6 +810,8 @@
 			
 			this.json = null;
 			//this.map = new ns.MapList();
+			
+			this.bindings = [];
 		},
 		
 		/**
@@ -824,7 +826,7 @@
 		process: function(binding, context) {
 			this.bindings.push(binding);
 
-			context.registryRef.addRef(this, binding)
+			//context.registryRef.addRef(this, binding)
 		},
 		
 		getJson: function() {
@@ -879,12 +881,16 @@
 			return ns.AggregatorArray(pattern);
 		},
 		
-		visitMap: function(pattern) {
-			return new ns.AggregatorMap(pattern);
+		visitMap: function(patternMap) {
+			return new ns.AggregatorMap(patternMap);
 		},
 		
 		visitLiteral: function(patternLiteral) {
 			return new ns.AggregatorLiteral(patternLiteral);
+		},
+		
+		visitRef: function(patternRef) {
+			return new ns.AggregatorRef(patternRef);
 		}
 	});
 	

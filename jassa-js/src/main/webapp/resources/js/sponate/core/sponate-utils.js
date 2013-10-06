@@ -180,13 +180,80 @@
 			var varsB = eleB.getVarsMentioned();
 			
 			
-		}
+		},
 			
+		
+		
+		/**
+		 * 
+		 */
+		createMappingJoin: function(context, rootMapping) {
+			var generator = new sparql.GenSym('a');
+			var rootAlias = generator.next();
+
+			// Map<String, MappingInfo>
+			var aliasToState = {};
+			
+			// ListMultimap<String, JoinInfo>
+			var aliasToJoins = {};
+		
+			
+			aliasToState[rootAlias] = {
+				mapping: rootMapping,
+				aggs: [] // TODO The mapping's aggregators
+			};
+			
+			var open = [a];
+			
+			while(open.isEmpty()) {
+				var sourceAlias = open.shift();
+				
+				var sourceState = aliasToState[sourceAlias];
+				var sourceMapping = sourceState.mapping;
+				
+				ns.ContextUtils.resolveMappingRefs(this.context, sourceMapping);
+				
+				var refs = mapping.getPatternRefs(); 
+
+				// For each reference, if it is an immediate join, add it to the join graph
+				// TODO And what if it is a lazy join??? We want to be able to batch those.
+				_(refs).each(function(ref) {
+					var targetMapRef = ref.getTargetMapRef();
+					
+					var targetAlias = generator.next();
+					
+					aliasToState[targetAlias] = {
+						mapping: targetMapping	
+					};
+				
+					var joins = aliasToJoins[sourceAlias];
+					if(joins == null) {
+						joins = [];
+						aliasToJoins[sourceAlias] = joins;
+					}
+					
+					var join = {
+						targetAlias: targetAlias
+					};
+					
+					joins.push(join);
+				});
+				
+				
+				var result = {
+					aliasToState: aliasToState, 
+					aliasToJoins: aliasToJoins
+				};
+				
+				return result;
+			}
+		}
 			
 	};
 
 	
-	ns.MappingJoin = Class.create({
+	
+	ns.MappingJoinBuilder = Class.create({
 		initialize: function() {
 			
 		},

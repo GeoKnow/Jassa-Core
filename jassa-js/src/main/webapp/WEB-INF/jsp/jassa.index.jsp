@@ -76,7 +76,7 @@
 	//var promise = store.castles.find().asList();
 	//var promise = store.castles.find({id: {$eq: '<http://dbpedia.org/resource/Hume_Castle>'}}).asList();
 	//var promise = store.castles.find({name: {$regex: 'Cast'}}).asList();
-	var promise = store.castles.find({id: '<http://dbpedia.org/resource/Hume_Castle>'}).asList();
+	//var promise = store.castles.find({id: '<http://dbpedia.org/resource/Hume_Castle>'}).asList();
 	
 	
 	/*
@@ -86,23 +86,27 @@
 
 	myModule.factory('myService', function($rootScope, $q) {
 		return {
-			getCastles: function() {
+			getCastles: function(filterText) {
+				var criteria;
+				if(filterText != null && filterText.length > 0) {
+					criteria = {name: {$regex: filterText}};
+				}
+ 				
+				var promise = store.castles.find(criteria).asList();
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
-				//return store.castles.find().forAngular(); 				
 				return result;
 	        }
-	   }
+	   };
 	});
 
-	myModule.controller('MyCtrl', function($scope, $q, myService) {
-		$scope.castles = myService.getCastles();
-		
+	myModule.controller('MyCtrl', function($scope, myService) {
 		$scope.filterTable = function() {
-			var filterText = $scope.filterText;
-			console.log(filterText);
-			var promise = store.castles.find({name: {$regex: filterText}}).asList();
-			$scope.castles = sponate.angular.bridgePromise(promise, $q.defer(), $scope);			
-		}
+			$scope.castles = myService.getCastles($scope.filterText);
+		};
+		
+		$scope.init = function() {
+			$scope.filterTable();
+		};
 	});
 
 	// Utility filter for comma separated values
@@ -118,7 +122,7 @@
 	</script>
 </head>
 
-<body ng-controller="MyCtrl">
+<body ng-controller="MyCtrl" data-ng-init="init()">
 	<form ng-submit="filterTable()">
     	<input type="text" ng-model="filterText"></input>
 		<input class="btn-primary" type="submit" value="add">
@@ -127,7 +131,7 @@
 	<table>
 		<tr ng-repeat="castle in castles">
 			<td>{{castle.name}}<td>
-			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td>
+<!-- 			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td> -->
 		</tr>
 	</table>
 </body>
