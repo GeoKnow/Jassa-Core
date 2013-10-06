@@ -43,13 +43,13 @@
 			id: '?s',      //unprefix()
 			name: '?l',
 //			owners: ['?s']
-// 			owners: [{
-// 				ref: 'owners',
-// 				//attr: 'name', // Refer to this attribute on the remote side
-// 				//joinColumn: '?x'
-// 				joinColumn: '?s',
-// 				refJoinColumn: '?x'
-// 			}]
+			owners: [{
+				ref: 'owners',
+				//attr: 'name', // Refer to this attribute on the remote side
+				//joinColumn: '?x'
+				joinColumn: '?s',
+				refJoinColumn: '?x'
+			}]
 		}],
 		//from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Optional { ?s dbpedia-owl:owner ?x } . Filter(langMatches(lang(?l), "en"))'
 		from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))'
@@ -59,12 +59,17 @@
 	store.addMap({
 		name: 'owners',
 		template: [{
-			id: '?o',
-			name: '?on'
+			id: '?s',
+			name: '?l'
 		}],
-		from: '?x dbpedia-owl:owner ?o . ?o rdfs:label ?on . Filter(langMatches(lang(?on), "en")'
+		from: '?x dbpedia-owl:owner ?s . ?s rdfs:label ?l . Filter(langMatches(lang(?l), "en")'
 	});
 
+	
+	var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
+	var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
+	var c = sparql.ElementUtils.makeElementDistinct(a, b);
+	console.log('distinct: ' + c.element);
 	
 	// Creating a join: 
 	
@@ -121,7 +126,7 @@
 	<table>
 		<tr ng-repeat="castle in castles">
 			<td>{{castle.name}}<td>
-<!-- 			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td> -->
+			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td>
 		</tr>
 	</table>
 </body>

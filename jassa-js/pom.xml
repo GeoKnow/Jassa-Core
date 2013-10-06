@@ -80,8 +80,9 @@
 								<param>sponate/core/sponate-context.js</param>
 								<param>sponate/core/sponate-utils.js</param>
 								<param>sponate/core/sponate-facade.js</param>
-								<param>sponate/core/sponate-critera-core.js</param>
-								
+								<param>sponate/core/sponate-criteria-core.js</param>
+								<param>sponate/core/sponate-criteria-sparql.js</param>
+																
 								<param>sponate/adapters/sponate-angular.js</param>
 							</jsSourceFiles>
 							

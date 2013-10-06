@@ -93,7 +93,7 @@
 		},
 		
 		getVarsMentioned: function() {
-			return [this];
+			return [this.v];
 		},
 		
 		toString: function() {

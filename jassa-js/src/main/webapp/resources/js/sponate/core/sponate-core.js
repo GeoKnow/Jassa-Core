@@ -237,7 +237,6 @@
 
 		getVarsMentioned: function() {
 			var result = this.expr.getVarsMentioned();
-						
 			return result;
 		},
 		
@@ -288,9 +287,16 @@
 
 		getVarsMentioned: function() {
 			var result = [];
-			_.each(this.attrToPattern, function(member, k) {
-				result = _.union(result, member.getVarsMentioned());	
+			
+			var fnToString = (function(x) {
+				//console.log('x: ' + x, x, x.toString());
+				return x.toString();
 			});
+			
+			_.each(this.attrToPattern, function(member, k) {
+				result = result.concat(member.getVarsMentioned());
+			});
+			result = _.uniq(result, false, fnToString);	
 			
 			return result;		
 		},
@@ -404,12 +410,18 @@
 			return JSON.stringify(this);
 		},
 		
+		accept: function(visitor) {
+			var result = this.callVisitor('visitRef', this, arguments);
+			return result;
+		},
+
 		getVarsMentioned: function() {
 			var result = [];
 			
 			var stub = this.stub;
 			if(stub.joinColumn != null) {
-				var v = rdf.Node.v(stub.joinColumn);
+				// TODO HACK Use proper expression parsing here
+				var v = rdf.Node.v(stub.joinColumn.substr(1));
 				result.push(v);
 			} else {
 				console.log('[ERROR] No join column declared; cannot get variable');

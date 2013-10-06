@@ -106,6 +106,14 @@
 	});
 	*/
 	
+	/**
+	 * a: castle
+	 * 
+	 * 
+	 * b: owners
+	 * 
+	 * 
+	 */
 	ns.JoinBuilderElement = Class.create({
 		initialize: function() {
 			this.varAliasMap = new ns.VarAliasMap();
@@ -177,6 +185,15 @@
 			
 	};
 
+	
+	ns.MappingJoin = Class.create({
+		initialize: function() {
+			
+		},
+		
+		
+	});
+	
 	
 	ns.HashMap = Class.create({
 		initialize: function(fnHash, fnEquals) {

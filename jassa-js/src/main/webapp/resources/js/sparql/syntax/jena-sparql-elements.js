@@ -128,14 +128,6 @@
 		
 	};
 	
-	
-	ns.ElementUtils = {
-			flatten: function(elements) {
-				var result = _.map(elements, function(element) { return element.flatten(); });
-
-				return result;
-			}
-	};
 
 	
 	ns.orify = function(exprs) {

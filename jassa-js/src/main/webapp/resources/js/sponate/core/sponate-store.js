@@ -251,6 +251,12 @@
 	});
 	
 	
+	ns.QueryPlan = Class.create({
+		initialize: function() {
+			
+		}
+	});
+	
 })();
 
 /*
@@ -309,7 +315,65 @@ or simply: Angular + Magic Sparql = Angular Marql
  * then we could do something like object['@proxyControl'].myProperty.fetch(10, 20)
  * object['@proxyControl'].myProperty.count() // This needs to trigger a batch count though
  * 
+ * 
  * So the goal is to be able to retrieve only parts of an relation
+ * 
+ * Actually, isn't this just like having store objects again?
+ * 
+ * foo = store.castles.find().asList();
+ * var bar =foo.owners.limit(10).find().asList();
+ * bar.friends.facebook.limit(10).find(name: {$regex:...}).asList();
+ * 
+ * find().asStores(); ->
+ * 
+ * find()
+ * 
+ * Yup, that's how it is.
+ * 
+ * So if we want to do it like this, we must not fetch all values of the join column in advance,
+ * but rather track the groupKey of the parent PatternMap
+ * 
+ * 
+ * So what does the query plan look like?
+ * Well, I don't think we need something like that -
+ * we just need to satisfy all references.
+ * 
+ * open = [initial mapping]
+ * closed =[]
+ * 
+ * 
+ * Compiling the criteria:
+ * C
+ * 
+ * If we hit a ref,
+ * 
+ * 
+ * 
+ * while(!open is empty) {
+ *    sourceMapping = open.pop();
+ *    if(closed.contains(sourceMapping)) {
+ *        circular reference; create a proxy instead (we could allow a certain number of round trips though)
+ *    }
+ *    close.push(sourceMapping);
+ *    
+ *    refs = sourceMapping.getRefs();
+ *    
+ *    for(ref in ref) {
+ *        if ref.joinType = immediate { // TODO align terminology with hibernate
+ *            targetMapping = context.getMapping(ref.getTargetMappingName)
+ *            
+ *            
+ *            
+ *            
+ *        }
+ *    
+ *    }
+ *    
+ *    
+ * 
+ * }
+ * 
+ * 
  * 
  * 
  */
