@@ -12,8 +12,16 @@
 	
 	<style media="screen" type="text/css">
 	.image {
-	     style: max-width: 100px;
-	     max-height: 100px;
+ 		margin: 0 auto;
+	}
+	
+	.image-frame {
+		border: 1px;
+		border-style: solid;
+		background-color: #DDDDDD;
+	    max-width: 100px;
+	    max-height: 100px;	
+		display: table;
 	}
 	</style>
 	
@@ -119,7 +127,11 @@
 			<table class="table table-striped">
 				<tr><th>Image</th><th>Name</th><th>Owners</th></tr>
 				<tr ng-repeat="castle in castles">
-					<td><img class="image" src="{{castle.depiction.slice(1, -1)}}" /></td>
+					<td>
+						<div class="image-frame">
+							<img class="image" src="{{castle.depiction.slice(1, -1)}}" />
+						</div>
+					</td>
 					<td><a href="{{castle.id.slice(1, -1)}}">{{castle.name}}</a></td>
 					<td>{{(castle.owners | map:'name').join(', ')}}</td>
 				</tr>

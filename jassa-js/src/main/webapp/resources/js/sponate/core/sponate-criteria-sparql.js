@@ -3,7 +3,8 @@
 	var ns = Jassa.sponate;
 	
 	ns.CriteriaCompilerSparql = Class.create({
-		
+
+
 		/**
 		 * Generates 
 		 * 
@@ -11,18 +12,25 @@
 		 * 
 		 */
 		compile: function(context, mapping, criteria) {
-			var cmc = {
+			var state = {
 				context: context,
 				mapping: mapping
-			}
+			};
+			
+			var result = criteria.accept(this);
+
+			return result;
+		},
+		
+		findPattern: function(attrPath) {
 			
 		},
 		
 		
-		
-		visitEq: function() {
+		visitElemMatch: function() {
 			
 		},
+
 		
 		visitGt: function() {
 			

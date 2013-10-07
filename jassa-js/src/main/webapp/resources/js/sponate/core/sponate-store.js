@@ -138,20 +138,27 @@
 			// a) SPARQL filters
 			// b) post processors
 			
-			
+			var context = this.context;
 			var criteria = config.criteria;
 			
 			//console.log('context', JSON.stringify(this.context), this.context.getNameToMapping());
 			
 			var mapping = this.context.getMapping(this.mappingName);
 			
-			
+
 			// Resolve references if this has not been done yet
 			// TODO Optimize this by caching prior resolution
 			ns.ContextUtils.resolveMappingRefs(this.context, mapping);
-			
-
 			console.log('Refs: ', mapping.getPatternRefs());
+
+			
+			// Compile criterias
+			var criteriaCompiler = new ns.CriteriaCompilerSparql();
+			
+//			var elementCriteria = criteriaCompiler.compile(context, criteria, mapping);
+//			console.log('Compliled criteria: ' + elementeCriteria);
+			
+			
 
 			
 			

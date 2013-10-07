@@ -12,8 +12,24 @@
 	
 	<style media="screen" type="text/css">
 	.image {
-	     style: max-width: 100px;
-	     max-height: 100px;
+ 	    max-width: 144px;
+ 	    max-height: 144px;
+	    vertical-align: middle;
+	}
+	
+	.image-frame {
+		display: table;
+
+	    width: 150px;
+	    height: 150px;	
+		line-height: 150px; /* should match height */
+		text-align: center;
+  
+		border: 1px;
+		border-collapse: true;
+		border-style: solid;
+		border-color: #CCCCCC;
+		background-color: #EEEEEE;
 	}
 	</style>
 	
@@ -49,7 +65,7 @@
 
 	// Rule of thumb: If you use optional in the from attribute, you are probably doing it wrong
 
-	if(true) {
+	if(false) {
 		
 		store.addMap({
 			name: 'castles',
@@ -121,13 +137,19 @@
 		return {
 			getCastles: function(filterText) {
 				var criteria;
+				//criteria = {name: {$or: ['bar', 'foo']}};
+
 				if(filterText != null && filterText.length > 0) {
-					//criteria = {name: {$regex: filterText}};
-					criteria = {
-							$or: [
-							      {name: {$regex: filterText}},
-							      {owners: {$elemMatch: {name: {$regex: filterText}}}}
-					]};
+//					criteria = {name: {$regex: filterText}};
+					//criteria = {name: {$or: [{$regex: filterText}, {$regex: 'orp'}]}};
+
+					criteria = {owners: {$elemMatch: {name: {$regex: filterText}}}};
+
+// 					criteria = {
+// 							$or: [
+// 							      {name: {$regex: filterText}},
+// 							      {owners: {$elemMatch: {name: {$regex: filterText}}}}
+// 					]};
 				}
  				
 				var promise = store.castles.find(criteria).asList();
@@ -172,7 +194,11 @@
 			<table class="table table-striped">
 				<tr><th>Image</th><th>Name</th><th>Owners</th></tr>
 				<tr ng-repeat="castle in castles">
-					<td><img class="image" src="{{castle.depiction.slice(1, -1)}}" /></td>
+					<td>
+						<div class="image-frame">
+							<img class="image" src="{{castle.depiction.slice(1, -1)}}" />
+						</div>
+					</td>
 					<td><a href="{{castle.id.slice(1, -1)}}">{{castle.name}}</a></td>
 					<td>{{(castle.owners | map:'name').join(', ')}}</td>
 				</tr>

@@ -151,6 +151,7 @@
 		},
 		
 		parse_$or: function(attrPath, val) {
+
 			if(!_(val).isArray()) {
 				console.log('Argument of $or must be an array');
 				throw 'Bailing out';
@@ -166,7 +167,7 @@
 			if(criterias.length == 1) {
 				result = criterias[0];
 			} else {
-				result = new ns.CriteriaLogicalOr(criterias);
+				result = new ns.CriteriaLogicalOr(attrPath, criterias);
 			}
 			
 			return result;
@@ -388,9 +389,9 @@
 	});
 		
 
-	ns.CriteriaLogicalOr = Class.create(ns.CriteriaBase, {
-		initialize: function($super, criterias) {
-			$super('$or');
+	ns.CriteriaLogicalOr = Class.create(ns.CriteriaPath, {
+		initialize: function($super, attrPath, criterias) {
+			$super('$or', attrPath);
 			this.criterias = criterias;
 		},
 		
@@ -398,9 +399,10 @@
 			return this.criterias;
 		},
 		
-		match: function(doc) {
+		$match: function(doc, val) {
+
 			var result = _(this.criterias).some(function(criteria) {
-				var subResult = criteria.match(doc);
+				var subResult = criteria.match(val);
 				return subResult;
 			});
 			
