@@ -148,6 +148,28 @@
 
 			var result = new ns.CriteriaElemMatch(attrPath, criterias);
 			return result;
+		},
+		
+		parse_$or: function(attrPath, val) {
+			if(!_(val).isArray()) {
+				console.log('Argument of $or must be an array');
+				throw 'Bailing out';
+			}
+			
+			var self = this;
+			var criterias = val.map(function(crit) {
+				var result = self.parse(crit);
+				return result;
+			});
+			
+			var result;
+			if(criterias.length == 1) {
+				result = criterias[0];
+			} else {
+				result = new ns.CriteriaLogicalOr(criterias);
+			}
+			
+			return result;
 		}
 		
 		
@@ -357,6 +379,27 @@
 		
 		match: function(doc) {
 			var result = _(this.criterias).every(function(criteria) {
+				var subResult = criteria.match(doc);
+				return subResult;
+			});
+			
+			return result;
+		}
+	});
+		
+
+	ns.CriteriaLogicalOr = Class.create(ns.CriteriaBase, {
+		initialize: function($super, criterias) {
+			$super('$or');
+			this.criterias = criterias;
+		},
+		
+		getCriterias: function() {
+			return this.criterias;
+		},
+		
+		match: function(doc) {
+			var result = _(this.criterias).some(function(criteria) {
 				var subResult = criteria.match(doc);
 				return subResult;
 			});

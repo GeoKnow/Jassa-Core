@@ -123,7 +123,11 @@
 				var criteria;
 				if(filterText != null && filterText.length > 0) {
 					//criteria = {name: {$regex: filterText}};
-					criteria = {owners: {$elemMatch: {name: {$regex: filterText}}}};
+					criteria = {
+							$or: [
+							      {name: {$regex: filterText}},
+							      {owners: {$elemMatch: {name: {$regex: filterText}}}}
+					]};
 				}
  				
 				var promise = store.castles.find(criteria).asList();
