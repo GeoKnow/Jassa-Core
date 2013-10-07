@@ -19,7 +19,12 @@
 		},
 		
 		
-		compileEq: function() {
+		
+		visitEq: function() {
+			
+		},
+		
+		visitGt: function() {
 			
 		}
 		

@@ -185,6 +185,12 @@
 		
 		
 		/**
+		 * This method prepares all the joins and mappings to be used for the projects
+		 * 
+		 * 
+		 * 
+		 * transient joins will be removed unless they join with something that is
+		 * not transient
 		 * 
 		 */
 		createMappingJoin: function(context, rootMapping) {
@@ -233,7 +239,8 @@
 					}
 					
 					var join = {
-						targetAlias: targetAlias
+						targetAlias: targetAlias,
+						isTransient: true
 					};
 					
 					joins.push(join);

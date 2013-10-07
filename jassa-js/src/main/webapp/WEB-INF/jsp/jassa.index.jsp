@@ -6,7 +6,18 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
 	<title>Sponate Example: DBpedia Castles</title>
+	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" />
+	
 	${cssIncludes}
+	
+	<style media="screen" type="text/css">
+	.image {
+	     style: max-width: 100px;
+	     max-height: 100px;
+	}
+	</style>
+	
+	
 	
 	<script src="resources/libs/jquery/1.9.1/jquery.js"></script>
 	<script src="resources/libs/underscore/1.4.4/underscore.js"></script>
@@ -37,36 +48,56 @@
 	var store = new sponate.StoreFacade(service, prefixes);
 
 	// Rule of thumb: If you use optional in the from attribute, you are probably doing it wrong
-	
-	store.addMap({
-		name: 'castles',
-		template: [{
-			id: '?s',      //unprefix()
-			name: '?l',
-			depiction: '?d',
-//			owners: ['?s']
-			owners: [{
-				ref: 'owners',
-				//attr: 'name', // Refer to this attribute on the remote side
-				//joinColumn: '?x'
-				joinColumn: '?s',
-				refJoinColumn: '?x'
-			}]
-		}],
-		//from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Optional { ?s dbpedia-owl:owner ?x } . Filter(langMatches(lang(?l), "en"))'
-		from: '{ Select * { ?s a dbpedia-owl:Castle ; foaf:depiction ?d ; rdfs:label ?l . Filter(langMatches(lang(?l), "en")) } Limit 10 }'
-	});
-	
-	
-	store.addMap({
-		name: 'owners',
-		template: [{
-			id: '?s',
-			name: '?l'
-		}],
-		from: '?x dbpedia-owl:owner ?s . ?s rdfs:label ?l . Filter(langMatches(lang(?l), "en")'
-	});
 
+	if(true) {
+		
+		store.addMap({
+			name: 'castles',
+			template: [{
+				id: '?s',
+				name: '?l',
+				depiction: '?d',
+				owners: [{
+					id: '?o',
+					name: '?on'
+				}]
+			}],
+			from: '{ Select * { ?s a dbpedia-owl:Castle ; rdfs:label ?l ; foaf:depiction ?d ; dbpedia-owl:owner ?o . ?o rdfs:label ?on . Filter(langMatches(lang(?l), "en")) . Filter(langMatches(lang(?on), "en")) } Limit 10 }'
+		});
+
+		
+		
+	} else {
+	
+		store.addMap({
+			name: 'castles',
+			template: [{
+				id: '?s',      //unprefix()
+				name: '?l',
+				depiction: '?d',
+	//			owners: ['?s']
+				owners: [{
+					ref: 'owners',
+					//attr: 'name', // Refer to this attribute on the remote side
+					//joinColumn: '?x'
+					joinColumn: '?s',
+					refJoinColumn: '?x'
+				}]
+			}],
+			//from: '?s a dbpedia-owl:Castle ; rdfs:label ?l . Optional { ?s dbpedia-owl:owner ?x } . Filter(langMatches(lang(?l), "en"))'
+			from: '{ Select * { ?s a dbpedia-owl:Castle ; foaf:depiction ?d ; rdfs:label ?l . Filter(langMatches(lang(?l), "en")) } Limit 10 }'
+		});
+		
+		
+		store.addMap({
+			name: 'owners',
+			template: [{
+				id: '?s',
+				name: '?l'
+			}],
+			from: '?x dbpedia-owl:owner ?s . ?s rdfs:label ?l . Filter(langMatches(lang(?l), "en")'
+		});
+	}
 	
 	var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
 	var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
@@ -91,7 +122,8 @@
 			getCastles: function(filterText) {
 				var criteria;
 				if(filterText != null && filterText.length > 0) {
-					criteria = {name: {$regex: filterText}};
+					//criteria = {name: {$regex: filterText}};
+					criteria = {owners: {$elemMatch: {name: {$regex: filterText}}}};
 				}
  				
 				var promise = store.castles.find(criteria).asList();
@@ -125,18 +157,24 @@
 </head>
 
 <body ng-controller="MyCtrl" data-ng-init="init()">
-	<form ng-submit="filterTable()">
-    	<input type="text" ng-model="filterText" />
-		<input class="btn-primary" type="submit" value="add" />
-	</form>
 
-	<table>
-		<tr ng-repeat="castle in castles">
-			<td>{{castle.name}}<td>
-			<td><img style="width: 300; height: 300px;" src="{{castle.depiction.slice(1, -1)}}" /></td>
-<!-- 			<td>{{(castle.owners | map:'name').join(' ----- ')}}</td> -->
-		</tr>
-	</table>
+	<div class="row-fluid">
+		<div class="span8 offset2">
+			<form ng-submit="filterTable()">
+		    	<input type="text" ng-model="filterText" />
+				<input class="btn-primary" type="submit" value="Filter" />
+			</form>
+		
+			<table class="table table-striped">
+				<tr><th>Image</th><th>Name</th><th>Owners</th></tr>
+				<tr ng-repeat="castle in castles">
+					<td><img class="image" src="{{castle.depiction.slice(1, -1)}}" /></td>
+					<td><a href="{{castle.id.slice(1, -1)}}">{{castle.name}}</a></td>
+					<td>{{(castle.owners | map:'name').join(', ')}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
 </body>
 
 </html>

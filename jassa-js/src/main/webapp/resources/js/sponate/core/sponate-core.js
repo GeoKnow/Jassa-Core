@@ -22,7 +22,7 @@
 		},
 		
 		toString: function() {
-			return steps.join('.');
+			return this.steps.join('.');
 		},
 		
 		slice: function(start, end) {

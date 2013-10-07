@@ -118,9 +118,6 @@
 			return new ns.CriteriaNe(attrPath, val);
 		},
 
-
-
-
 		parse_$regex: function(attrPath, val) {
 			var regex;
 
@@ -134,6 +131,22 @@
 			}
 			
 			var result = new ns.CriteriaRegex(attrPath, regex);
+			return result;
+		},
+		
+		
+		parse_$elemMatch: function(attrPath, val) {
+
+			var c = this.parse(val);
+			
+			var criterias;
+			if(c instanceof ns.CriteriaLogicalAnd) {
+				criterias = c.getCriterias();
+			} else {
+				criterias = [c];
+			}
+
+			var result = new ns.CriteriaElemMatch(attrPath, criterias);
 			return result;
 		}
 		
@@ -375,6 +388,8 @@
 				throw 'Bailing out';
 			}
 			
+			console.log('$elemMatch ' + this.attrPath);
+			
 			var result = this.matchArray(val);
 			return result;
 		},
@@ -383,8 +398,9 @@
 		matchArray: function(docArray) {
 			
 			var self = this;
-			var result = _(docArray).some(function(item) {
+			var result = _(docArray).some(function(doc) {
 				var itemMatch = _(self.criterias).every(function(criteria) {
+					console.log('Matching doc', doc, criteria);
 					var criteriaMatch = criteria.match(doc);
 					return criteriaMatch;
 				});
