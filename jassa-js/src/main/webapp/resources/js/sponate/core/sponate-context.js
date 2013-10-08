@@ -53,7 +53,7 @@
 		parseElement: function(str) {
 			var vars = sparql.extractSparqlVars(str);
 			
-			var result = ns.ElementString(str, vars);
+			var result = ns.ElementString.create(str, vars);
 		}
 	});
 
@@ -219,7 +219,7 @@
 
 			var str = sparql.expandPrefixes(prefixes, elementStr);
 			
-			var element = new sparql.ElementString(str, vars);
+			var element = sparql.ElementString.create(str, vars);
 			
 			// TODO Maybe prefix them with '?' ???
 			//var varNames = sparql.extractVarNames(vars);

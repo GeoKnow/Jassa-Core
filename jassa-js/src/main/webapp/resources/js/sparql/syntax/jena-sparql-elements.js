@@ -445,13 +445,14 @@
 	 * An element that injects a string "as is" into a query.
 	 * 
 	 */
-	ns.ElementString = function(sparqlString) {
-		this.sparqlString = sparqlString;
-	};
-
-	ns.ElementString.classLabel = 'ElementString';
-	
-	ns.ElementString.prototype = { 
+	ns.ElementString = Class.create({
+		initialize: function(sparqlString) {
+			if(_(sparqlString).isString()) {
+				debugger;
+			}
+			this.sparqlString = sparqlString;	
+		},
+ 
 		getArgs: function() {
 			return [];
 		},
@@ -468,10 +469,11 @@
 		},
 	
 		toString: function() {
-			return this.value;
+			return this.sparqlString.getString();
 		},
 
 		copySubstitute: function(fnNodeMap) {
+			console.log('ss', this.sparqlString);
 			var newSparqlString = this.sparqlString.copySubstitute(fnNodeMap);
 			return new ns.ElementString(newSparqlString);
 		},
@@ -483,9 +485,10 @@
 		flatten: function() {
 			return this;
 		}
-	};
+	});
 
-	ns.ElementString.create = function(str, vars) {		
+
+	ns.ElementString.create = function(str, vars) {
 		var result = new ns.ElementString(ns.SparqlString.create(str, vars));
 		return result;
 	};

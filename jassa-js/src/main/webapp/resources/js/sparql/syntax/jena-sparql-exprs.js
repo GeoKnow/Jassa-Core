@@ -14,15 +14,17 @@
 	 * to be used for ElementString and ExprString
 	 * 
 	 */
-	ns.SparqlString = function(value, varsMentioned) {
-		this.value = value;
-		this.varsMentioned = varsMentioned ? varsMentioned : [];
-	};
+	ns.SparqlString = Class.create({
+		initialize: function(value, varsMentioned) {			
+			this.value = value;
+			this.varsMentioned = varsMentioned ? varsMentioned : [];
+		},
 
-	ns.SparqlString.classLabel = 'SparqlString';
-	
-	ns.SparqlString.prototype = { 	
 		toString: function() {
+			return this.value;
+		},
+		
+		getString: function() {
 			return this.value;
 		},
 
@@ -51,16 +53,19 @@
 			});
 			
 			
-			return new ns.ElementString(str, newVarsMentioned);
+			return new ns.SparqlString(str, newVarsMentioned);
 		},
 	
 		getVarsMentioned: function() {
 			return this.varsMentioned;
 		}
-	};
+	});
+
+	ns.SparqlString.classLabel = 'SparqlString';
+
 	
-	ns.SparqlString.create = function(str) {
-		var vars = ns.extractSparqlVars(str);
+	ns.SparqlString.create = function(str, vars) {
+		vars = vars ? vars : vars = ns.extractSparqlVars(str);
 		
 		var result = new ns.SparqlString(str, vars);
 		return result;
