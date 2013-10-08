@@ -80,8 +80,6 @@
 			}],
 			from: '{ Select * { ?s a dbpedia-owl:Castle ; rdfs:label ?l ; foaf:depiction ?d ; dbpedia-owl:owner ?o . ?o rdfs:label ?on . Filter(langMatches(lang(?l), "en")) . Filter(langMatches(lang(?on), "en")) } Limit 10 }'
 		});
-
-		
 		
 	} else {
 	
@@ -128,6 +126,7 @@
 	//var promise = store.castles.find({id: '<http://dbpedia.org/resource/Hume_Castle>'}).asList();
 	
 	
+	
 	/*
 	 * Angular JS
 	 */	
@@ -138,6 +137,7 @@
 			getCastles: function(filterText) {
 				var criteria;
 				//criteria = {name: {$or: ['bar', 'foo']}};
+				criteria = {owners: {$elemMatch: {name: {$regex: 'foo'}}}};
 
 				if(filterText != null && filterText.length > 0) {
 //					criteria = {name: {$regex: filterText}};

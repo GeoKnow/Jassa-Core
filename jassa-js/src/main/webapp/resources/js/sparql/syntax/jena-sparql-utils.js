@@ -70,7 +70,7 @@
 		 */
 		makeElementDistinct: function(a, b) {
 			var vas = a.getVarsMentioned();
-			var vbs = a.getVarsMentioned();
+			var vbs = b.getVarsMentioned();
 
 			var vans = vas.map(ns.fnGetVarName);
 			var vbns = vbs.map(ns.fnGetVarName);

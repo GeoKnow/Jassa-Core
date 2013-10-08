@@ -259,15 +259,129 @@
 	};
 
 	
-	
-	ns.MappingJoinBuilder = Class.create({
-		initialize: function() {
-			
+	ns.GraphItem = Class.create({
+		initialize: function(graph, id) {
+			this.graph = graph;
+			this.id = id;
 		},
 		
+		getGraph: function() {
+			return this.graph;
+		},
+		
+		getId: function() {
+			return this.id;
+		}
+	});
+
+
+	ns.Node = Class.create(ns.GraphItem, {
+		initialize: function($super, graph, id) {
+			$super(graph, id);
+		},
+		
+		getOutgoingEdges: function() {
+			var result = this.graph.getEdges(this.id);
+			return result;
+		}
+	});
+
+	
+	ns.Edge = Class.create({
+		
+		initialize: function(graph, id, nodeIdFrom, nodeIdTo) {
+			this.graph = graph;
+			this.id = id;
+			this.nodeIdFrom = nodeIdFrom;
+			this.nodeIdTo = nodeIdTo;
+		},
+		
+		getNodeFrom: function() {
+			var result = this.graph.getNode(this.nodeIdFrom);
+			return result;
+		},
+		
+		getNodeTo: function() {
+			var result = this.graph.getNode(this.nodeIdTo);
+			return result;			
+		}
+	});
+	
+	
+	ns.Graph = Class.create({
+		initialize: function(fnCreateNode, fnCreateEdge) {
+			this.fnCreateNode = fnCreateNode;
+			this.fnCretaeEdge = fnCreateEdge;
+			
+			this.idToNode = {};
+			
+			// {v1: {e1: data}}
+			this.nodeIdToEdgeIdToEdge = {};
+			this.idToEdge = {};
+
+			this.nextNodeId = 1;
+			this.nextEdgeId = 1;
+		},
+		
+		createNode: function() {
+			var nodeId = '' + (++this.nextNodeId);
+			
+			var result = this.fnCreateNode.apply(arguments /* todo */);
+			idToNode[nodeId] = result;
+			
+			return result;
+		},
+		
+		createEdge: function(nodeIdFrom, nodeIdTo) {
+			var edgeId = '' + (++this.nextEdgeId);
+			
+			var result = this.fnEdgeNode.apply(arguments /* todo */);
+			
+			var edgeIdToEdge = this.nodeIdToEdgeIdToEdge[edges];
+			if(edgeIdToEdge == null) {
+				edgeIdToEdge = {};
+				this.nodeIdToEdgeIdToEdge = edgeIdToEdge; 
+			}
+			
+			edgeIdToEdge[edgeId] = result;
+			this.idToEdge[edgeId] = result;
+			
+			
+			return result;
+		}		
 		
 	});
 	
+	ns.MappingJoinNode = Class.create(ns.Node, {
+		initialize: function($super, graph, nodeId) {
+			$super(graph, graph, edgeId); 
+
+			this.graph = graph;
+			this.alias = alias;
+		},
+		
+		getAlias: function() {
+			return this.alias;
+		},
+		
+		
+		// Note refSpec must have an id
+		addJoin: function(targetMapping, refSpec) {
+			var nodeTo = this.graph.createNode();
+			
+			
+			
+			return nodeTo;
+		}
+	});
+
+
+	ns.MappingJoinEdge = Class.create(ns.Edge, {
+		initialize: function($super, graph, edgeId) {
+			$super(graph, graph, edgeId); 
+		}
+	});
+
 	
 	ns.HashMap = Class.create({
 		initialize: function(fnHash, fnEquals) {

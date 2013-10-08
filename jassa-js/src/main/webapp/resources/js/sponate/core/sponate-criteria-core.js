@@ -197,6 +197,15 @@
 		
 		match: function(doc) {
 			throw 'Not overridden';
+		},
+		
+		callVisitor: function(name, self, args) {
+			var result = ns.callVisitor(name, self, args);
+			return result;
+		},
+		
+		accept: function(visitor) {
+			throw 'Not overridden';
 		}
 	});
 	
@@ -358,6 +367,11 @@
 			var result = this.regex.test(val);
 
 			return result;
+		},
+		
+		accept: function(visitor) {
+			var result = this.callVisitor('visitRegex', this, arguments);
+			return result;
 		}
 	});
 
@@ -407,7 +421,13 @@
 			});
 			
 			return result;
+		},
+		
+		accept: function(visitor) {
+			var result = this.callVisitor('visitLogicalOr', this, arguments);
+			return result;
 		}
+
 	});
 		
 
@@ -453,6 +473,11 @@
 				return itemMatch;				
 			})
 			
+			return result;
+		},
+		
+		accept: function(visitor) {
+			var result = this.callVisitor('visitElemMatch', this, arguments);
 			return result;
 		}
 	});

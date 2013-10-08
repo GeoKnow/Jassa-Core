@@ -1,7 +1,8 @@
 (function() {
 	
 	var ns = Jassa.sponate;
-	
+
+
 	ns.CriteriaCompilerSparql = Class.create({
 
 
@@ -17,22 +18,35 @@
 				mapping: mapping
 			};
 			
+			console.log('crit', criteria);
+			
 			var result = criteria.accept(this);
 
 			return result;
 		},
 		
-		findPattern: function(attrPath) {
-			
+		
+		findPattern: function(pattern, attrPath) {
+
+			// At each step check whether we encounter a reference
+			_(attrPath.getSteps()).each(function(step) {
+				pattern.find();
+				
+			});
 		},
 		
 		
-		visitElemMatch: function() {
+		visitElemMatch: function(criteria) {
 			
+			alert('yay' +  JSON.stringify(criteria));
 		},
 
 		
 		visitGt: function() {
+
+		},
+		
+		visitLogicalOr: function() {
 			
 		}
 		

@@ -8,6 +8,65 @@
 	
 	// NOTE This file is currently being portet to make use of classes	
 		
+	
+	/**
+	 * An string object that supports variable substitution and extraction
+	 * to be used for ElementString and ExprString
+	 * 
+	 */
+	ns.SparqlString = function(value, varsMentioned) {
+		this.value = value;
+		this.varsMentioned = varsMentioned ? varsMentioned : [];
+	};
+
+	ns.SparqlString.classLabel = 'SparqlString';
+	
+	ns.SparqlString.prototype = { 	
+		toString: function() {
+			return this.value;
+		},
+
+		copySubstitute: function(fnNodeMap) {
+			var str = this.value;
+			var newVarsMentioned = [];
+			
+			_(this.varsMentioned).each(function(v) {
+
+				var reStr = '\\?' + v.getName() + '([^_\\w])?';
+				var re = new RegExp(reStr, 'g');
+
+				var node = fnNodeMap(v);
+				if(node) {
+					if(node.isVariable()) {
+						//console.log('Var is ' + node + ' ', node);
+						
+						newVarsMentioned.push(node);						
+					}
+
+					var nodeStr = node.toString();
+					str = str.replace(re, nodeStr + '$1');
+				} else {
+					newVarsMentioned.push(v);
+				}
+			});
+			
+			
+			return new ns.ElementString(str, newVarsMentioned);
+		},
+	
+		getVarsMentioned: function() {
+			return this.varsMentioned;
+		}
+	};
+	
+	ns.SparqlString.create = function(str) {
+		var vars = ns.extractSparqlVars(str);
+		
+		var result = new ns.SparqlString(str, vars);
+		return result;
+	};
+
+
 
 	/**
 	 * Expr classes, similar to those in Jena
@@ -178,7 +237,8 @@
 		}
 	});
 	
-	
+
+
 // TODO Change to ExprFunction1
 	ns.E_In = Class.create(ns.Expr, {
 		initialize: function(variable, nodes) {
@@ -622,6 +682,44 @@
 		return "Max(" + this.subExpr + ")";
 	};
 
+
+
+	ns.ExprString = Class.create(ns.Expr, {
+		initialize: function(sparqlString) {
+			this.sparqlString = sparqlString;
+		},
+		
+		copySubstitute: function(fnNodeMap) {
+			var newSparqlString = this.sparqlString.copySubstitute(fnNodeMap);
+			return new ns.ExprString(newSparqlString);
+		},
+		
+		getVarsMentioned: function() {
+			return this.sparqlString.getVarsMentioned();
+		},
+
+		getArgs: function() {
+			return [];
+		},
+		
+		copy: function(args) {
+			if(args.length != 0) {
+				throw "Invalid argument";
+			}
+
+			return this;
+		},
+
+		toString: function() {
+			return "(!" + this.expr + ")";
+		}				
+	});
+	
+	ns.ExprString.create = function(str, vars) {		
+		var result = new ns.ExprString(ns.SparqlString.create(str, vars));
+		return result;
+	};
+	
 	
 	
 	// TODO Not sure about the best way to design this class

@@ -436,13 +436,17 @@
 		}
 	};
 	
+
+		
+
+	
+	
 	/**
 	 * An element that injects a string "as is" into a query.
 	 * 
 	 */
-	ns.ElementString = function(value, varsMentioned) {
-		this.value = value;
-		this.varsMentioned = varsMentioned ? varsMentioned : [];
+	ns.ElementString = function(sparqlString) {
+		this.sparqlString = sparqlString;
 	};
 
 	ns.ElementString.classLabel = 'ElementString';
@@ -458,8 +462,9 @@
 			}
 			
 			// FIXME: Should we clone the attributes too?
-			var result = new ns.String(this.value, this.varsMentioned);
-			return result;
+			//var result = new ns.ElementString(this.sparqlString);
+			return this;
+			//return result;
 		},
 	
 		toString: function() {
@@ -467,35 +472,12 @@
 		},
 
 		copySubstitute: function(fnNodeMap) {
-			var str = this.value;
-			var newVarsMentioned = [];
-			
-			_(this.varsMentioned).each(function(v) {
-
-				var reStr = '\\?' + v.getName() + '([^_\\w])?';
-				var re = new RegExp(reStr, 'g');
-
-				var node = fnNodeMap(v);
-				if(node) {
-					if(node.isVariable()) {
-						//console.log('Var is ' + node + ' ', node);
-						
-						newVarsMentioned.push(node);						
-					}
-
-					var nodeStr = node.toString();
-					str = str.replace(re, nodeStr + '$1');
-				} else {
-					newVarsMentioned.push(v);
-				}
-			});
-			
-			
-			return new ns.ElementString(str, newVarsMentioned);
+			var newSparqlString = this.sparqlString.copySubstitute(fnNodeMap);
+			return new ns.ElementString(newSparqlString);
 		},
 	
 		getVarsMentioned: function() {
-			return this.varsMentioned;
+			return this.sparqlString.getVarsMentioned();
 		},
 	
 		flatten: function() {
@@ -503,10 +485,8 @@
 		}
 	};
 
-	ns.ElementString.create = function(str) {
-		vars = ns.extractSparqlVars(str);
-		
-		var result = new ns.ElementString(str, vars);
+	ns.ElementString.create = function(str, vars) {		
+		var result = new ns.ElementString(ns.SparqlString.create(str, vars));
 		return result;
 	};
 	

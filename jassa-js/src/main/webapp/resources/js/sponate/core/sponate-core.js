@@ -83,34 +83,40 @@
 	 * 
 	 */
 
+	ns.callVisitor = function(name, self, args) {
+
+		if(self !== this) {
+			console.log('Different this pointers');
+		}
+		
+		// The first argument is the visitor
+		var visitor = args[0];
+
+		var fn = visitor[name];
+
+		if(!fn) {
+			console.log('[ERROR] No visitor with name ' + name + ' in ', self);
+			throw 'Bailing out';
+		}
+		
+		var tmp = Array.prototype.slice.call(args, 1);
+		var xargs = [self].concat(tmp);
+		//console.log('xargs', xargs.length, xargs);
+		
+		//debugger;
+		var result = fn.apply(visitor, xargs);
+		
+		return result;
+		
+	};
+	
 	/**
 	 * 
 	 * 
 	 */
 	ns.Pattern = Class.create({
 		callVisitor: function(name, self, args) {
-
-			if(self !== this) {
-				console.log('Different this pointers');
-			}
-			
-			// The first argument is the visitor
-			var visitor = args[0];
-
-			var fn = visitor[name];
-
-			if(!fn) {
-				console.log('[ERROR] No visitor with name ' + name + ' in ', self);
-				throw 'Bailing out';
-			}
-			
-			var tmp = Array.prototype.slice.call(args, 1);
-			var xargs = [self].concat(tmp);
-			//console.log('xargs', xargs.length, xargs);
-			
-			//debugger;
-			var result = fn.apply(visitor, xargs);
-			
+			var result = ns.callVisitor(name, self, args);
 			return result;
 		},
 
