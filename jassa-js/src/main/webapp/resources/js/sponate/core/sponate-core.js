@@ -85,9 +85,9 @@
 
 	ns.callVisitor = function(name, self, args) {
 
-		if(self !== this) {
-			console.log('Different this pointers');
-		}
+//		if(self !== this) {
+//			console.log('Different this pointers');
+//		}
 		
 		// The first argument is the visitor
 		var visitor = args[0];

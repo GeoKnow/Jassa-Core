@@ -13,14 +13,10 @@
 		 * 
 		 */
 		compile: function(context, mapping, criteria) {
-			var state = {
-				context: context,
-				mapping: mapping
-			};
+			var joinGraph = new ns.Graph(ns.fnCreateMappingJoinNode, ns.fnCreateMappingEdge);
 			
-			console.log('crit', criteria);
-			
-			var result = criteria.accept(this);
+			var joinNode = joinGraph.createNode(mapping);
+			var result = criteria.accept(this, criteria, context, joinGraph, joinNode);
 
 			return result;
 		},
@@ -31,17 +27,26 @@
 			// At each step check whether we encounter a reference
 			_(attrPath.getSteps()).each(function(step) {
 				pattern.find();
-				
 			});
 		},
 		
 		
-		visitElemMatch: function(criteria) {
+		visitElemMatch: function(criteria, context, graph, joinNode) {
 			
-			alert('yay' +  JSON.stringify(criteria));
+			var refSpec = criteria.getRefSpec();
+			
+			alert('yay' +  JSON.stringify(refSpec));
 		},
 
-		
+		/**
+		 * 
+		 * 
+		 */
+		visitRef: function(criteria, context, graph, joinNode) {
+			
+		},
+
+
 		visitGt: function() {
 
 		},

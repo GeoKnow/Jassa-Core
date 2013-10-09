@@ -39,6 +39,7 @@
 
 				var node = fnNodeMap(v);
 				if(node) {
+					console.log('Node is ', node);
 					if(node.isVariable()) {
 						//console.log('Var is ' + node + ' ', node);
 						
@@ -65,7 +66,7 @@
 
 	
 	ns.SparqlString.create = function(str, vars) {
-		vars = vars ? vars : vars = ns.extractSparqlVars(str);
+		vars = vars ? vars : ns.extractSparqlVars(str);
 		
 		var result = new ns.SparqlString(str, vars);
 		return result;
@@ -802,36 +803,39 @@
 	 */
 	_.extend(ns.NodeValue, {
 		
-		// TODO Move to NodeFactory
-		createLiteral: function(dtypeUri, val) {
-			var dtype = rdf.RdfDatatypes[dtypeUri];
-			if(!dtype) {
-				console.log('[ERROR] No dtype for ' + dtypeUri);
-			}
-			
-			var lex = dtype.unparse(val);
-			var lang = null;
-			
-			var literalLabel = new rdf.LiteralLabel(val, lex, lang, dtype);
-			
-			var node = new rdf.Node_Literal(literalLabel);
-			
+		createLiteral: function(val, typeUri) {
+			var node = rdf.NodeFactory.createTypedLiteralFromValue(val, typeUri);
 			var result = new ns.NodeValueNode(node);
-			
 			return result;
+			
+//			var dtype = rdf.RdfDatatypes[dtypeUri];
+//			if(!dtype) {
+//				console.log('[ERROR] No dtype for ' + dtypeUri);
+//			}
+//			
+//			var lex = dtype.unparse(val);
+//			var lang = null;
+//			
+//			var literalLabel = new rdf.LiteralLabel(val, lex, lang, dtype);
+//			
+//			var node = new rdf.Node_Literal(literalLabel);
+//			
+//			var result = new ns.NodeValueNode(node);
+//			
+//			return result;
 		},
 		
 		
 		makeString: function(str) {
-			return ns.NodeValue.createLiteral(xsd.str.xstring, str);
+			return ns.NodeValue.createLiteral(str, xsd.str.xstring);
 		},
 		
 		makeInteger: function(val) {
-			return new ns.NodeValue.createLiteral(xsd.str.xint, val);
+			return new ns.NodeValue.createLiteral(val, xsd.str.xint);
 		},
 		
 		makeFloat: function(val) {
-			return new ns.NodeValue.createLiteral(xsd.str.xfloat, val);
+			return new ns.NodeValue.createLiteral(val, xsd.str.xfloat);
 		},
 		
 		makeNode: function(node) {

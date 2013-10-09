@@ -1,8 +1,10 @@
 // Move some utility functions from Elements here
 (function() {
 	
-	var ns = Jassa.sparql;
+	var col = Jassa.utils.collections;
 
+	var ns = Jassa.sparql;
+	
 	/**
 	 * Another class that mimics Jena's behavour.
 	 * 
@@ -56,6 +58,7 @@
 	};
 
 
+	
 	ns.ElementUtils = {
 		flatten: function(elements) {
 			var result = _.map(elements, function(element) { return element.flatten(); });
@@ -63,13 +66,89 @@
 			return result;
 		},
 		
+		/**
+		 * distinctMap is the result of making vbs and vas distinct
+		 * 
+		 * [?s ?o] [?s ?p] join on ?o = ?s
+		 * 
+		 * Step 1: Make overlapping vars distinct
+		 * [?s ?o] [?x ?p] -> {?s: ?x, ?p: ?p}
+		 * 
+		 * Step 2: Make join vars common again
+		 * [?s ?o] [?x ?s] -> {?s: ?x, ?p: ?s}
+		 */
+		createJoinVarMap: function(sourceVars, targetVars, sourceJoinVars, targetJoinVars) {
+			
+			if(sourceJoinVars.length != targetJoinVars.length) {
+				console.log('[ERROR] Cannot join on different number of columns');
+				throw 'Bailing out';
+			}
+			
+			var result = ns.ElementUtils.createDistinctVarMap(sourceVars, targetVars);
+			
+			for(var i = 0; i < sourceJoinVars.length; ++i) {
+				var sourceJoinVar = sourceJoinVars[i];
+				var targetJoinVar = targetJoinVars[i];
+
+				// Map targetVar to sourceVar 
+				result.put(targetJoinVar, sourceJoinVar);
+				//rename[targetVar.getName()] = sourceVar;
+			}
+
+			return result;
+		},
 		
 		/**
-		 * Rename all variables in b that appear in a.
+		 * Var map must be a bidi map
+		 */
+		createRenamedElement: function(element, varMap) {
+			var fnSubst = function(v) {
+				var result = varMap.get(v);//[v.getName()];
+				return result;
+			};
+			
+			//debugger;
+			var newElement = element.copySubstitute(fnSubst);
+			
+			return newElement;
+		},
+		
+		createDistinctVarMap: function(vas, vbs) {
+			var vans = vas.map(ns.fnGetVarName);
+			var vbns = vbs.map(ns.fnGetVarName);
+			
+			// Get the var names that are in common
+			var vcns = _(vans).intersection(vbns);
+			
+			var g = new ns.GenSym('v');
+			var gen = new ns.GeneratorBlacklist(g, vans);
+
+			// Rename all variables that are in common
+			var result = new col.HashBidiMap(ns.fnNodeEquals);
+			//var rename = {};
+
+			_(vcns).each(function(vcn) {
+				var newName = gen.next();
+				var newVar = ns.Node.v(newName);
+				//rename[vcn] = newVar;
+				
+				// TODO Somehow re-use existing var objects... 
+				var oldVar = ns.Node.v(vcn);
+				
+				result.put(oldVar, newVar);
+			});
+			
+			return result;
+		},
+		
+
+		
+		/**
+		 * Rename all variables in b that appear in the array of variables vas.
 		 * 
 		 */
-		makeElementDistinct: function(a, b) {
-			var vas = a.getVarsMentioned();
+		makeElementDistinct: function(b, vas) {
+			//var vas = a.getVarsMentioned();
 			var vbs = b.getVarsMentioned();
 
 			var vans = vas.map(ns.fnGetVarName);
@@ -82,18 +161,24 @@
 			var gen = new ns.GeneratorBlacklist(g, vans);
 
 			// Rename all variables that are in common
-			var rename = {};
+			var rename = new col.HashBidiMap(ns.fnNodeEquals);
+			//var rename = {};
 
 			_(vcns).each(function(vcn) {
 				var newName = gen.next();
 				var newVar = ns.Node.v(newName);
-				rename[vcn] = newVar;
+				//rename[vcn] = newVar;
+				
+				// TODO Somehow re-use existing var objects... 
+				var oldVar = ns.Node.v(vcn);
+				
+				rename.put(oldVar, newVar);
 			});
 			
-			console.log('Common vars: ' + vcns + ' rename: ' + JSON.stringify(rename));
+			console.log('Common vars: ' + vcns + ' rename: ' + JSON.stringify(rename.getMap()));
 			
 			var fnSubst = function(v) {
-				var result = rename[v.getName()];
+				var result = rename.get(v);//[v.getName()];
 				return result;
 			};
 			

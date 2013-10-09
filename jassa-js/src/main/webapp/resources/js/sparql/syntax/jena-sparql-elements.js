@@ -473,7 +473,6 @@
 		},
 
 		copySubstitute: function(fnNodeMap) {
-			console.log('ss', this.sparqlString);
 			var newSparqlString = this.sparqlString.copySubstitute(fnNodeMap);
 			return new ns.ElementString(newSparqlString);
 		},

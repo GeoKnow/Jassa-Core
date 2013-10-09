@@ -465,7 +465,7 @@
 			var self = this;
 			var result = _(docArray).some(function(doc) {
 				var itemMatch = _(self.criterias).every(function(criteria) {
-					console.log('Matching doc', doc, criteria);
+					//console.log('Matching doc', doc, criteria);
 					var criteriaMatch = criteria.match(doc);
 					return criteriaMatch;
 				});

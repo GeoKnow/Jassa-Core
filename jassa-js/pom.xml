@@ -52,6 +52,7 @@
 							    <param>modules.js</param>
 							  
 <!-- 							    <param>utils/Logging.js</param> -->
+								<param>utils/collections.js</param>
 							    
 							    <param>rdf/rdf-core.js</param>
 							    <param>rdf/vocabs/utils.js</param>
@@ -62,7 +63,7 @@
 							    <param>rdf/vocabs/rdfs.js</param>
 							    <param>rdf/vocabs/owl.js</param>
 							    <param>rdf/vocabs/wgs84.js</param>
-							    							    							    							    							    							    							    
+			    							    							    							    							    
 							    <param>sparql/syntax/jena-sparql-base.js</param>
 							    <param>sparql/syntax/jena-sparql-exprs.js</param>
 								<param>sparql/syntax/jena-sparql-elements.js</param>

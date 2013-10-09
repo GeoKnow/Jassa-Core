@@ -253,7 +253,7 @@
 		},
 		
 		toString: function() {
-			var dtypeUri = this.dtype.getUri();
+			var dtypeUri = this.dtype ? this.dtype.getUri() : null;
 			var litStr = ns.escapeLiteralString(this.lex);
 			
 			var result;
@@ -396,8 +396,51 @@
 			return result;
 		},
 		
-		createTypedLiteralFromString: function(str, dtype) {
-			throw 'Not implemented yet';
+		/**
+		 * The value needs to be unparsed first (i.e. converted to string)
+		 * 
+		 */
+		createTypedLiteralFromValue: function(val, typeUri) {
+			var dtype = rdf.RdfDatatypes[typeUri];
+			if(!dtype) {
+				console.log('[ERROR] No dtype for ' + typeUri);
+				throw 'Bailing out';
+			}
+
+			var lex = dtype.unparse(val);
+			var lang = null;
+			
+			var literalLabel = new rdf.LiteralLabel(val, lex, lang, dtype);
+			
+			var result = new rdf.Node_Literal(literalLabel);
+			
+			return result;
+		},
+
+		
+		/**
+		 * The string needs to be parsed first (i.e. converted to the value)
+		 * 
+		 */
+		createTypedLiteralFromString: function(str, typeUri) {
+			var dtype = rdf.RdfDatatypes[typeUri];
+			if(!dtype) {
+				console.log('[ERROR] No dtype for ' + typeUri);
+				throw 'Bailing out';
+			}
+			
+			var val = dtype.parse(str);
+
+			var lex = str;
+			//var lex = dtype.unparse(val);
+			//var lex = s; //dtype.parse(str);
+			var lang = null;
+			
+			var literalLabel = new rdf.LiteralLabel(val, lex, lang, dtype);
+			
+			var result = new rdf.Node_Literal(literalLabel);
+			
+			return result;
 		},
 		
 		createFromTalisRdfJson: function(talisJson) {
@@ -419,7 +462,7 @@
 					result = ns.NodeFactory.createPlainLiteral(talisJson.value, lang);
 					break;
 				case 'typed-literal':
-					ns.Node = ns.NodeFactory.createTypedLiteralFromString(talisJson.value, talisJson.datatype);
+					result = ns.NodeFactory.createTypedLiteralFromString(talisJson.value, talisJson.datatype);
 					break;
 				default:
 					console.log("Unknown type: '" + talisJson.type + "'");

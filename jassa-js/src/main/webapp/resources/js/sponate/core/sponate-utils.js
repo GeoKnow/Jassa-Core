@@ -20,7 +20,9 @@
 
 				var tmp = bindings.map(function(b) {
 					//console.log('Talis Json' + JSON.stringify(b));
-					return sparql.Binding.fromTalisJson(b);
+					var bindingObj = sparql.Binding.fromTalisJson(b);
+					//console.log('Binding obj: ' + bindingObj);
+					return bindingObj;					
 				});
 				
 				var it = new ns.IteratorArray(tmp);
@@ -107,6 +109,80 @@
 	*/
 	
 	/**
+	 * A convenient facade on top of a join builder
+	 * 
+	 */
+	ns.JoinNode = Class.create({
+		initialize: function(joinBuilder, alias) {
+			this.joinBuilder = joinBuilder;
+			this.alias = alias;
+		},
+		
+		getElement: function() {
+			this.joinBuilder.getElementByAlias(this.alias);
+		},
+		
+		// Returns all join node object 
+		// joinBuilder = new joinBuilder();
+		// node = joinBuilder.getRootNode();
+		// node.join([?s], element, [?o]);
+		//    ?s refers to the original element wrapped by the node
+		//    ?o also refers to the original element of 'element'
+		// 
+		// joinBuilder.getRowMapper();
+		// joinBuilder.getElement();
+		getJoinNodes: function() {
+			
+		},
+		
+		// Keeps track of how to map back and forth by taking the alias into account
+		join: function(sourceVars, targetElement, targetVars) {
+			
+			// Maps original var names to new ones
+			var varMap = new ns.HashBidiMap();
+			
+			if(sourceColumns.length != targetColumns.length) {
+				console.log('[ERROR] Cannot join on different number of columns');
+				throw 'Bailing out';
+			}
+			
+			var sourceElement = this.getElement();
+			
+			var c = sparql.ElementUtils.makeElementDistinct(a, b);
+			console.log('distinct: ' + c.element, c.map);
+			
+			var bVars = b.getVarsMentioned();
+			_.each(bVars, function(v) {
+				var r = c.map[v.getName()];
+				varMap.put(v, r)
+			});
+			
+			//var rename = 
+
+			// Rename the join columns of b so that they equal those of a
+			for(var i = 0; i < sourceVars.length; ++i) {
+				var sourceVar = sourceVars[i];
+				var targetVar = targetVars[i];
+
+				rename[targetVar.getName()] = sourceVar;
+			}
+
+			var fnSubst = function(v) {
+				var result = rename[v.getName()];
+				return result;
+			};
+			
+			var d = c.copySubstitute(fnSubst);
+			
+			
+			
+		},
+		
+		//leftJoin: 
+		
+	});
+	
+	/**
 	 * a: castle
 	 * 
 	 * 
@@ -116,12 +192,13 @@
 	 */
 	ns.JoinBuilderElement = Class.create({
 		initialize: function() {
+			this.aliasGenerator = new ns.GenSym('a');
 			this.varAliasMap = new ns.VarAliasMap();
 			this.aliasToElement = new ns.MapList(); 
 		},
 		
 		// 
-		add: function(element, projectVars) {
+		add: function(aliasFrom, aliasTo) {
 			
 		},
 		
@@ -130,11 +207,15 @@
 		}
 	});
 
+	ns.fnNodeEquals = function(a, b) { return a.equals(b); };
+
 	/*
 	 * We need to map a generated var back to the alias and original var
+	 * newVarToAliasVar:
 	 * {?foo -> {alias: 'bar', var: 'baz'} }
 	 * 
 	 * We need to map and alias and a var to the generater var
+	 * aliasToVarMap
 	 * { bar: { baz -> ?foo } }
 	 *
 	 * 
@@ -143,20 +224,30 @@
 	 */
 	ns.VarAliasMap = Class.create({
 		initialize: function() {
-			this.aliasToBinding = {};
-			this.newVarToAliasVar = {};
+			// newVarToOrig
+			this.aliasToVarMap = new ns.HashMap(nsNodeEquals)
+			this.newVarToAliasVar = new ns.HashMap(nsNodeEquals);
 		},
 		
 		put: function(origVar, alias, newVar) {
+			this.newVarToAliasVar.put(newVar, {alias: alias, v: origVar});
 			
+			var varMap = this.aliasToBinding[alias];
+			if(varMap == null) {
+				varMap = new ns.BidiHashMap();
+				this.aliasToVarMap[alias] = varMap;
+			}
+			
+			varMap.put(newVar, origVar);
 		},
 		
-		getAliasVar: function(newVar) {
+		getOrigAliasVar: function(newVar) {
+			var entry = this.newVarToAliasVar.get(newVar);
 			
+			var result = entry == null ? null : entry;
 		},
 		
-		getBinding: function(alias) {
-			
+		getVarMap: function(alias) {
 		}
 	});
 	
@@ -305,9 +396,13 @@
 			var result = this.graph.getNode(this.nodeIdTo);
 			return result;			
 		}
+
 	});
 	
-	
+
+	/**
+	 * 
+	 */
 	ns.Graph = Class.create({
 		initialize: function(fnCreateNode, fnCreateEdge) {
 			this.fnCreateNode = fnCreateNode;
@@ -316,6 +411,7 @@
 			this.idToNode = {};
 			
 			// {v1: {e1: data}}
+			// outgoing edges
 			this.nodeIdToEdgeIdToEdge = {};
 			this.idToEdge = {};
 
@@ -323,19 +419,27 @@
 			this.nextEdgeId = 1;
 		},
 		
-		createNode: function() {
+		createNode: function(/* arguments */) {
 			var nodeId = '' + (++this.nextNodeId);
 			
-			var result = this.fnCreateNode.apply(arguments /* todo */);
-			idToNode[nodeId] = result;
+			var tmp = Array.prototype.slice.call(arguments, 0);
+			var xargs = [this, nodeId].concat(tmp);
+			
+			var result = this.fnCreateNode.apply(this, xargs);
+			this.idToNode[nodeId] = result;
 			
 			return result;
 		},
 		
-		createEdge: function(nodeIdFrom, nodeIdTo) {
+		createEdge: function(nodeIdFrom, nodeIdTo /*, arguments */) {
 			var edgeId = '' + (++this.nextEdgeId);
 			
-			var result = this.fnEdgeNode.apply(arguments /* todo */);
+			var tmp = Array.prototype.slice.call(arguments, 0);
+			// TODO Maybe we should pass the nodes rather than the node ids
+			var xargs = [graph, nodeIdFrom, nodeIdTo].concat(tmp);
+
+			
+			var result = this.fnEdgeNode.apply(this, xargs);
 			
 			var edgeIdToEdge = this.nodeIdToEdgeIdToEdge[edges];
 			if(edgeIdToEdge == null) {
@@ -352,29 +456,88 @@
 		
 	});
 	
-	ns.MappingJoinNode = Class.create(ns.Node, {
-		initialize: function($super, graph, nodeId) {
-			$super(graph, graph, edgeId); 
+	ns.NodeJoinElement = Class.create(ns.Node, {
+		initialize: function($super, graph, nodeId, element, alias) {
+			$super(graph, nodeId); 
 
-			this.graph = graph;
+			this.element = element; // TODO ElementProvider?
 			this.alias = alias;
+		},
+		
+		getElement: function() {
+			return this.element;
 		},
 		
 		getAlias: function() {
 			return this.alias;
-		},
-		
-		
-		// Note refSpec must have an id
-		addJoin: function(targetMapping, refSpec) {
-			var nodeTo = this.graph.createNode();
-			
-			
-			
-			return nodeTo;
-		}
+		}		
 	});
 
+	
+	ns.fnCreateMappingJoinNode = function(graph, nodeId) {
+		console.log('Node arguments:', arguments);
+		return new ns.MappingJoinNode(graph, nodeId);
+	};
+
+
+	ns.fnCreateMappingEdge = function(graph, edgeId) {
+		return new ns.MappingJoinEdge(graph, edgeId);
+	};
+
+
+	ns.JoinGraphElement = Class.create(ns.Graph, {
+		initialize: function($super) {
+			$super(ns.fnCreateMappingJoinNode, ns.fnCreateMappingEdge);
+		}
+	});
+	
+	
+	/**
+	 * This row mapper splits a single binding up into multiple ones
+	 * according to how the variables are mapped by aliases.
+	 * 
+	 * 
+	 */
+	ns.RowMapperJoin = Class.create({
+		initialize: function(varAliasMap) {
+			this.varAliasMap = varAliasMap;
+		},
+		
+		/**
+		 * 
+		 * Returns a map from alias to bindings
+		 * e.g. { a: binding, b: binding}
+		 */
+		map: function(binding) {
+			//this.varAliasMap
+			
+			var vars = binding.getVars();
+			
+			var result = {};
+			
+			var varAliasMap = this.varAliasMap;
+			_(vars).each(function(v) {
+				
+				var node = binding.get(v);
+				
+				var aliasVar = varAliasMap.getOrigAliasVar(v);
+				var ov = aliasVar.v;
+				var oa = aliasVar.alias;
+				
+				var resultBinding = result[oa];
+				if(resultBinding == null) {
+					resultBinding = new ns.Binding();
+					result[oa] = resultBinding;
+				}
+				
+				resultBinding.put(ov, node);
+			});
+			
+			
+			return result;
+		}
+	});
+	
 
 	ns.MappingJoinEdge = Class.create(ns.Edge, {
 		initialize: function($super, graph, edgeId) {
@@ -383,113 +546,6 @@
 	});
 
 	
-	ns.HashMap = Class.create({
-		initialize: function(fnHash, fnEquals) {
-			this.fnHash = fnHash ? fnHash : (function(x) { return '' + x; });
-			this.fnEquals = fnEquals ? fnEuqals : _.isEqual;
-			
-			this.hashToBucket = {};
-		},
-		
-		put: function(key, val) {
-			var hash = this.fnHash(key);
-			
-			var bucket = this.hashToBucket[hash];
-			if(bucket == null) {
-				bucket = [];
-				this.hashToBucket[hash] = bucket;
-			}
-			
-
-			var keyIndex = this._indexOfKey(bucket, key);
-			if(keyIndex >= 0) {
-				bucket[keyIndex].val = val;
-				return;
-			}
-			
-			var entry = {
-				key: key,
-				val: val
-			};
-
-			bucket.push(entry);
-		},
-		
-		_indexOfKey: function(bucket, key) {
-			if(bucket != null) {
-
-				for(var i = 0; i < bucket.length; ++i) {
-					var entry = bucket[i];
-					
-					var k = entry.key;
-					if(this.fnEquals(k, key)) {
-						entry.val = val;
-						return i;
-					}
-				}
-
-			}
-			
-			return -1;
-		},
-		
-		get: function(key) {
-			var hash = this.fnHash(key);
-			var bucket = this.hashToBucket[hash];
-			var i = this._indexOfKey(bucket, key);
-			var result = i >= 0 ? bucket[i] : null;
-			return result;
-		},
-		
-		containsKey: function(key) {
-			var hash = this.fnHash(key);
-			var bucket = this.hashToBucket[hash];
-			var result =  this._indexOfKey(bucket, key) >= 0;
-			return result;
-		},
-		
-		keyList: function() {
-			var result = [];
-			
-			_.each(this.hashToBucket, function(bucket) {
-				var keys = _(bucket).pluck('key')
-				result.push.apply(result, keys);
-			});
-			
-			return result;
-		}
-	});
-	
-	
-	ns.BidiHashMap = Class.create({
-		/**
-		 * NEVER! Pass a constructor argument to this map yourself;
-		 * 
-		 */
-		initialize: function(inverseMap) {
-			forward = new ns.HashMap();
-			inverse = inverseMap ? inverseMap : new ns.BidiHashMap(this);
-		},
-		
-		getInverse: function() {
-			return this.inverse;
-		},
-		
-		put: function(key, val) {
-			this.forward.put(key, val);
-			this.inverse.put(val, key);
-		},
-		
-		get: function(key) {
-			var result = this.forward.get(key);
-			return result;
-		},
-		
-		keyList: function() {
-			var result = this.forward.keyList();
-			return result;
-		}
-	});
 	
 })();
 

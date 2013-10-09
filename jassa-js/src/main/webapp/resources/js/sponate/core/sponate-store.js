@@ -155,8 +155,8 @@
 			// Compile criterias
 			var criteriaCompiler = new ns.CriteriaCompilerSparql();
 			
-			var elementCriteria = criteriaCompiler.compile(context, mapping, criteria);
-			console.log('Compliled criteria: ' + elementCriteria);
+			//var elementCriteria = criteriaCompiler.compile(context, mapping, criteria);
+			//console.log('Compliled criteria: ' + elementCriteria);
 			
 			
 

@@ -32,6 +32,8 @@ var Jassa = {
 	
 	vocabs: {},
 	
-	utils: {}
+	utils: {
+		collections: {}
+	}
 };
 

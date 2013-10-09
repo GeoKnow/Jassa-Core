@@ -9,6 +9,7 @@
 	ns.str = {
 		xboolean: p + 'boolean',
 		xint: p + 'int',
+		decimal: p + 'decimal',
 		xfloat: p + 'float',
 		xdouble: p + 'double',
 		xstring: p + 'string',
