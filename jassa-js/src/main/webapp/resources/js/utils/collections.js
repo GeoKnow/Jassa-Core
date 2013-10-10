@@ -156,4 +156,12 @@
 		}
 	});
 
+	ns.HashSet = Class.create({
+		initialize: function(fnEquals, fnHash) {
+			
+		}
+		
+		
+	});
+	
 })();

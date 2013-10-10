@@ -4,8 +4,9 @@
 	// In fact, the latter should go to the facade file
 	
 	var sparql = Jassa.sparql; 
-
+	var col = Jassa.utils.collections;
 	var ns = Jassa.sponate;
+
 	
 	ns.ServiceSponateSparqlHttp = Class.create({
 		initialize: function(rawService) {
@@ -118,8 +119,16 @@
 			this.alias = alias;
 		},
 		
+		getJoinBuilder: function() {
+			return this.joinBuilder;
+		},
+		
 		getElement: function() {
-			this.joinBuilder.getElementByAlias(this.alias);
+			return this.joinBuilder.getElement(this.alias);
+		},
+
+		getVarMap: function() {
+			return this.joinBuilder.getVarMap(this.alias);
 		},
 		
 		// Returns all join node object 
@@ -132,56 +141,24 @@
 		// joinBuilder.getRowMapper();
 		// joinBuilder.getElement();
 		getJoinNodes: function() {
+			var state = this.joinBuilder.getState(this.alias);
 			
-		},
-		
-		// Keeps track of how to map back and forth by taking the alias into account
-		join: function(sourceVars, targetElement, targetVars) {
-			
-			// Maps original var names to new ones
-			var varMap = new ns.HashBidiMap();
-			
-			if(sourceColumns.length != targetColumns.length) {
-				console.log('[ERROR] Cannot join on different number of columns');
-				throw 'Bailing out';
-			}
-			
-			var sourceElement = this.getElement();
-			
-			var c = sparql.ElementUtils.makeElementDistinct(a, b);
-			console.log('distinct: ' + c.element, c.map);
-			
-			var bVars = b.getVarsMentioned();
-			_.each(bVars, function(v) {
-				var r = c.map[v.getName()];
-				varMap.put(v, r)
+			var joinBuilder = this.joinBuilder;
+			var result = _(state.joins).map(function(alias) {
+				return this.joinBuilder.getJoinNode(alias);
 			});
 			
-			//var rename = 
-
-			// Rename the join columns of b so that they equal those of a
-			for(var i = 0; i < sourceVars.length; ++i) {
-				var sourceVar = sourceVars[i];
-				var targetVar = targetVars[i];
-
-				rename[targetVar.getName()] = sourceVar;
-			}
-
-			var fnSubst = function(v) {
-				var result = rename[v.getName()];
-				return result;
-			};
-			
-			var d = c.copySubstitute(fnSubst);
-			
-			
-			
+			return result;
 		},
-		
-		//leftJoin: 
-		
+
+		join: function(sourceJoinVars, targetElement, targetJoinVars) {
+			var result = this.joinBuilder.addJoin(this.alias, sourceJoinVars, targetElement, targetJoinVars);
+
+			return result;
+		}		
 	});
 	
+
 	/**
 	 * a: castle
 	 * 
@@ -191,21 +168,158 @@
 	 * 
 	 */
 	ns.JoinBuilderElement = Class.create({
-		initialize: function() {
-			this.aliasGenerator = new ns.GenSym('a');
-			this.varAliasMap = new ns.VarAliasMap();
-			this.aliasToElement = new ns.MapList(); 
+		initialize: function(rootElement) {
+
+			if(rootElement == null) {
+				console.log('[Error] Root element must not be null');
+				throw 'Bailing out';
+			}
+			
+			
+			this.usedVarNames = [];
+			this.usedVars = [];
+
+			this.aliasGenerator = new sparql.GenSym('a');
+			this.varNameGenerator = new sparql.GeneratorBlacklist(new sparql.GenSym('v'), this.usedVarNames); 
+			
+
+			this.aliasToState = {};
+			this.rootAlias = this.aliasGenerator.next();
+			
+
+			var rootState = this.createTargetState(this.rootAlias, new col.HashBidiMap(), [], rootElement, []);
+
+			this.aliasToState[this.rootAlias] = rootState;
+			
+			this.rootNode = rootState.joinNode; //new ns.JoinNode(rootAlias);
+		},
+
+		getRootNode: function() {
+			return this.rootNode;
+		},
+
+		getJoinNode: function(alias) {
+			var state = this.aliasToState[alias];
+			
+			var result = state ? state.joinNode : null;
+			
+			return result;
+		},
+
+
+		getState: function(alias) {
+			return this.aliasToState[alias];
+		},
+	
+		getElement: function(alias) {
+			var state = this.aliasToState[alias];
+			var result = state ? state.element : null;
+			return result;
 		},
 		
-		// 
-		add: function(aliasFrom, aliasTo) {
+//		getElement: function(alias) {
+//			return this.aliasToElement[alias];
+//		},
+//		
+//		getJoinNode: function(alias) {
+//			return this.aliasToJoinNode[alias];
+//		},
+//		
+//		getVarMap: function(alias) {
+//			return this.aliasToVarMap[alias];
+//		},
+		
+		addVars: function(vars) {
 			
+			var self = this;
+			_(vars).each(function(v) {
+				
+				var varName = v.getName();
+				var isContained = _(self.usedVarNames).contains(varName);
+				if(!isContained) {
+					self.usedVarNames.push(varName);
+					self.usedVars.push(v);
+				}
+			});
 		},
 		
-		get: function() {
+		createTargetState: function(targetAlias, sourceVarMap, sourceJoinVars, targetElement, targetJoinVars) {
+			var sjv = sourceJoinVars.map(function(v) {
+				var rv = sourceVarMap.get(v);				
+				return rv;
+			});
 			
+			//var sourceVars = this.ge; // Based on renaming!
+			var oldTargetVars = targetElement.getVarsMentioned();
+			var targetVarMap = sparql.ElementUtils.createJoinVarMap(this.usedVars, oldTargetVars, sjv, targetJoinVars, this.varGenerator);
+			
+			var newTargetElement = sparql.ElementUtils.createRenamedElement(targetElement, targetVarMap);
+			
+			var newTargetVars = targetVarMap.getInverse().keyList();
+			this.addVars(newTargetVars);
+
+			
+			var result = new ns.JoinNode(this, targetAlias);
+
+			var targetState = {
+				varMap: targetVarMap,
+				joinNode: result,
+				element: newTargetElement,
+				joins: []
+			};
+
+			return targetState;
+		},
+		
+
+		
+		addJoin: function(sourceAlias, sourceJoinVars, targetElement, targetJoinVars) {
+			var sourceState = this.aliasToState[sourceAlias];
+			var sourceVarMap = sourceState.varMap;
+
+			var targetAlias = this.aliasGenerator.next();
+			var targetState = this.createTargetState(targetAlias, sourceVarMap, sourceJoinVars, targetElement, targetJoinVars);
+						
+			//var targetVarMap = targetState.varMap;			
+			//var newTargetVars = targetVarMap.getInverse().keyList();
+			
+			
+			sourceState.joins.push(targetAlias);
+			
+
+			this.aliasToState[targetAlias] = targetState;
+			
+			var result = targetState.joinNode;
+			return result;
+		},
+		
+		getElements: function() {
+			var result = [];
+			
+			var rootNode = this.getRootNode();
+			this.getElementsRec(rootNode, result);
+			
+			return result;
+		},
+		
+		getElementsRec: function(node, result) {
+			result.push(node.getElement());
+		
+			var self = this;
+			var children = node.getJoinNodes();
+			_(children).each(function(child) {
+				self.getElementsRec(child, result);
+			});
 		}
 	});
+
+
+	ns.JoinBuilderElement.create = function(rootElement) {
+		var joinBuilder = new ns.JoinBuilderElement(rootElement);
+		var result = joinBuilder.getRootNode();
+		
+		return result;
+	};
 
 	ns.fnNodeEquals = function(a, b) { return a.equals(b); };
 

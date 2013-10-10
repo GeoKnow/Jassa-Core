@@ -137,11 +137,22 @@
 	var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
 
 	
+	var vs = rdf.Node.v('s');
+	var vl = rdf.Node.v('l');
 	
-	var varMap = sparql.ElementUtils.createJoinVarMap(a.getVarsMentioned(), b.getVarsMentioned(), [sparql.Node.v('s')], [sparql.Node.v('l')]);
-	var c = sparql.ElementUtils.createRenamedElement(b, varMap);
+	var joinNode = sponate.JoinBuilderElement.create(a);
+	var foo = joinNode.join([vs], b, [vs]);
+
+	var joinBuilder = foo.getJoinBuilder();
+	var elements = joinBuilder.getElements();
+	var els = new sparql.ElementGroup(elements);
+	console.log('Final Element: ' + els);
 	
-	console.log('distinct: ' + c + ' ' + varMap.getMap(),  varMap);
+	
+//	var varMap = sparql.ElementUtils.createJoinVarMap(a.getVarsMentioned(), b.getVarsMentioned(), [sparql.Node.v('s')], [sparql.Node.v('l')]);
+//	var c = sparql.ElementUtils.createRenamedElement(b, varMap);
+	
+//	console.log('distinct: ' + c + ' ' + varMap.getMap(),  varMap);
 	
 	//var joinGraph = new ns.JoinGraphElement();
 	//var alias = joinGraph.create
