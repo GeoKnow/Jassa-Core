@@ -53,7 +53,8 @@
 							  
 <!-- 							    <param>utils/Logging.js</param> -->
 								<param>utils/collections.js</param>
-							    
+								<param>utils/trees.js</param>
+															    
 							    <param>rdf/rdf-core.js</param>
 							    <param>rdf/vocabs/utils.js</param>
 							    <param>rdf/vocabs/xsd.js</param>

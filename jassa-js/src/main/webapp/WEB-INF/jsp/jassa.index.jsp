@@ -133,21 +133,40 @@
 		});
 	}
 	
-	var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
-	var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
-
+	//var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
+	//var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
+	var a = sparql.ElementString.create('?s a ?l');
+	var b = sparql.ElementString.create('?s <http://ex.org> ?l');
 	
 	var vs = rdf.Node.v('s');
 	var vl = rdf.Node.v('l');
 	
+	var vsv = rdf.Node.uri('<http://s>');
+	var vlv = rdf.NodeFactory.createPlainLiteral('test');
+
+	var binding = new sparql.Binding();
+	binding.put(vs, vsv);
+	binding.put(vs, vlv);
+	
 	var joinNode = sponate.JoinBuilderElement.create(a);
 	var foo = joinNode.join([vs], b, [vs]);
+	//var bar = foo.join([vl], b, [vs]);
+	joinNode.join([vs], a, [vl]);
 
 	var joinBuilder = foo.getJoinBuilder();
 	var elements = joinBuilder.getElements();
 	var els = new sparql.ElementGroup(elements);
-	console.log('Final Element: ' + els);
+	var aliasToVarMap = joinBuilder.getAliasToVarMap();
 	
+	
+	var rowMapper = new sponate.RowMapperAlias(aliasToVarMap);
+	var aliasToBinding = rowMapper.map(binding);
+	
+	
+	
+	console.log('Final Element: ' + els);
+	console.log('Var map:',  aliasToVarMap);
+	console.log('Alias to Binding: ', JSON.stringify(aliasToBinding));
 	
 //	var varMap = sparql.ElementUtils.createJoinVarMap(a.getVarsMentioned(), b.getVarsMentioned(), [sparql.Node.v('s')], [sparql.Node.v('l')]);
 //	var c = sparql.ElementUtils.createRenamedElement(b, varMap);

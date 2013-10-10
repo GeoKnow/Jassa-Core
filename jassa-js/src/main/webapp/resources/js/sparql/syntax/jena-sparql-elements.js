@@ -51,6 +51,7 @@
 	/**
 	 * Create method in case the variables are not objects
 	 * 
+	 * TODO Replace with an ordinary hashMap.
 	 */
 	ns.Binding.create = function(varNameToNode) {
 		
@@ -108,6 +109,16 @@
 			
 			var result = '{' + tmp.join(', ') + '}'; 
 
+			return result;
+		},
+		
+		getVars: function() {
+			var result = [];
+
+			_(this.varNameToEntry).each(function(entry) {
+				result.push(entry.v);
+			});
+			
 			return result;
 		}
 	};

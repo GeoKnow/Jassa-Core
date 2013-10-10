@@ -1,6 +1,7 @@
 (function() {
 
 	var sparql = Jassa.sparql;
+	var col = Jassa.utils.collections;
 
 	var ns = Jassa.sponate;
 	
@@ -171,6 +172,84 @@
 	});
 	
 	
+	ns.Iterator = Class.create({
+		next: function() {
+			throw 'Not overridden';
+		},
+		
+		hasNext: function() {
+			throw 'Not overridden';
+		}
+	});
+	
+
+	ns.IteratorAbstract = Class.create(ns.Iterator, {
+		initialize: function() {
+			this.current = null;
+			this.advance = true;
+			this.finished = false;
+		},
+		
+		finish: function() {
+			this.finished = true;
+
+			this.close();
+			return null;
+		},
+
+		$prefetch: function() {
+//			try {
+			this.current = this.prefetch();
+//			}
+//			catch(Exception e) {
+//				current = null;
+//				logger.error("Error prefetching data", e);
+//			}
+		},
+
+		hasNext: function() {
+			if(this.advance) {
+				this.$prefetch();
+				this.advance = false;
+			}
+
+			return this.finished == false;
+		},
+
+		next: function() {
+			if(this.finished) {
+				throw 'No more elments';
+			}
+
+			if(this.advance) {
+				this.$prefetch();
+			}
+
+			this.advance = true;
+			return this.current;
+		},
+
+		
+		prefetch: function() {
+			throw 'Not overridden';
+		}
+	});
+			
+	
+	
+/*
+	ns.IteratorDepthFirst = Class.create({
+		initialize: function(node, fnGetChildern, fnGetValue) {
+			this.fnGetChildren = fnGetChildren;
+			this.fnGetValue = fnGetValue;
+		},
+		
+		prefetch: function() {
+			
+		}
+	});
+*/
+	
 	ns.PatternUtils = {
 		/**
 		 * Get all patterns in a pattern
@@ -188,30 +267,30 @@
 				return proceed;
 			}
 			
-			ns.PatternUtils.visitDepthFirst(pattern, ns.PatternUtils.getChildren, fn);
+			col.TreeUtils.visitDepthFirst(pattern, ns.PatternUtils.getChildren, fn);
 			
 			return result;
 		},
 		
 		getChildren: function(pattern) {
 			return pattern.getSubPatterns();
-		},
+		}
 		
 		/**
 		 * Generic method for visiting a tree structure
 		 * 
 		 */
-		visitDepthFirst: function(parent, fnChildren, fnPredicate) {
-			var proceed = fnPredicate(parent);
-			
-			if(proceed) {
-				var children = fnChildren(parent);
-				
-				_(children).each(function(child) {
-					ns.PatternUtils.visitDepthFirst(child, fnChildren, fnPredicate);
-				});
-			}
-		}
+//		visitDepthFirst: function(parent, fnChildren, fnPredicate) {
+//			var proceed = fnPredicate(parent);
+//			
+//			if(proceed) {
+//				var children = fnChildren(parent);
+//				
+//				_(children).each(function(child) {
+//					ns.PatternUtils.visitDepthFirst(child, fnChildren, fnPredicate);
+//				});
+//			}
+//		}
 			
 	};
 	

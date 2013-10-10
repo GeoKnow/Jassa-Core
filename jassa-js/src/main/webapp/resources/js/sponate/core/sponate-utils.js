@@ -297,22 +297,35 @@
 			var result = [];
 			
 			var rootNode = this.getRootNode();
-			this.getElementsRec(rootNode, result);
+
+			col.TreeUtils.visitDepthFirst(rootNode, ns.JoinBuilderUtils.getChildren, function(node) {
+				result.push(node.getElement());
+				return true;
+			});
 			
 			return result;
 		},
 		
-		getElementsRec: function(node, result) {
-			result.push(node.getElement());
-		
-			var self = this;
-			var children = node.getJoinNodes();
-			_(children).each(function(child) {
-				self.getElementsRec(child, result);
+		getAliasToVarMap: function() {
+			var result = {};
+			_(this.aliasToState).each(function(state, alias) {
+				result[alias] = state.varMap;
 			});
+			
+			return result;
 		}
+		
+
+//		getVarMap: function() {
+//			_.each()
+//		}
 	});
 
+	ns.JoinBuilderUtils = {
+		getChildren: function(node) {
+			return node.getJoinNodes();
+		}
+	}
 
 	ns.JoinBuilderElement.create = function(rootElement) {
 		var joinBuilder = new ns.JoinBuilderElement(rootElement);
@@ -336,35 +349,47 @@
 	 * 
 	 * 
 	 */
-	ns.VarAliasMap = Class.create({
-		initialize: function() {
-			// newVarToOrig
-			this.aliasToVarMap = new ns.HashMap(nsNodeEquals)
-			this.newVarToAliasVar = new ns.HashMap(nsNodeEquals);
-		},
-		
-		put: function(origVar, alias, newVar) {
-			this.newVarToAliasVar.put(newVar, {alias: alias, v: origVar});
-			
-			var varMap = this.aliasToBinding[alias];
-			if(varMap == null) {
-				varMap = new ns.BidiHashMap();
-				this.aliasToVarMap[alias] = varMap;
-			}
-			
-			varMap.put(newVar, origVar);
-		},
-		
-		getOrigAliasVar: function(newVar) {
-			var entry = this.newVarToAliasVar.get(newVar);
-			
-			var result = entry == null ? null : entry;
-		},
-		
-		getVarMap: function(alias) {
-		}
-	});
-	
+//	ns.VarAliasMap = Class.create({
+//		initialize: function() {
+//			// newVarToOrig
+//			this.aliasToVarMap = new ns.HashMap(ns.fnNodeEquals)
+//			this.newVarToAliasVar = new ns.HashMap(ns.fnNodeEquals);
+//		},
+//		
+//		/*
+//		addVarMap: function(alias, varMap) {
+//			
+//		},
+//		
+//		put: function(origVar, alias, newVar) {
+//			this.newVarToAliasVar.put(newVar, {alias: alias, v: origVar});
+//			
+//			var varMap = this.aliasToBinding[alias];
+//			if(varMap == null) {
+//				varMap = new ns.BidiHashMap();
+//				this.aliasToVarMap[alias] = varMap;
+//			}
+//			
+//			varMap.put(newVar, origVar);
+//		},
+//		*/
+//		
+//		getOrigAliasVar: function(newVar) {
+//			var entry = this.newVarToAliasVar.get(newVar);
+//			
+//			var result = entry == null ? null : entry;
+//		},
+//		
+//		getVarMap: function(alias) {
+//		}
+//	});
+//	
+//	
+//	ns.VarAliasMap.create = function(aliasToVarMap) {
+//		var newVarToAliasVar = new ns.HashMap()
+//		
+//	};
+//	
 	
 	ns.JoinElement = Class.create({
 		initialize: function(element, varMap) {
@@ -612,9 +637,9 @@
 	 * 
 	 * 
 	 */
-	ns.RowMapperJoin = Class.create({
-		initialize: function(varAliasMap) {
-			this.varAliasMap = varAliasMap;
+	ns.RowMapperAlias = Class.create({
+		initialize: function(aliasToVarMap) {
+			this.aliasToVarMap = aliasToVarMap;
 		},
 		
 		/**
@@ -629,26 +654,45 @@
 			
 			var result = {};
 			
-			var varAliasMap = this.varAliasMap;
-			_(vars).each(function(v) {
+			_(this.aliasToVarMap).each(function(varMap, alias) {
 				
-				var node = binding.get(v);
+				var b = new sparql.Binding();
+				result[alias] = b;
 				
-				var aliasVar = varAliasMap.getOrigAliasVar(v);
-				var ov = aliasVar.v;
-				var oa = aliasVar.alias;
+				var newToOld = varMap.getInverse();
+				var newVars = newToOld.keyList();
 				
-				var resultBinding = result[oa];
-				if(resultBinding == null) {
-					resultBinding = new ns.Binding();
-					result[oa] = resultBinding;
-				}
+				_(newVars).each(function(newVar) {
+					var oldVar = newToOld.get(newVar);
+					
+					var node = binding.get(newVar);
+					b.put(oldVar, node);
+				});
 				
-				resultBinding.put(ov, node);
 			});
 			
-			
 			return result;
+//			
+//			var varAliasMap = this.varAliasMap;
+//			_(vars).each(function(v) {
+//				
+//				var node = binding.get(v);
+//				
+//				var aliasVar = varAliasMap.getOrigAliasVar(v);
+//				var ov = aliasVar.v;
+//				var oa = aliasVar.alias;
+//				
+//				var resultBinding = result[oa];
+//				if(resultBinding == null) {
+//					resultBinding = new ns.Binding();
+//					result[oa] = resultBinding;
+//				}
+//				
+//				resultBinding.put(ov, node);
+//			});
+//			
+//			
+//			return result;
 		}
 	});
 	
