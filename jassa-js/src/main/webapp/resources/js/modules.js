@@ -37,3 +37,13 @@ var Jassa = {
 	}
 };
 
+// Export for nodejs
+var module;
+
+if(!module) {
+    module = {};
+}
+
+module["exports"] = Jassa;
+
+

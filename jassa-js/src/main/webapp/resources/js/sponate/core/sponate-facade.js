@@ -94,7 +94,7 @@
 				throw 'Bailing out';
 			}
 			
-			this[name] = new ns.Store(service, this.context, name);
+			this[name] = new ns.Store(this.service, this.context, name);
 		},
 		
 		/*

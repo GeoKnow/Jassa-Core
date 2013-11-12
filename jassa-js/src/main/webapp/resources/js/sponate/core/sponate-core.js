@@ -731,6 +731,8 @@
 		},
 		
 		getJson: function() {
+			var result;
+
 			var node = this.node;
 			
 			if(node) {

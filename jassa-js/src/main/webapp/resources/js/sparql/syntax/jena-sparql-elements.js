@@ -458,9 +458,9 @@
 	 */
 	ns.ElementString = Class.create({
 		initialize: function(sparqlString) {
-			if(_(sparqlString).isString()) {
-				debugger;
-			}
+//			if(_(sparqlString).isString()) {
+//				debugger;
+//			}
 			this.sparqlString = sparqlString;	
 		},
  

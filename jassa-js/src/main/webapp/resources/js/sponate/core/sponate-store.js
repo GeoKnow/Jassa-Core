@@ -245,7 +245,7 @@
 			};
 
 			
-			var result = service.execSelect(query).pipe(processResult);			
+			var result = this.service.execSelect(query).pipe(processResult);			
 			
 			return result;
 			//console.log('' + query);

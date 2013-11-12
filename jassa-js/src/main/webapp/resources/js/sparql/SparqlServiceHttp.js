@@ -210,11 +210,11 @@
 			//console.log('SPARQL Data for hash ' + hash, data);	
 		}
 
-		var result = jQuery.Deferred();
+		var result = $.Deferred();
 		if(data) { 
 			result.resolve(data);
 		} else {
-			var result = jQuery.ajax(ajaxObj);
+			var result = $.ajax(ajaxObj);
 			
 			if(useCache) {
 				result.pipe(function(response) {
