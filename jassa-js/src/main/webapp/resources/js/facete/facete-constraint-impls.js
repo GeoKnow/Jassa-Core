@@ -3,41 +3,56 @@
 	var vocab = Jassa.vocab;
 	
 	var ns = Jassa.facete;
+
+	
 	
 	// The three basic constraint types: mustExist, equals, and range.
 	// Futhermore: bbox (multiple implementations possible, such as lat long or wktLiteral based)
 	
 	ns.ConstraintElementFactory = Class.create({
-		createElement: function(rootFacetNode, constraintSpec) {
+		createElementsAndExprs: function(rootFacetNode, constraintSpec) {
 			throw "Override me";
 		}
 	});
 
 	
+//	ns.ConstraintElementFactoryTriplesBase = Class.create(ns.ConstraintElementFactory, {
+//		createElementsAndExprs: function() {
+//			
+//		},
+//		
+//		createTriplesAndExprs: function() {
+//			throw "Override me";
+//		}
+//	});
+	
 
 	ns.ConstraintElementFactoryExist = Class.create(ns.ConstraintElementFactory, {
-		createElements: function(rootFacetNode, constraintSpec) {
+		createElementsAndExprs: function(rootFacetNode, constraintSpec) {
 			var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
-			var triples = facetNode.getTriples();		
-			var triplesAndExprs = new ns.TriplesAndExprs(triples, []);
+			var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];		
+			var triplesAndExprs = new ns.ElementsAndExprs(elements, []);
 			
 			return result;
 		}
 	});
 	
 	
+	/**
+	 * constraintSpec.getValue() must return an instance of sparql.NodeValue
+	 * 
+	 */
 	ns.ConstraintElementFactoryEqual = Class.create(ns.ConstraintElementFactory, {
-		createElements: function(rootFacetNode, constraintSpec) {
-			var facetNode = rootFacetNode.forPath(spec.getDeclaredPath());
+		createElementsAndExprs: function(rootFacetNode, constraintSpec) {
+			var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
+
+			var pathVar = facetNode.getVar();
 			
-			var triples = facetNode.getTriples();		
-			var result = new ns.ConstraintElement(triples, []);
+			var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];		
+			var exprs = [new sparql.E_Equals(pathVar, constraintSpec.getValue())]; //sparql.NodeValue.makeNode(constraintSpec.getValue()))];
 			
+			var result = new ns.ElementsAndExprs(elements, exprs);
 			
-			var expr = new E_Equals(NodeValue.makeNode(constraintSpec.getValue()));
-			
-			var triplesAndExprs = new ns.TriplesAndExprs(triples, exprs);
-			var result = triplesAndExprs.createElements();
 			return result;
 		}
 	});
@@ -56,7 +71,7 @@
 			this.stepY = new facete.Step(vocab.wgs84.str.la);
 		},
 		
-		createElement: function(rootFacetNode, spec) {
+		createElementsAndExprs: function(rootFacetNode, spec) {
 			var facetNode = rootFacetNode.forPath(spec.getPath());
 			var bounds = spec.getValue();
 			
@@ -76,8 +91,11 @@
 			
 			var expr = ns.createWgsFilter(vX, vY, this.bounds, xsd.xdouble);
 			
+			var elements = [new sparql.ElementTriplesBlock(triples)];
+			var exprs = [expr];
+			
 			// Create the result
-			var result = new ns.ConstraintElement(triples, expr);
+			var result = new ns.ElementsAndExprs(elements, exprs);
 	
 			return result;
 		}		

@@ -1,5 +1,7 @@
 (function() {
 
+	var sparql = Jassa.sparql;
+	
 	var ns = Jassa.facete;
 
 
@@ -233,7 +235,7 @@
 			
 			steps.reverse();
 			
-			var result = new facets.Path(steps);
+			var result = new ns.Path(steps);
 			
 			return result;
 		},
@@ -524,7 +526,7 @@
 	 */
 	ns.FacetNode.createRoot = function(varName, generator) {
 
-		generator = generator ? generator : new facets.GenSym("fv");
+		generator = generator ? generator : new sparql.GenSym("fv");
 		
 		var varNode = new ns.VarNode(varName, generator);		
 		result = new ns.FacetNode(varNode);
@@ -628,7 +630,7 @@
 		},
 		
 		forPathStr: function(pathStr) {
-			var path = facets.Path.fromString(pathStr);
+			var path = ns.Path.fromString(pathStr);
 			var result = this.forPath(path);
 			
 			//console.log("path result is", result);
@@ -659,7 +661,7 @@
 			//checkNotNull(node);
 			
 			var nodeValue = sparql.NodeValue.makeNode(node);
-			var result = facets.ConstraintUtils.createEquals(this.facetNode.getPath(), nodeValue);
+			var result = ns.ConstraintUtils.createEquals(this.facetNode.getPath(), nodeValue);
 			
 			return result;
 		},
@@ -731,10 +733,10 @@
 		 */
 		createConcept: function(includeSelfConstraints) {
 			var elements = this.createElements(includeSelfConstraints);
-			var element = new sparql.ElementGroup(elements);
+			//var element = new sparql.ElementGroup(elements);
 			var v = this.getVariable();
 			
-			var result = new facets.ConceptInt(element, v);
+			var result = new ns.Concept(elements, v);
 			return result;
 		},
 		

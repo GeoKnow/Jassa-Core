@@ -116,13 +116,29 @@
 		var path = facete.Path.fromString("http://foo");
 
 		constraintManager.addConstraint(new facete.ConstraintSpecPathValue("equal", path, sparql.NodeValue.makeInteger(5)));
+
+		
+		var baseVar = rdf.NodeFactory.createVar("s");
+		var baseConcept = facete.ConceptUtils.createSubjectConcept(baseVar);
+		var rootFacetNode = facete.FacetNode.createRoot(baseConcept.getVar());
+		var facetStateProvider = new facete.FacetStateProviderImpl();		
+		
+		var queryGenerator = new facete.FaceteQueryGenerator(
+			new facete.ConceptFactoryConst(baseConcept),
+			new facete.FacetNodeFactoryConst(rootFacetNode),
+			constraintManager,
+			facetStateProvider
+		);
 		
 		
+		var facetConcept = queryGenerator.createFacetConcept(facete.Path.parse("http://foobar"));
+		
+		alert(JSON.stringify(facetConcept));
 		
 		//var facetService = 
 		
-		var v = rdf.NodeFactory.createVar("s");
-		var baseConcept = facete.ConceptUtils.createSubjectConcept(v);
+//		var v = rdf.NodeFactory.createVar("s");
+//		var baseConcept = facete.ConceptUtils.createSubjectConcept(v);
 
 		
 		

@@ -1,6 +1,6 @@
 (function() {
 	
-	var ns = Jassa.facets;
+	var ns = Jassa.facete;
 
 	ns.QueryFactory = Class.create({
 		createQuery: function() {

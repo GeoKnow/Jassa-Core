@@ -1,6 +1,6 @@
 (function() {
 
-	var ns = Jassa.facets;
+	var ns = Jassa.facete;
 
 	ns.ConceptFactory = Class.create({
 		createConcept: function() {
@@ -23,7 +23,7 @@
 		},
 		
 		createConcept: function() {
-			return concept;
+			return this.concept;
 		}
 	});
 

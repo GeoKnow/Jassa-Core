@@ -83,7 +83,7 @@
 		return result;
 	};
 	
-	ns.Step.fromString = function(str) {
+	ns.Step.parse = function(str) {
 		var result;
 		if(_(str).startsWith("<")) {
 			result = new ns.Step(str.substring(1), true);
@@ -230,7 +230,7 @@
 	};
 
 	
-	ns.Path.fromString = function(pathStr) {
+	ns.Path.parse = function(pathStr) {
 		pathStr = _(pathStr).trim();
 		
 		var items = pathStr.length !== 0 ? pathStr.split(" ") : [];		
@@ -241,7 +241,7 @@
 			} else if(item === "^" || item === ">^") {
 				return new ns.StepFacet(1);
 			} else {
-				return ns.Step.fromString(item);
+				return ns.Step.parse(item);
 			}
 		});
 		
@@ -251,5 +251,9 @@
 		
 		return result;
 	};
+	
+
+	// @Deprecated - Do not use anymore
+	ns.Path.fromString = ns.Path.parse;
 	
 })();

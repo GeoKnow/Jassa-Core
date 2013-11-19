@@ -82,7 +82,7 @@
 				var constraint = constraints[i];
 				//console.log("  Constraint: " + constraint);
 
-				var paths = constraint.getPaths();
+				var paths = constraint.getDeclaredPaths();
 				//console.log("    Paths: " + paths.length + " - " + paths);
 				
 				for(var j = 0; j < paths.length; ++j) {
@@ -137,8 +137,10 @@
 			
 			var pathToExprs = {};
 			
+			var self = this;
+
 			_.each(this.constraints, function(constraint) {
-				var paths = constraint.getPaths();
+				var paths = constraint.getDeclaredPaths();
 				
 				var pathId = _.reduce(
 						paths,
@@ -179,7 +181,15 @@
 					elements.push.apply(elements, tmpElements);
 				});
 				
-				var ci = constraint.instanciate(facetNode);
+				var constraintName = constraint.getName();
+				var cef = self.cefRegistry.get(constraintName);
+				if(!cef) {
+					throw "No constraintElementFactory registered for " + constraintName;
+				}
+				
+				var ci = cef.createElementsAndExprs(facetNode, constraint);
+				
+				//var ci = constraint.instanciate(facetNode);
 				var ciElements = ci.getElements();
 				var ciExprs = ci.getExprs();
 				

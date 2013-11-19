@@ -95,12 +95,18 @@
 <!-- 								<param>facete/FactoryQuery.js</param> -->
 								<param>facete/facete-paths.js</param>
 								<param>facete/facete-concepts.js</param>
+
+								<param>facete/facete-factories-concept.js</param>
+								<param>facete/facete-factories-facet-node.js</param>
+								<param>facete/facete-factories-query.js</param>
 								
 								<param>facete/facete-constraint-specs.js</param>
 								<param>facete/facete-constraint-impls.js</param>
 								<param>facete/facete-constraint-utils.js</param>
 								<param>facete/facete-constraint-manager.js</param>
 								<param>facete/facete-trees.js</param>
+
+								<param>facete/facete-query-generator.js</param>
 								
 								<param>facete/facete-playground.js</param>
 							</jsSourceFiles>

@@ -84,6 +84,37 @@
 
 	};
 
+	
+
+	/**
+	 * A class for holding information which variable
+	 * of an element corresponds to the property and
+	 * which to the 
+	 * 
+	 * ({?s ?p ?o}, ?p, ?o)
+	 * 
+	 * 
+	 */
+	ns.FacetConcept = Class.create({
+		initialize: function(elements, facetVar, facetValueVar) {
+			this.elements = elements;
+			this.facetVar = facetVar;
+			this.facetValueVar = facetValueVar;
+		},
+		
+		getElements: function() {
+			return this.elements;
+		},
+		
+		getFacetVar: function() {
+			return this.facetVar;
+		},
+		
+		getFacetValueVar: function() {
+			return this.facetValueVar;
+		}
+	});
+
 
 	/**
 	 * A concept is pair comprised of a sparql graph
