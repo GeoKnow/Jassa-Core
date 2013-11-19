@@ -1,6 +1,8 @@
 (function() {
 	
-	var ns = {};
+	var sparql = Jassa.sparql;
+	
+	var ns = Jassa.facete;
 
 	
 	/**
@@ -25,42 +27,61 @@
 	 * The new concept used the variable of the second argument.
 	 * 
 	 */
-	ns.createCombinedConcept = function(baseConcept, tmpConcept) {
-		// TODO The variables of baseConcept and tmpConcept must match!!!
-		// Right now we just assume that.
-		
-		
-		// Check if the concept of the facetFacadeNode is empty
-		var tmpElements = tmpConcept.getElements();
-		var baseElement = baseConcept.getElement();
-		
-		// Small workaround (hack) with constraints on empty paths:
-		// In this case, the tmpConcept only provides filters but
-		// no triples, so we have to include the base concept
-		var hasTriplesTmp = tmpConcept.hasTriples();
-		
-		var e;
-		if(tmpElements.length > 0) {
-
-			if(hasTriplesTmp && baseConcept.isSubjectConcept()) {
-				e = tmpConcept.getElement();
+	ns.ConceptUtils = {
+		createCombinedConcept: function(baseConcept, tmpConcept) {
+			// TODO The variables of baseConcept and tmpConcept must match!!!
+			// Right now we just assume that.
+			
+			
+			// Check if the concept of the facetFacadeNode is empty
+			var tmpElements = tmpConcept.getElements();
+			var baseElement = baseConcept.getElement();
+			
+			// Small workaround (hack) with constraints on empty paths:
+			// In this case, the tmpConcept only provides filters but
+			// no triples, so we have to include the base concept
+			var hasTriplesTmp = tmpConcept.hasTriples();
+			
+			var e;
+			if(tmpElements.length > 0) {
+	
+				if(hasTriplesTmp && baseConcept.isSubjectConcept()) {
+					e = tmpConcept.getElement();
+				} else {
+					var baseElements = baseConcept.getElements();
+	
+					var newElements = [];
+					newElements.push.apply(newElements, baseElements);
+					newElements.push.apply(newElements, tmpElements);
+					
+					e = new sparql.ElementGroup(newElements);
+				}
 			} else {
-				var baseElements = baseConcept.getElements();
-
-				var newElements = [];
-				newElements.push.apply(newElements, baseElements);
-				newElements.push.apply(newElements, tmpElements);
-				
-				e = new sparql.ElementGroup(newElements);
+				e = baseElement;
 			}
-		} else {
-			e = baseElement;
-		}
+			
+			
+			var concept = new facets.ConceptInt(e, tmpConcept.getVariable());
+	
+			return concept;
+		},
 		
-		
-		var concept = new facets.ConceptInt(e, tmpConcept.getVariable());
+		createSubjectConcept: function(subjectVar) {
+			
+			//var s = sparql.Node.v("s");
+			var s = subjectVar;
+			var p = sparql.Node.v("_p_");
+			var o = sparql.Node.v("_o_");
+			
+			var conceptElement = new sparql.ElementTriplesBlock([new sparql.Triple(s, p, o)]);
 
-		return concept;
+			//pathManager = new facets.PathManager(s.value);
+			
+			result = new facete.Concept(conceptElement, s);
+
+			return result;
+		}
+
 	};
 
 
@@ -69,32 +90,14 @@
 	 * pattern (referred to as element) and a variable.
 	 * 
 	 */
-	ns.Concept = function(element, variable) {
-		this.element = element;
-		this.variable = variable;
-	};
-
-	
-	/**
-	 * Array version constructor
-	 * 
-	 */
-	ns.Concept.createFromElements = function(elements, variable) {
-		var element;
-		if(elements.length == 1) {
-			element = elements[0];
-		} else {
-			element = new sparql.ElementGroup(elements);
-		}
+	ns.Concept = Class.create({
 		
-		var result = new ns.ConceptInt(element, variable);
-		
-		return result;
-	};
-
-	
-	ns.Concept.prototype = {
 		classLabel: 'Concept',
+		
+		initialize: function(element, variable) {
+			this.element = element;
+			this.variable = variable;
+		},
 		
 		toJson: function() {
 			var result = {
@@ -206,6 +209,27 @@
 			
 		}
 	});
+
+
+	//ns.Concept.classLabel = 'Concept';
+
+
+	/**
+	 * Array version constructor
+	 * 
+	 */
+	ns.Concept.createFromElements = function(elements, variable) {
+		var element;
+		if(elements.length == 1) {
+			element = elements[0];
+		} else {
+			element = new sparql.ElementGroup(elements);
+		}
+		
+		var result = new ns.ConceptInt(element, variable);
+		
+		return result;
+	};
 
 	
 })();

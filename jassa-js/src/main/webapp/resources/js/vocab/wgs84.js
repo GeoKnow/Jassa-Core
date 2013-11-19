@@ -1,7 +1,7 @@
 (function() {
 	
-	var utils = Jassa.rdf.vocabs.utils;
-	var ns = Jassa.rdf.vocabs.wgs84;
+	var util = Jassa.vocab.util;
+	var ns = Jassa.vocab.wgs84;
 	
 	var p = 'http://www.w3.org/2003/01/geo/wgs84_pos#';
 
@@ -11,6 +11,6 @@
 		lat: p + "lat",
 	};
 		
-	utils.initNodes(ns);
+	util.initNodes(ns);
 	
 })();

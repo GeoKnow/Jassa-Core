@@ -1,7 +1,7 @@
 (function() {
 
 	var sparql = Jassa.sparql;
-	var col = Jassa.utils.collections;
+	var util = Jassa.util;
 
 	var ns = Jassa.sponate;
 	
@@ -267,7 +267,7 @@
 				return proceed;
 			}
 			
-			col.TreeUtils.visitDepthFirst(pattern, ns.PatternUtils.getChildren, fn);
+			util.TreeUtils.visitDepthFirst(pattern, ns.PatternUtils.getChildren, fn);
 			
 			return result;
 		},

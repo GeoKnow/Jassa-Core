@@ -1,7 +1,7 @@
 (function() {
 
-	var utils = Jassa.rdf.vocabs.utils;
-	var ns = Jassa.rdf.vocabs.rdf;
+	var util = Jassa.vocab.util;
+	var ns = Jassa.vocab.rdf;
 	
 	var p = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
 	
@@ -9,6 +9,6 @@
 		type: p + 'type'
 	};
 	
-	utils.initNodes(ns);
+	util.initNodes(ns);
 
 })();	

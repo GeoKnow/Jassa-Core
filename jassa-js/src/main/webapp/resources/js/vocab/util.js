@@ -2,7 +2,7 @@
 
 	var rdf = Jassa.rdf;
 
-	var ns = Jassa.rdf.vocabs.utils;
+	var ns = Jassa.vocab.util;
 
 	/**
 	 * Creates rdf.Node objects in the target namespace

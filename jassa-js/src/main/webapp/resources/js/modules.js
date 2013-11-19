@@ -11,29 +11,30 @@
  * 
  */
 var Jassa = {
+	vocab: {
+		util: {},
+		xsd: {},
+		rdf: {},
+		rdfs: {},
+		owl: {},
+		wgs84: {}
+	},
+
 	rdf: {
-		vocabs: {
-			utils: {},
-			xsd: {},
-			rdf: {},
-			rdfs: {},
-			owl: {},
-			wgs84: {}
-		}		
 	},
 		
 	sparql: {},
 
+	service: {},
+	
 	i18n: {},
 
 	sponate: {},
 	
-	facets: {},
+	facete: {},
 	
-	vocabs: {},
-	
-	utils: {
-		collections: {}
+	util: {
+		//collection: {}
 	}
 };
 

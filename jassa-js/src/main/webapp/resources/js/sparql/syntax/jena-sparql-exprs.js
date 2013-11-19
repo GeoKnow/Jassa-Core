@@ -1,7 +1,7 @@
 (function() {
 
 	var rdf = Jassa.rdf;
-	var xsd = Jassa.rdf.vocabs.xsd;
+	var xsd = Jassa.vocab.xsd;
 
 	
 	var ns = Jassa.sparql;

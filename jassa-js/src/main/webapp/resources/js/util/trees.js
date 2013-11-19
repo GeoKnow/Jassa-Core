@@ -1,6 +1,6 @@
 (function() {
 	
-	var ns = Jassa.utils.collections;
+	var ns = Jassa.util;
 	
 	ns.TreeUtils = {
 		

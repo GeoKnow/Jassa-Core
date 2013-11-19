@@ -113,23 +113,6 @@
 		return result;
 	};
 	
-	
-	
-	ns.createSubjectConcept = function(subjectVar) {
-		
-		//var s = sparql.Node.v("s");
-		var s = subjectVar;
-		var p = sparql.Node.v("_p_");
-		var o = sparql.Node.v("_o_");
-		
-		var conceptElement = new sparql.ElementTriplesBlock([new sparql.Triple(s, p, o)]);
-
-		//pathManager = new facets.PathManager(s.value);
-		
-		result = new facets.ConceptInt(conceptElement, s);
-
-		return result;
-	};
 
 	
 	/**
@@ -1441,5 +1424,6 @@
 		console.log("Facet query: " + batchQuery);
 		
 		return batchQuery;
-	};
+	}
+
 })(jQuery);

@@ -4,7 +4,7 @@
 	// In fact, the latter should go to the facade file
 	
 	var sparql = Jassa.sparql; 
-	var col = Jassa.utils.collections;
+	var util = Jassa.util;
 	var ns = Jassa.sponate;
 
 	
@@ -52,39 +52,6 @@
 			
 			return result;
 		}	
-	};
-	
-	
-	/**
-	 * Utility class to create an iterator over an array.
-	 * 
-	 */
-	ns.IteratorArray = function(array, offset) {
-		this.array = array;
-		this.offset = offset ? offset : 0;
-	};
-	
-	ns.IteratorArray.prototype = {
-		hasNext: function() {
-			var result = this.offset < this.array.length;
-			return result;
-		},
-		
-		next: function() {
-			var hasNext = this.hasNext();
-			
-			var result;
-			if(hasNext) {			
-				result = this.array[this.offset];
-				
-				++this.offset;
-			}
-			else {
-				result = null;
-			}
-			
-			return result;
-		}		
 	};
 	
 
@@ -187,7 +154,7 @@
 			this.rootAlias = this.aliasGenerator.next();
 			
 
-			var rootState = this.createTargetState(this.rootAlias, new col.HashBidiMap(), [], rootElement, []);
+			var rootState = this.createTargetState(this.rootAlias, new util.HashBidiMap(), [], rootElement, []);
 
 			this.aliasToState[this.rootAlias] = rootState;
 			
@@ -298,7 +265,7 @@
 			
 			var rootNode = this.getRootNode();
 
-			col.TreeUtils.visitDepthFirst(rootNode, ns.JoinBuilderUtils.getChildren, function(node) {
+			util.TreeUtils.visitDepthFirst(rootNode, ns.JoinBuilderUtils.getChildren, function(node) {
 				result.push(node.getElement());
 				return true;
 			});

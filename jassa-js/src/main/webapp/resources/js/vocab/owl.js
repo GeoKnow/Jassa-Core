@@ -1,7 +1,7 @@
 (function() {
 	
-	var utils = Jassa.rdf.vocabs.utils;
-	var ns = Jassa.rdf.vocabs.owl;
+	var util = Jassa.vocab.util;
+	var ns = Jassa.vocab.owl;
 	
 	var p = 'http://www.w3.org/2002/07/owl#';
 	
@@ -9,6 +9,6 @@
 		'Class': p + 'Class'
 	};
 	
-	utils.initNodes(ns);
+	util.initNodes(ns);
 	
 })();	

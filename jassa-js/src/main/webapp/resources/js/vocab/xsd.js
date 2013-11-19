@@ -1,7 +1,7 @@
 (function() {
 	
-	var utils = Jassa.rdf.vocabs.utils;
-	var ns = Jassa.rdf.vocabs.xsd;
+	var util = Jassa.vocab.util;
+	var ns = Jassa.vocab.xsd;
 	
 	var p = 'http://www.w3.org/2001/XMLSchema#';
 
@@ -19,7 +19,7 @@
 	};
 	
 	
-	utils.initNodes(ns);
+	util.initNodes(ns);
 
 //	// Node versions
 //	var str = ns.str;

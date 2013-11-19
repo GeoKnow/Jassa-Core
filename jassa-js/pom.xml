@@ -51,27 +51,29 @@
 							<jsSourceFiles>
 							    <param>modules.js</param>
 							  
+							  
 <!-- 							    <param>utils/Logging.js</param> -->
-								<param>utils/collections.js</param>
-								<param>utils/trees.js</param>
+								<param>util/collections.js</param>
+								<param>util/trees.js</param>
 															    
 							    <param>rdf/rdf-core.js</param>
-							    <param>rdf/vocabs/utils.js</param>
-							    <param>rdf/vocabs/xsd.js</param>
+							    <param>vocab/util.js</param>
+							    <param>vocab/xsd.js</param>
 							    <param>rdf/rdf-literals.js</param>
 							    
-							    <param>rdf/vocabs/rdf.js</param>
-							    <param>rdf/vocabs/rdfs.js</param>
-							    <param>rdf/vocabs/owl.js</param>
-							    <param>rdf/vocabs/wgs84.js</param>
+							    <param>vocab/rdf.js</param>
+							    <param>vocab/rdfs.js</param>
+							    <param>vocab/owl.js</param>
+							    <param>vocab/wgs84.js</param>
 			    							    							    							    							    
 							    <param>sparql/syntax/jena-sparql-base.js</param>
 							    <param>sparql/syntax/jena-sparql-exprs.js</param>
 								<param>sparql/syntax/jena-sparql-elements.js</param>
 								<param>sparql/syntax/jena-sparql-utils.js</param>
 															    
-								<param>sparql/SparqlServiceHttp.js</param>
-								<param>sparql/SparqlServicePaginator.js</param>
+								<param>service/ResultSet.js</param>
+								<param>service/SparqlServiceHttp.js</param>
+								<param>service/SparqlServicePaginator.js</param>
 
 								<param>sparql/sparql-expr-eval.js</param>
 								
@@ -86,6 +88,21 @@
 								<param>sponate/core/sponate-criteria-sparql.js</param>
 																
 								<param>sponate/adapters/sponate-angular.js</param>
+								
+								
+<!-- 								<param>facete/FactoryConcept.js</param> -->
+<!-- 								<param>facete/FactoryElement.js</param> -->
+<!-- 								<param>facete/FactoryQuery.js</param> -->
+								<param>facete/facete-paths.js</param>
+								<param>facete/facete-concepts.js</param>
+								
+								<param>facete/facete-constraint-specs.js</param>
+								<param>facete/facete-constraint-impls.js</param>
+								<param>facete/facete-constraint-utils.js</param>
+								<param>facete/facete-constraint-manager.js</param>
+								<param>facete/facete-trees.js</param>
+								
+								<param>facete/facete-playground.js</param>
 							</jsSourceFiles>
 							
 

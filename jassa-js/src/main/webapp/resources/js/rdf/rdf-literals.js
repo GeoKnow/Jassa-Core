@@ -2,7 +2,7 @@
 
 	// This file requires the xsd datatypes, whereas xsd depends on rdf-core
 	
-	var xsd = Jassa.rdf.vocabs.xsd;
+	var xsd = Jassa.vocab.xsd;
 	var s = xsd.str;
 	var ns = Jassa.rdf;
 	

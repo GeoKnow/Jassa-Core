@@ -1,0 +1,27 @@
+	/**
+	 * Utility functions for creating constraints on paths.
+	 * 
+	 * TODO: What about an E_Range(givenExpr, minExpr, maxExpr)?
+	 * This one does not exist in the SPARQL standard,
+	 * but the effective expression would be
+	 * givenExpr > minExpr && givenEXpr < maxExpr
+	 * 
+	 * So it would be a useful abstraction.
+	 * The fundamental question is, whether this abstraction
+	 * should be done with the SPARQL classes in the first place.
+	 * 
+	 */
+	ns.ConstraintUtils = {
+		createEquals: function(path, expr) {
+			var v = sparql.Node.v("e");
+			var ev = new sparql.ExprVar(v);
+			
+			var ex = new sparql.E_Equals(ev, expr);			
+			var varToPath = {e: path};
+			
+			var result = new ns.ConstraintExpr(ex, varToPath);
+			return result;
+		}
+	};
+	
+	

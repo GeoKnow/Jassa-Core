@@ -1,29 +1,31 @@
 // Move some utility functions from Elements here
 (function() {
 	
-	var col = Jassa.utils.collections;
+	var util = Jassa.util;
 
 	var ns = Jassa.sparql;
 	
 	/**
-	 * Another class that mimics Jena's behavour.
+	 * Another class that mimics Jena's behaviour.
 	 * 
 	 * @param prefix
 	 * @param start
 	 * @returns {ns.GenSym}
 	 */
-	ns.GenSym = function(prefix, start) {
-		this.prefix = prefix ? prefix : 'v';
-		this.nextValue = start ? start : 0;
-	};
+	ns.GenSym = Class.create({
+		initialize: function(prefix, start) {
+			this.prefix = prefix ? prefix : "v";
+			this.nextValue = start ? start : 0;
+		},
 	
-	ns.GenSym.prototype.next = function() {
-		++this.nextValue;
-		
-		var result = this.prefix + "_" + this.nextValue;
-		
-		return result;
-	};
+		next: function() {
+			++this.nextValue;
+			
+			var result = this.prefix + "_" + this.nextValue;
+			
+			return result;
+		}
+	});
 
 
 	/**
@@ -32,22 +34,26 @@
 	 * @param blacklist Array of strings
 	 * @returns {ns.GeneratorBlacklist}
 	 */
-	ns.GeneratorBlacklist = function(generator, blacklist) {
-		this.generator = generator;
-		this.blacklist = blacklist;
-	};
-	
-	ns.GeneratorBlacklist.prototype = {
+	ns.GeneratorBlacklist = Class.create({
+		
+		initialize: function(generator, blacklist) {
+			this.generator = generator;
+			this.blacklist = blacklist;
+		},
+
 		next: function() {
 			var result;
 			
 			do {
 				result = this.generator.next();
-			} while(_(this.blacklist).contains(result));
+			} while(_.contains(this.blacklist, result));
 				
 			return result;
 		}
-	};
+
+	});
+
+
 
 	ns.fnToString = function(x) {
 		return x.toString();
@@ -82,7 +88,7 @@
 			}
 
 			// Rename all variables that are in common
-			var result = new col.HashBidiMap(ns.fnNodeEquals);
+			var result = new util.HashBidiMap(ns.fnNodeEquals);
 			//var rename = {};
 
 			_(vbs).each(function(oldVar) {

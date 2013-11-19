@@ -3,9 +3,27 @@
  * Allows execution of sparql queries against a preconfigured service
  * 
  */			
-(function() {
+(function($) {
 
-	var ns = Jassa.sparql;
+	var util = Jassa.util;
+	
+	var ns = Jassa.service;
+
+	// TODO Maybe move to a conversion utils package.
+	ns.jsonToResultSet = function(json) {
+
+		var bindings = json.results.bindings;
+
+		var tmp = bindings.map(function(b) {
+			var bindingObj = sparql.Binding.fromTalisJson(b);
+			return bindingObj;					
+		});
+		
+		var itBinding = new util.IteratorArray(tmp);
+		
+		var result = new ns.ResultSetArrayIteratorBinding(itBinding);
+		return result;
+	};
 	
 	/**
 	 * SparqlServiceHttp
@@ -15,15 +33,14 @@
 	 * @param defaultGraphUris The RDF graphs on which to run the query by default
 	 * @param httpArgs A JSON object with additional arguments to include in HTTP requests
 	 */
-	ns.SparqlServiceHttp = function(serviceUri, defaultGraphUris, httpArgs) {
-		this.serviceUri = serviceUri;
-		this.setDefaultGraphs(defaultGraphUris);
-		
-		this.httpArgs = httpArgs;
-	};
-	
-	ns.SparqlServiceHttp.prototype = {
+	ns.SparqlServiceHttp = Class.create({
+		initialize: function(serviceUri, defaultGraphUris, httpArgs) {
+			this.serviceUri = serviceUri;
+			this.setDefaultGraphs(defaultGraphUris);
 			
+			this.httpArgs = httpArgs;
+		},
+
 		/**
 		 * This method is intended to be used by caches,
 		 * 
@@ -86,44 +103,30 @@
 		},
 	
 
+		/**
+		 * 
+		 * @returns {Promise<sparql.ResultSet>}
+		 */
 		execSelect: function(query, options) {
-			return this.execAny(query, options);
+			var promise = this.execAny(query, options);
+			var result = promise.pipe(ns.jsonToResultSet);
+			return result;
 		},
 	
 		execAsk: function(query, options) {
 			return this.execAny(query, options).pipe(function(json) { return json['boolean']; });
 		},
-	
-		// TODO What to return: e.g. RdfJson vs RdfQuery
-		execConstruct: function(query, options) {
-			return this.execAny(query, options);
-		},
-	
-	
-		execDescribe: function(query, options) {
-			return this.execAny(query, options);
-		}
-	};
 
-	
-	/**
-	 * 
-	 * SparqlServiceDelay 
-	 */
-	ns.SparqlServiceDelay = function(delegate, delay) {
-		this.delegate = delegate;
-		this.scheduler = new Scheduler(delay); 
-	};
-	
-	ns.SparqlServiceDelay.prototype = {
-		execSelect: function(queryString, callback) {
-			return delegate.execSelect(queryString, callback);
+		// Returns an iterator of triples
+		execConstructTriples: function(query, options) {
+			return this.execAny(query, options);
 		},
 	
-		execAsk: function(queryString, callback) {
-			return delegate.execAsk(queryString, callback);
+		execDescribeTriples: function(query, options) {
+			return this.execAny(query, options);
 		}
-	};
+	});
+
 
 	
 
@@ -234,5 +237,7 @@
 		return result;
 	};
 
-})();
+})(jQuery);
+
+
 

@@ -1,6 +1,82 @@
 (function() {
 	
-	var ns = Jassa.utils.collections;
+	var ns = Jassa.util;
+	
+	ns.Iterator = Class.create({
+		next: function() {
+			throw "Not overridden";
+		},
+		
+		hasNext: function() {
+			throw "Not overridden";			
+		}
+	});
+	
+	
+	
+	/**
+	 * Utility class to create an iterator over an array.
+	 * 
+	 */
+	ns.IteratorArray = Class.create(ns.Iterator, {
+		initialize: function(array, offset) {
+			this.array = array;
+			this.offset = offset ? offset : 0;
+		},
+	
+		hasNext: function() {
+			var result = this.offset < this.array.length;
+			return result;
+		},
+		
+		next: function() {
+			var hasNext = this.hasNext();
+			
+			var result;
+			if(hasNext) {			
+				result = this.array[this.offset];
+				
+				++this.offset;
+			}
+			else {
+				result = null;
+			}
+			
+			return result;
+		}		
+	});
+	
+	
+	/**
+	 * A map that just wraps a json object
+	 * Just there to provide a unified map interface
+	 */
+	ns.ObjectMap = Class.create({
+		initialize: function(data) {
+			this.data = data ? data : {};
+		},
+		
+		get: function(key) {
+			return this.data[key];
+		},
+		
+		put: function(key, val) {
+			this.data[key] = val;
+		},
+		
+		remove: function(key) {
+			delete this.data[key];
+		},
+		
+		entries: function() {
+			throw "Not implemented";
+		},
+		
+		toString: function() {
+			return JSON.stringify(this.data); 
+		}
+	});
+	
 	
 	ns.HashMap = Class.create({
 		initialize: function(fnEquals, fnHash) {

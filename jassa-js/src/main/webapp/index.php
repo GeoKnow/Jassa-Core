@@ -1,5 +1,11 @@
 ﻿<?php
-    $prefix = "jassa";
+
+    $prefix = $_REQUEST['file'];
+
+	if(!isset($prefix)) {
+    	$prefix = "jassa";
+	}
+
 
 	$basePath = "resources/";
 

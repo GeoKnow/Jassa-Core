@@ -1,8 +1,8 @@
 (function() {
 
-	var ns = Jassa.parent;
-	
-	
+	var ns = Jassa.facete;
+
+
 	/**
 	 * A class for generating variables for step-ids.
 	 * So this class does not care about the concrete step taken.
@@ -13,30 +13,29 @@
 	 * @param root
 	 * @returns {ns.VarNode}
 	 */
-	ns.VarNode = function(variableName, generator, stepId, parent, root) {
-		this.variableName = variableName;
-		this.generator = generator;
-		this.stepId = stepId; // Null for root
-		this.parent = parent;
-		this.root = root;
-		
-		
-		//console.log("VarNode status" , this);
-		if(!this.root) {
-			if(this.parent) {
-				this.root = parent.root;
+	ns.VarNode = Class.create({
+		initialize: function(variableName, generator, stepId, parent, root) {
+			this.variableName = variableName;
+			this.generator = generator;
+			this.stepId = stepId; // Null for root
+			this.parent = parent;
+			this.root = root;
+			
+			
+			//console.log("VarNode status" , this);
+			if(!this.root) {
+				if(this.parent) {
+					this.root = parent.root;
+				}
+				else {
+					this.root = this;
+				}
 			}
-			else {
-				this.root = this;
-			}
-		}
+	
+			
+			this.idToChild = {};
+		},
 
-		
-		this.idToChild = {};
-	};
-	
-	
-	ns.VarNode.prototype = {
 		isRoot: function() {
 			var result = this.parent ? false : true;
 			return result;
@@ -141,7 +140,8 @@
 			
 			return null;
 		}
-	};
+	});
+
 	
 	/**
 	 * This class only has the purpose of allocating variables
@@ -155,51 +155,36 @@
 	 * @param generator
 	 * @returns {ns.FacetNode}
 	 */
-	ns.FacetNode = function(varNode, step, parent, root) {
-		this.parent = parent;
-		this.root = root;
-		if(!this.root) {
-			if(this.parent) {
-				this.root = parent.root;
+	ns.FacetNode = Class.create({
+		initialize: function(varNode, step, parent, root) {
+			this.parent = parent;
+			this.root = root;
+			if(!this.root) {
+				if(this.parent) {
+					this.root = parent.root;
+				}
+				else {
+					this.root = this;
+				}
 			}
-			else {
-				this.root = this;
-			}
-		}
-
-		
-		this.varNode = varNode;
-		
-		/**
-		 * The step for how this node can be  reached from the parent
-		 * Null for the root 
-		 */
-		this.step = step;
-
-
-		this._isActive = true; // Nodes can be disabled; in this case no triples/constraints will be generated
-		
-		this.idToChild = {};
-		
-		//this.idToConstraint = {};
-	};
 	
-	/**
-	 * Use this instead of the constructor
-	 * 
-	 */
-	ns.FacetNode.createRoot = function(varName, generator) {
-
-		generator = generator ? generator : new facets.GenSym("fv");
-		
-		var varNode = new ns.VarNode(varName, generator);		
-		result = new ns.FacetNode(varNode);
-		return result;
-	};
-
+			
+			this.varNode = varNode;
+			
+			/**
+			 * The step for how this node can be  reached from the parent
+			 * Null for the root 
+			 */
+			this.step = step;
 	
-	ns.FacetNode.prototype = {
-		
+	
+			this._isActive = true; // Nodes can be disabled; in this case no triples/constraints will be generated
+			
+			this.idToChild = {};
+			
+			//this.idToConstraint = {};
+		},
+
 		getRootNode: function() {
 			return this.root;
 		},
@@ -530,8 +515,22 @@
 			
 			//return result;
 		}
+	});
+
+
+	/**
+	 * Use this instead of the constructor
+	 * 
+	 */
+	ns.FacetNode.createRoot = function(varName, generator) {
+
+		generator = generator ? generator : new facets.GenSym("fv");
+		
+		var varNode = new ns.VarNode(varName, generator);		
+		result = new ns.FacetNode(varNode);
+		return result;
 	};
-	
+
 	
 	/**
 	 * The idea of this class is to have a singe object
@@ -540,17 +539,17 @@
 	 * 
 	 * 
 	 */
-	ns.FacetManager = function(varName, generator) { //rootNode, generator) {
-		
-		var varNode = new ns.VarNode(varName, generator);
-		
-		this.rootNode = new ns.FacetNode(varNode);
-
-		//this.rootNode = rootNode;
-		this.generator = generator;
-	};
+	ns.FacetManager = Class.create({
+		initialize: function(varName, generator) { //rootNode, generator) {
+			
+			var varNode = new ns.VarNode(varName, generator);
+			
+			this.rootNode = new ns.FacetNode(varNode);
 	
-	ns.FacetManager.prototype = {
+			//this.rootNode = rootNode;
+			this.generator = generator;
+		},
+	
 			/*
 			create: function(varName, generator) {
 				var v = checkNotNull(varName);
@@ -562,15 +561,15 @@
 				
 				return result;
 			},*/
-			
-			getRootNode: function() {
-				return this.rootNode;
-			},
-			
-			getGenerator: function() {
-				return this.generator;
-			}
-	};
+		
+		getRootNode: function() {
+			return this.rootNode;
+		},
+		
+		getGenerator: function() {
+			return this.generator;
+		}
+	});
 	
 	
 	/**
@@ -591,164 +590,166 @@
 	 * @param facetNode
 	 * @returns {ns.SimpleFacetFacade}
 	 */
-	ns.SimpleFacetFacade = function(constraintManager, facetNode) {
-		this.constraintManager = constraintManager;
-		this.facetNode = checkNotNull(facetNode);
-	};
+	ns.SimpleFacetFacade = Class.create({
+		initialize: function(constraintManager, facetNode) {
+			this.constraintManager = constraintManager;
+			//this.facetNode = checkNotNull(facetNode);
+			this.facetNode = facetNode;
+		},
 
-	ns.SimpleFacetFacade.prototype = {
-			getFacetNode: function() {
-				return this.facetNode;
-			},
+		getFacetNode: function() {
+			return this.facetNode;
+		},
+		
+		getVariable: function() {
+			var result = this.facetNode.getVariable();
+			return result;
+		},
+		
+		getPath: function() {
+			return this.facetNode.getPath();
+		},
+		
+		forProperty: function(propertyName, isInverse) {
+			var fn = this.facetNode.forProperty(propertyName, isInverse);
+			var result = this.wrap(fn);
+			return result;								
+		},
+		
+		forStep: function(step) {
+			var fn = this.facetNode.forStep(step);
+			var result = this.wrap(fn);
+			return result;				
+		},
+		
+		wrap: function(facetNode) {
+			var result = new ns.SimpleFacetFacade(this.constraintManager, facetNode);
+			return result;
+		},
+		
+		forPathStr: function(pathStr) {
+			var path = facets.Path.fromString(pathStr);
+			var result = this.forPath(path);
 			
-			getVariable: function() {
-				var result = this.facetNode.getVariable();
-				return result;
-			},
+			//console.log("path result is", result);
 			
-			getPath: function() {
-				return this.facetNode.getPath();
-			},
-			
-			forProperty: function(propertyName, isInverse) {
-				var fn = this.facetNode.forProperty(propertyName, isInverse);
-				var result = this.wrap(fn);
-				return result;								
-			},
-			
-			forStep: function(step) {
-				var fn = this.facetNode.forStep(step);
-				var result = this.wrap(fn);
-				return result;				
-			},
-			
-			wrap: function(facetNode) {
-				var result = new ns.SimpleFacetFacade(this.constraintManager, facetNode);
-				return result;
-			},
-			
-			forPathStr: function(pathStr) {
-				var path = facets.Path.fromString(pathStr);
-				var result = this.forPath(path);
-				
-				//console.log("path result is", result);
-				
-				return result;
-			},
-			
-			forPath: function(path) {
-				var fn = this.facetNode.forPath(path);
-				var result = this.wrap(fn);
-				return result;
-			},
-			
-			forProperty: function(propertyName, isInverse) {
-				var fn = this.facetNode.forProperty(propertyName, isInverse);
-				var result = this.wrap(fn);
-				return result;				
-			},
+			return result;
+		},
+		
+		forPath: function(path) {
+			var fn = this.facetNode.forPath(path);
+			var result = this.wrap(fn);
+			return result;
+		},
+		
+		forProperty: function(propertyName, isInverse) {
+			var fn = this.facetNode.forProperty(propertyName, isInverse);
+			var result = this.wrap(fn);
+			return result;				
+		},
 
-			createConstraint: function(json) {
-				if(json.type != "equals") {
-					throw "Only equals supported";
-				}
+		createConstraint: function(json) {
+			if(json.type != "equals") {
 				
-				var node = json.node;
-
-				checkNotNull(node);
-				
-				var nodeValue = sparql.NodeValue.makeNode(node);
-				var result = facets.ConstraintUtils.createEquals(this.facetNode.getPath(), nodeValue);
-				
-				return result;
-			},
-			
-			/**
-			 * 
-			 * Support:
-			 * { type: equals, value: }
-			 * 
-			 * 
-			 * @param json
-			 */
-			addConstraint: function(json) {
-				var constraint = this.createConstraint(json);				
-				this.constraintManager.addConstraint(constraint);
-			},
-			
-			removeConstraint: function(json) {
-				var constraint = this.createConstraint(json);
-				this.constraintManager.moveConstraint(constraint);				
-			},
-			
-			// Returns the set of constraint that reference a path matching this one
-			getConstraints: function() {
-				var path = this.facetNode.getPath();
-				var constraints = this.constraintManager.getConstraintsByPath(path);
-				
-				return constraints;
-			},
-			
-			/**
-			 * TODO: Should the result include the path triples even if there is no constraint? Currently it includes them.
-			 * 
-			 * Returns a concept for the values at this node.
-			 * This concept can wrapped for getting the distinct value count
-			 * 
-			 * Also, the element can be extended with further elements
-			 */
-			createElements: function(includeSelfConstraints) {
-				var rootNode = this.facetNode.getRootNode();
-				var excludePath = includeSelfConstraints ? null : this.facetNode.getPath();
-				
-				// Create the constraint elements
-				var elements = this.constraintManager.createElements(rootNode, excludePath);
-				//console.log("___Constraint Elements:", elements);
-				
-				// Create the element for this path (if not exists)
-				var pathElements = this.facetNode.getElements();
-				//console.log("___Path Elements:", elements);
-				
-				elements.push.apply(elements, pathElements);
-				
-				var result = sparql.ElementUtils.flatten(elements);
-				//console.log("Flattened: ", result);
-				
-				// Remove duplicates
-				
-				return result;
-			},
-			
-			
-			/**
-			 * Creates the corresponding concept for the given node.
-			 * 
-			 * @param includeSelfConstraints Whether the created concept should
-			 *        include constraints that affect the variable
-			 *        corresponding to this node. 
-			 * 
-			 */
-			createConcept: function(includeSelfConstraints) {
-				var elements = this.createElements(includeSelfConstraints);
-				var element = new sparql.ElementGroup(elements);
-				var v = this.getVariable();
-				
-				var result = new facets.ConceptInt(element, v);
-				return result;
-			},
-			
-			
-			/**
-			 * Returns a list of steps of _this_ node for which constraints exist
-			 * 
-			 * Use the filter to only select steps that e.g. correspond to outgoing properties
-			 */
-			getConstrainedSteps: function() {
-				var path = this.getPath();
-				var result = this.constraintManager.getConstrainedSteps(path);
-				return result;
+				throw "Only equals supported";
 			}
 			
+			var node = json.node;
+
+			//checkNotNull(node);
+			
+			var nodeValue = sparql.NodeValue.makeNode(node);
+			var result = facets.ConstraintUtils.createEquals(this.facetNode.getPath(), nodeValue);
+			
+			return result;
+		},
+		
+		/**
+		 * 
+		 * Support:
+		 * { type: equals, value: }
+		 * 
+		 * 
+		 * @param json
+		 */
+		addConstraint: function(json) {
+			var constraint = this.createConstraint(json);				
+			this.constraintManager.addConstraint(constraint);
+		},
+		
+		removeConstraint: function(json) {
+			var constraint = this.createConstraint(json);
+			this.constraintManager.moveConstraint(constraint);				
+		},
+		
+		// Returns the set of constraint that reference a path matching this one
+		getConstraints: function() {
+			var path = this.facetNode.getPath();
+			var constraints = this.constraintManager.getConstraintsByPath(path);
+			
+			return constraints;
+		},
+		
+		/**
+		 * TODO: Should the result include the path triples even if there is no constraint? Currently it includes them.
+		 * 
+		 * Returns a concept for the values at this node.
+		 * This concept can wrapped for getting the distinct value count
+		 * 
+		 * Also, the element can be extended with further elements
+		 */
+		createElements: function(includeSelfConstraints) {
+			var rootNode = this.facetNode.getRootNode();
+			var excludePath = includeSelfConstraints ? null : this.facetNode.getPath();
+			
+			// Create the constraint elements
+			var elements = this.constraintManager.createElements(rootNode, excludePath);
+			//console.log("___Constraint Elements:", elements);
+			
+			// Create the element for this path (if not exists)
+			var pathElements = this.facetNode.getElements();
+			//console.log("___Path Elements:", elements);
+			
+			elements.push.apply(elements, pathElements);
+			
+			var result = sparql.ElementUtils.flatten(elements);
+			//console.log("Flattened: ", result);
+			
+			// Remove duplicates
+			
+			return result;
+		},
+		
+		
+		/**
+		 * Creates the corresponding concept for the given node.
+		 * 
+		 * @param includeSelfConstraints Whether the created concept should
+		 *        include constraints that affect the variable
+		 *        corresponding to this node. 
+		 * 
+		 */
+		createConcept: function(includeSelfConstraints) {
+			var elements = this.createElements(includeSelfConstraints);
+			var element = new sparql.ElementGroup(elements);
+			var v = this.getVariable();
+			
+			var result = new facets.ConceptInt(element, v);
+			return result;
+		},
+		
+		
+		/**
+		 * Returns a list of steps of _this_ node for which constraints exist
+		 * 
+		 * Use the filter to only select steps that e.g. correspond to outgoing properties
+		 */
+		getConstrainedSteps: function() {
+			var path = this.getPath();
+			var result = this.constraintManager.getConstrainedSteps(path);
+			return result;
+		}
+	});
 			
 			/**
 			 * Returns a list of steps for _this_ node for which constraints exists
@@ -769,7 +770,6 @@
 				
 			}
 			*/
-	};
-	
+
 })();
 
