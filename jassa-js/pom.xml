@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.aksw.jassa</groupId>
 		<artifactId>jassa-parent</artifactId>
-		<version>0.1.0-SNAPSHOT</version>
+		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>jassa-js</artifactId>
@@ -75,6 +75,9 @@
 								<param>service/SparqlServiceHttp.js</param>
 								<param>service/SparqlServicePaginator.js</param>
 
+								<param>service/query-executions.js</param>
+								<param>service/query-execution-factories.js</param>
+
 								<param>sparql/sparql-expr-eval.js</param>
 								
 								
@@ -106,7 +109,10 @@
 								<param>facete/facete-constraint-manager.js</param>
 								<param>facete/facete-trees.js</param>
 
-								<param>facete/facete-query-generator.js</param>
+								<param>facete/facete-query-generation.js</param>
+								<param>facete/facete-query-execution.js</param>
+
+<!-- 								<param>facete/facete-query-generator.js</param> -->
 								
 								<param>facete/facete-playground.js</param>
 							</jsSourceFiles>

@@ -21,45 +21,46 @@
 	
 		
 		
-//		createElementsFacet: function(concept, isInverse, facetVar, valueVar) {
-//			var result = [];
-//			
-//			// If the concept is isomorph to (?s ?p ?o , ?s), skip it because we are going to add the same triple
-//			if(!concept.isSubjectConcept()) {
-//				var elements = concept.getElements();
-//				result.push.apply(result, elements);
-//			}
-//			
-//			var s = concept.getVariable();
-//			var p = facetVar;
-//			var o = valueVar;
-//		
-//			var triples = isInverse
-//				? [ new rdf.Triple(o, p, s) ]
-//				: [ new rdf.Triple(s, p, o) ];
-//			
-//			var triplesBlock = new sparql.ElementTriplesBlock(triples);
-//			
-//			result.push(triplesBlock);
-//			
-//			return result;
-//		},
-//	
-//		/**
-//		 * Select ?facetVar (Count(Distinct(?__o)) As ?countFacetVar) { }
-//		 * 
-//		 */
-//		createQueryFacetCount: function(concept, facetVar, countFacetVar, isInverse, sampleSize) {
-//	
-//			//var facetVar = sparql.Node.v("__p");
-//			var valueVar = sparql.Node.v("__o");
-//			var elements = ns.createElementsFacet(concept, isInverse, facetVar, valueVar);
-//			
-//			var result = ns.createQueryCount(element, sampleSize, valueVar, countFacetVar, [facetVar], true);
-//	
-//			return result;
-//		},
+		createElementsFacet: function(concept, isInverse, facetVar, valueVar) {
+			var result = [];
+			
+			// If the concept is isomorph to (?s ?p ?o , ?s), skip it because we are going to add the same triple
+			if(!concept.isSubjectConcept()) {
+				var elements = concept.getElements();
+				result.push.apply(result, elements);
+			}
+			
+			var s = concept.getVariable();
+			var p = facetVar;
+			var o = valueVar;
 		
+			var triples = isInverse
+				? [ new rdf.Triple(o, p, s) ]
+				: [ new rdf.Triple(s, p, o) ];
+			
+			var triplesBlock = new sparql.ElementTriplesBlock(triples);
+			
+			result.push(triplesBlock);
+			
+			return result;
+		},
+	
+		/**
+		 * Select ?facetVar (Count(Distinct(?__o)) As ?countFacetVar) { }
+		 * 
+		 */
+		createQueryFacetCount: function(concept, facetVar, countFacetVar, isInverse, sampleSize) {
+	
+			//var facetVar = sparql.Node.v("__p");
+			var valueVar = sparql.Node.v("__o");
+			var elements = ns.createElementsFacet(concept, isInverse, facetVar, valueVar);
+			
+			var result = ns.createQueryCount(element, sampleSize, valueVar, countFacetVar, [facetVar], true);
+	
+			return result;
+		},
+
+			
 		/**
 		 * Creates a query with Count(Distinct ?variable)) As outputVar for an element.
 		 * 

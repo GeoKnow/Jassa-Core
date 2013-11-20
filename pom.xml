@@ -4,7 +4,7 @@
 
 	<groupId>org.aksw.jassa</groupId>
 	<artifactId>jassa-parent</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Jassa JAvascript Suite for Sparql Access - Parent</name>
@@ -28,9 +28,8 @@
 
 
 	<modules>
-		<module>facete-client</module>
-		<module>facete-server</module>
-		<module>facete-debian-tomcat6</module>
+<!-- 		<module>jassa-js</module> -->
+		<module>jassa-server</module>
 	</modules>
 
 
@@ -38,8 +37,6 @@
 
 		<!-- Dependency Versions -->
 <!-- 		<jena-sparql-api.version>2.10.0-14</jena-sparql-api.version> -->
-		<aksw-commons.version>0.7.1</aksw-commons.version>
-
 
 		<jetty.version>9.0.0.v20130308</jetty.version>
 		<jetty-plugin.version>8.1.10.v20130312</jetty-plugin.version>

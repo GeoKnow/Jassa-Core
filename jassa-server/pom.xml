@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.aksw.jassa</groupId>
+		<artifactId>jassa-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>jassa-server</artifactId>
+	<name>JAvascript Suite for Sparql Access - Server API</name>
+	<!-- <packaging>js</packaging> -->
+	<description>A JavaScript library for Sparql access</description>
+	<packaging>war</packaging>
+
+	<properties>
+		<tomcat.server-id>tomcat-localhost</tomcat.server-id>
+
+                <tomcat6.server-id>${tomcat.server-id}</tomcat6.server-id>
+		<tomcat6.deploy-url>http://localhost:8080/manager</tomcat6.deploy-url>
+
+                <tomcat7.server-id>${tomcat.server-id}</tomcat7.server-id>
+		<tomcat7.deploy-url>http://localhost:8080/manager/text</tomcat7.deploy-url>
+	</properties>
+
+	<!-- <profiles> -->
+	<!-- <profile> -->
+	<!-- <id>tomcat7-localhost</id> -->
+	<!-- <activation> -->
+	<!-- <activeByDefault>true</activeByDefault> -->
+	<!-- </activation> -->
+	<!-- <properties> -->
+	<!-- <tomcat-server-id>tomcat-localhost</tomcat-server-id> -->
+	<!-- <tomcat-deploy-url>http://localhost:8080/manager/text</tomcat-deploy-url> -->
+	<!-- </properties> -->
+	<!-- </profile> -->
+	<!-- <profile> -->
+	<!-- <id>tomcat6-localhost</id> -->
+	<!-- <properties> -->
+	<!-- <tomcat-server-id>tomcat6-localhost</tomcat-server-id> -->
+	<!-- <tomcat-deploy-url>http://localhost:8080/manager</tomcat-deploy-url> -->
+	<!-- </properties> -->
+	<!-- </profile> -->
+	<!-- </profiles> -->
+
+	<build>
+		<!-- finalName>facete-server</finalName -->
+
+		<plugins>
+			<!-- <plugin> -->
+			<!-- <artifactId>maven-compiler-plugin</artifactId> -->
+			<!-- <version>2.3.2</version> -->
+			<!-- <configuration> -->
+			<!-- <source>1.6</source> -->
+			<!-- <target>1.6</target> -->
+			<!-- </configuration> -->
+			<!-- </plugin> -->
+
+			<plugin>
+				<!-- Any eclipse problem with the plugin should disappear with m2e 1.1 -->
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.8.3</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<generatePackage>org.aksw.facete.domains.minify_maven_plugin</generatePackage>
+				</configuration>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.2</version>
+				<!-- <configuration> <overlays> <overlay> <groupId>org.kurtjx.snorql</groupId> 
+					<artifactId>snorql-webapp</artifactId> <type>jar</type> <targetPath>.</targetPath> 
+					<includes> <include>build/**</include> </includes> <excludes> <exclude>WEB-INF</exclude> 
+					</excludes> </overlay> </overlays> </configuration> -->
+			</plugin>
+			<!-- <plugin> <groupId>org.codehaus.cargo</groupId> <artifactId>cargo-maven2-plugin</artifactId> 
+				<extensions>true</extensions> <configuration> <descriptor>src/assemble/merge.xml</descriptor> 
+				</configuration> </plugin> -->
+
+                        <plugin>
+                                <groupId>org.apache.tomcat.maven</groupId>
+                                <artifactId>tomcat6-maven-plugin</artifactId>
+                                <version>2.1</version>
+                                <configuration>
+                                        <server>${tomcat6.server-id}</server>
+                                        <url>${tomcat6.deploy-url}</url>
+                                </configuration>
+                        </plugin>
+
+
+			<plugin>
+				<groupId>org.apache.tomcat.maven</groupId>
+				<artifactId>tomcat7-maven-plugin</artifactId>
+				<version>2.1</version>
+				<configuration>
+					<server>${tomcat7.server-id}</server>
+					<url>${tomcat7.deploy-url}</url>
+				</configuration>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>8.1.9.v20130131</version>
+				<configuration>
+					<systemProperties>
+						<systemProperty>
+							<name>jetty.port</name>
+							<value>5510</value>
+						</systemProperty>
+					</systemProperties>
+					<reload>manual</reload>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>org.aksw.facete</groupId>
+			<artifactId>facete-client</artifactId>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.aksw.sparqlify</groupId>
+			<artifactId>sparqlify-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+		</dependency>
+
+		<!-- Logging -->
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-ext</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.tuckey</groupId>
+			<artifactId>urlrewritefilter</artifactId>
+		</dependency>
+
+	</dependencies>
+
+</project>
