@@ -1,5 +1,6 @@
 (function() {
 
+	var vocab = Jassa.vocab;
 	var util = Jassa.util;
 	var sparql = Jassa.sparql;
 	
@@ -71,19 +72,13 @@
 //			
 //			var constraintConcept = 
 //		},
-		
+
 		/**
-		 * Creates a concept that fetches all facets at a given path
-		 *
-		 * Note that the returned concept does not necessarily
-		 * offer access to the facet's values.
-		 * 
-		 * Examples:
-		 * - ({?s a rdf:Property}, ?s)
-		 * - ({?s a ex:Foo . ?s ?p ?o }, ?p)
+		 * This method signature is not final yet.
 		 * 
 		 */
-		createFacetConcept: function(path, isInverse) {
+		createFacetConceptCore: function(path, isInverse, enableOptimization) {
+
 			var rootFacetNode = this.rootFacetNodeFactory.createFacetNode(); 
 			var baseConcept = this.baseConceptFactory.createConcept();
 			var constraintManager = this.constraintManager;			
@@ -117,11 +112,11 @@
 			// This makes several assumptions, TODO point to a discussion 
 			// but on large datasets it may work much better than having to scan everything for the properties.
 			
-			var hasConstraints = facetElements.length == 0;
+			var hasConstraints = facetElements.length !== 0;
 
 			var triple; 
 			
-			if(!hasConstraints && path.length === 0) {
+			if(enableOptimization && !hasConstraints && path.isEmpty()) {
 				triple = new rdf.Triple(propertyVar, vocab.rdf.type, vocab.rdf.Property);
 			} else {
 				if(!isInverse) {
@@ -130,12 +125,41 @@
 					triple = new rdf.Triple(objectVar, propertyVar, facetVar);
 				}
 			}
-			
+						
 			facetElements.push(new sparql.ElementTriplesBlock([triple]));
 			
-			var result = new ns.Concept(facetElements, facetVar);
+			
+			var pathElements = facetNode.getElements();
+			facetElements.push.apply(facetElements, pathElements);
+
+			// TODO Fix the API - it should only need one call
+			var finalElements = sparql.ElementUtils.flatten(facetElements);
+			finalElements = sparql.ElementUtils.flattenElements(finalElements);
+			
+			//var result = new ns.Concept(finalElements, propertyVar);
+			var result = new ns.FacetConcept(finalElements, propertyVar, objectVar);
 			return result;
 		},
+
+		
+		/**
+		 * Creates a concept that fetches all facets at a given path
+		 *
+		 * Note that the returned concept does not necessarily
+		 * offer access to the facet's values.
+		 * 
+		 * Examples:
+		 * - ({?s a rdf:Property}, ?s)
+		 * - ({?s a ex:Foo . ?s ?p ?o }, ?p)
+		 * 
+		 */
+		createFacetConcept: function(path, isInverse) {
+			var facetConcept = this.createFacetConceptCore(path, isInverse, true);
+			
+			var result = new ns.Concept(facetConcept.getElements(), facetConcept.getFacetVar());
+			return result;
+		},
+
 		
 		/**
 		 * TODO The name is a bit confusing...
@@ -153,7 +177,9 @@
 		 * @return  
 		 */
 		createFacetValueConcept: function(path, isInverse) {
+			var result = this.createFacetConceptCore(path, isInverse, false);
 			
+			return result;
 		}
 	});
 	

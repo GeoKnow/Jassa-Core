@@ -3,10 +3,11 @@
 	var util = Jassa.vocab.util;
 	var ns = Jassa.vocab.rdf;
 	
-	var p = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#';
+	var p = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 	
 	ns.str = {
-		type: p + 'type'
+		type: p + "type",
+		Property: p + "Property"
 	};
 	
 	util.initNodes(ns);

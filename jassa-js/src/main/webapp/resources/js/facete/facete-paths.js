@@ -104,7 +104,12 @@
 		initialize: function(steps) {
 			this.steps = steps ? steps : [];
 		},
-	
+		
+		isEmpty: function() {
+			var result = this.steps.length === 0;
+			return result;
+		},
+		
 		toString: function() {
 			var result = this.steps.join(" ");
 			return result;

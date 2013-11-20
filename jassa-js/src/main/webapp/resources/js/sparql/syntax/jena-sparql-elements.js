@@ -722,55 +722,16 @@
 			if(processed.length === 1) {
 				return processed[0];
 			} else {
-				return new ns.ElementGroup(ns.flattenElements(processed));
+				return new ns.ElementGroup(ns.ElementUtils.flattenElements(processed));
 			}
 		}
 	};
 	
-	
-	
-	/**
-	 * Bottom up
-	 * - Merge ElementTripleBlocks
-	 * - Merge ElementGroups
-	 */
-	ns.flattenElements = function(elements) {
-		var result = [];
-		
-		var triples = [];
-		
-		var tmps = [];
-		_.each(elements, function(item) {
-			if(item instanceof ns.ElementGroup) {
-				tmps.push.apply(tmps, item.elements);
-			} else {
-				tmps.push(item);
-			}
-		});
-		
-		_.each(tmps, function(item) {
-			if(item instanceof ns.ElementTriplesBlock) {
-				triples.push.apply(triples, item.getTriples());
-			} else {
-				result.push(item);
-			}
-		});		
 
-		if(triples.length > 0) {			
-			var ts = ns.uniqTriples(triples);
-			
-			result.unshift(new ns.ElementTriplesBlock(ts));
-		}
-		
-		//console.log("INPUT ", elements);
-		//console.log("OUTPUT ", result);
-		
-		return result;
-	};
 	
 	ns.joinElements = function(separator, elements) {
 		var strs = _.map(elements, function(element) { return "" + element; });
-		var filtered = _.filter(strs, function(str){ return str.length != 0; });
+		var filtered = _.filter(strs, function(str) { return str.length != 0; });
 		
 		return filtered.join(separator);
 	};
@@ -1088,7 +1049,7 @@
 
 		var tmp = _.map(result.elements, function(element) { return element.flatten(); });
 
-		var newElements = ns.flattenElements(tmp);
+		var newElements = ns.ElementUtils.flattenElements(tmp);
 		
 		result.elements = newElements;
 

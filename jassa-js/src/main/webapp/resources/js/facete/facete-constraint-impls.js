@@ -53,6 +53,7 @@
 			
 			var result = new ns.ElementsAndExprs(elements, exprs);
 			
+			//console.log('constraintSpec.getValue() ', constraintSpec.getValue());
 			return result;
 		}
 	});

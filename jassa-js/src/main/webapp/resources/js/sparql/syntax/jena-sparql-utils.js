@@ -94,6 +94,46 @@
 			return result;
 		},
 		
+		
+		/**
+		 * Bottom up
+		 * - Merge ElementTripleBlocks
+		 * - Merge ElementGroups
+		 */
+		flattenElements: function(elements) {
+			var result = [];
+			
+			var triples = [];
+			
+			var tmps = [];
+			_.each(elements, function(item) {
+				if(item instanceof ns.ElementGroup) {
+					tmps.push.apply(tmps, item.elements);
+				} else {
+					tmps.push(item);
+				}
+			});
+			
+			_.each(tmps, function(item) {
+				if(item instanceof ns.ElementTriplesBlock) {
+					triples.push.apply(triples, item.getTriples());
+				} else {
+					result.push(item);
+				}
+			});		
+
+			if(triples.length > 0) {			
+				var ts = ns.uniqTriples(triples);
+				
+				result.unshift(new ns.ElementTriplesBlock(ts));
+			}
+			
+			//console.log("INPUT ", elements);
+			//console.log("OUTPUT ", result);
+			
+			return result;
+		},
+		
 		/**
 		 * Returns a map that maps *each* variable from vbs to a name that does not appear in vas.
 		 */

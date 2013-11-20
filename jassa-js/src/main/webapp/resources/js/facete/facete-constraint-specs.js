@@ -59,7 +59,7 @@
 		},
 
 		getValue: function() {
-			this.value;
+			return this.value;
 		}
 	});
 	

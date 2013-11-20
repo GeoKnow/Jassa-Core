@@ -859,6 +859,7 @@
 		},
 		
 		toString: function() {
+			//return "" + this.node;
 			return 'NodeValue[' + this.node + ']';
 		}
 	});
