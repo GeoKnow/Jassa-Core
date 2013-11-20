@@ -26,7 +26,7 @@
 			}
 			
 			
-			var triple = new sparql.Triple(s, p, o);
+			var triple = new rdf.Triple(s, p, o);
 			
 			return [triple];
 		},
@@ -46,7 +46,7 @@
 			}
 			
 			
-			var triple = new sparql.Triple(s, p, o);
+			var triple = new rdf.Triple(s, p, o);
 			
 			return [triple];
 			

@@ -524,8 +524,9 @@
 	 * Use this instead of the constructor
 	 * 
 	 */
-	ns.FacetNode.createRoot = function(varName, generator) {
+	ns.FacetNode.createRoot = function(v, generator) {
 
+		var varName = v.getName();
 		generator = generator ? generator : new sparql.GenSym("fv");
 		
 		var varNode = new ns.VarNode(varName, generator);		

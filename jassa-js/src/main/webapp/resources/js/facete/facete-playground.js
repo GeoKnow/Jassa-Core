@@ -119,8 +119,9 @@
 
 		
 		var baseVar = rdf.NodeFactory.createVar("s");
+		//alert("test" + baseVar);
 		var baseConcept = facete.ConceptUtils.createSubjectConcept(baseVar);
-		var rootFacetNode = facete.FacetNode.createRoot(baseConcept.getVar());
+		var rootFacetNode = facete.FacetNode.createRoot(baseVar);
 		var facetStateProvider = new facete.FacetStateProviderImpl();		
 		
 		var queryGenerator = new facete.FaceteQueryGenerator(
@@ -133,7 +134,7 @@
 		
 		var facetConcept = queryGenerator.createFacetConcept(facete.Path.parse("http://foobar"));
 		
-		alert(JSON.stringify(facetConcept));
+		alert("" + facetConcept);
 		
 		//var facetService = 
 		

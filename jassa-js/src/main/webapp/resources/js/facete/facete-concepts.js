@@ -73,7 +73,7 @@
 			var p = sparql.Node.v("_p_");
 			var o = sparql.Node.v("_o_");
 			
-			var conceptElement = new sparql.ElementTriplesBlock([new sparql.Triple(s, p, o)]);
+			var conceptElement = new sparql.ElementTriplesBlock([new rdf.Triple(s, p, o)]);
 
 			//pathManager = new facets.PathManager(s.value);
 			
@@ -203,7 +203,7 @@
 					var p = t.getProperty();
 					var o = t.getObject();
 					
-					result = v.equals(s) && p.isVar() && o.isVar();
+					result = v.equals(s) && p.isVariable() && o.isVariable();
 				}
 			}
 

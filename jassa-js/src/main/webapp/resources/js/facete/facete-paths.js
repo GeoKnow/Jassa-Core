@@ -52,9 +52,9 @@
 			
 			var triple;
 			if(this._isInverse) {
-				triple = new sparql.Triple(targetVar, propertyNode, sourceVar);
+				triple = new rdf.Triple(targetVar, propertyNode, sourceVar);
 			} else {
-				triple = new sparql.Triple(sourceVar, propertyNode, targetVar);
+				triple = new rdf.Triple(sourceVar, propertyNode, targetVar);
 			}
 			
 			var result = new sparql.ElementTriplesBlock([triple]);

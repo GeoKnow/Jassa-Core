@@ -5,6 +5,12 @@
 
 	var ns = Jassa.sparql;
 	
+	ns.Generator = Class.create({
+		next: function() {
+			throw "Override me";
+		}
+	});
+	
 	/**
 	 * Another class that mimics Jena's behaviour.
 	 * 
@@ -12,7 +18,7 @@
 	 * @param start
 	 * @returns {ns.GenSym}
 	 */
-	ns.GenSym = Class.create({
+	ns.GenSym = Class.create(ns.Generator, {
 		initialize: function(prefix, start) {
 			this.prefix = prefix ? prefix : "v";
 			this.nextValue = start ? start : 0;
@@ -27,6 +33,10 @@
 		}
 	});
 
+	ns.GenSym.create = function(prefix) {
+		var result = new ns.GenSym(prefix, 0);
+		return result;
+	};
 
 	/**
 	 * 
@@ -34,7 +44,7 @@
 	 * @param blacklist Array of strings
 	 * @returns {ns.GeneratorBlacklist}
 	 */
-	ns.GeneratorBlacklist = Class.create({
+	ns.GeneratorBlacklist = Class.create(ns.Generator, {
 		
 		initialize: function(generator, blacklist) {
 			this.generator = generator;
@@ -64,6 +74,18 @@
 	};
 
 
+	
+	ns.PatternUtils = {
+		getVarsMentioned: function(elements) {
+			var result = [];
+			_.each(elements, function(element) {
+				_(result).union(element.getVarsMentioned());
+			});
+			
+			return result;
+		}
+	};
+			
 	
 	ns.ElementUtils = {
 		flatten: function(elements) {

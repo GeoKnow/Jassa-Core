@@ -112,11 +112,11 @@
 					(
 							propertyName,
 							propertyNode,
-							new sparql.ElementTriplesBlock([new sparql.Triple(self.config.conceptVar, propertyNode, objectNode)])
+							new sparql.ElementTriplesBlock([new rdf.Triple(self.config.conceptVar, propertyNode, objectNode)])
 					);
 					*/
 					
-					var element = new sparql.ElementTriplesBlock([new sparql.Triple(s, propertyNode, objectNode)]);
+					var element = new sparql.ElementTriplesBlock([new rdf.Triple(s, propertyNode, objectNode)]);
 					
 					var newFacet = new ns.Facet(config.getRoot(), propertyNode.value, element, s.value);
 					

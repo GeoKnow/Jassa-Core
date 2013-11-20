@@ -53,7 +53,7 @@
 
 			evLabels.push(evLabel);
 			
-			var triple = new sparql.Triple(v, rdfs.label, vLabel);				
+			var triple = new rdf.Triple(v, rdfs.label, vLabel);				
 			var exprLabel = createFilterExpr(evLabel, searchText);
 
 			var exprLang;
@@ -147,9 +147,9 @@
 		var y = sparql.Node.v("__y");
 		
 		var result = new sparql.ElementUnion([
-		    new sparql.ElementTriplesBlock([new sparql.Triple(s, x, y)]),
-		    new sparql.ElementTriplesBlock([new sparql.Triple(x, s, y)]),
-		    new sparql.ElementTriplesBlock([new sparql.Triple(x, y, s)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(s, x, y)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(x, s, y)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(x, y, s)]),
 		]);
 		
 		return result;
@@ -178,9 +178,9 @@
 		var x = sparql.Node.v("__x");
 		
 		var result = new sparql.ElementUnion([
-		    new sparql.ElementTriplesBlock([new sparql.Triple(s, rdf.type, owl.Class)]),
-		    new sparql.ElementTriplesBlock([new sparql.Triple(x, rdfs.subClassOf, s)]),
-		    new sparql.ElementTriplesBlock([new sparql.Triple(s, rdfs.subClassOf, x)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(s, rdf.type, owl.Class)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(x, rdfs.subClassOf, s)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(s, rdfs.subClassOf, x)]),
 		]);
 		
 		return result;
@@ -198,7 +198,7 @@
 		var s = outputVar;
 		var t = sparql.Node.v("t");
 		
-		var element = new sparql.ElementTriplesBlock([new sparql.Triple(s, rdf.type, t)]);
+		var element = new sparql.ElementTriplesBlock([new rdf.Triple(s, rdf.type, t)]);
 		
 		result.projectVars.add(t);
 		result.distinct = true;
@@ -246,7 +246,7 @@
 		var p = sparql.Node.v("p");
 		var o = sparql.Node.v("o");
 		
-		var result = new sparql.ElementNamedGraph(new sparql.ElementTriplesBlock([new sparql.Triple(s, p, o)]), g);
+		var result = new sparql.ElementNamedGraph(new sparql.ElementTriplesBlock([new rdf.Triple(s, p, o)]), g);
 
 		return result;
 	};
@@ -317,7 +317,7 @@
 		
  
 		var p = sparql.Node.v("__p");
-		var triple = new sparql.Triple(concept, p, sparql.Node.v("__o"));		
+		var triple = new rdf.Triple(concept, p, sparql.Node.v("__o"));		
 		result.elements.push(new sparql.ElementTriplesBlock(triple));
 		
 		result.projectVars.add(p);
@@ -345,7 +345,7 @@
 		var p = sparql.Node.v("__p");
 		var o = sparql.Node.v("__o");
 		
-		var triple = new sparql.Triple(conceptVar, p, o);
+		var triple = new rdf.Triple(conceptVar, p, o);
 
 		result.constructTemplate = new sparql.Template(new sparql.BasicPattern([triple]));
 		
@@ -396,11 +396,11 @@
 		
 		var elements = [];
 		
-		var triple = new sparql.Triple(node, property, hasValue);
+		var triple = new rdf.Triple(node, property, hasValue);
 		elements.push(new sparql.ElementTriplesBlock([triple]));
 		
 		if(false) {
-			var tripleInv = new sparql.Triple(isValueOf, property, node);
+			var tripleInv = new rdf.Triple(isValueOf, property, node);
 			elements.push(new sparql.ElementTriplesBlock([tripleInv]));
 		}
 
@@ -453,8 +453,8 @@
 		var y = sparql.Node.v("__y");
 
 		var triples = isInverse
-			? [ new sparql.Triple(o, p, s), new sparql.Triple(y, x, o) ]
-			: [ new sparql.Triple(s, p, o), new sparql.Triple(o, x, y) ];
+			? [ new rdf.Triple(o, p, s), new rdf.Triple(y, x, o) ]
+			: [ new rdf.Triple(s, p, o), new rdf.Triple(o, x, y) ];
 		
 		var triplesBlock = new sparql.ElementTriplesBlock(triples);
 		
@@ -519,7 +519,7 @@
 		//console.log("Driver", concept);
 		
 		tmp.elements.push(concept);
-		tmp.elements.push(new sparql.ElementTriplesBlock([new sparql.Triple(conceptVar, p, o)]));
+		tmp.elements.push(new sparql.ElementTriplesBlock([new rdf.Triple(conceptVar, p, o)]));
 		
 		
 		// TODO We could reduce the number of requests if we fetched labels here
@@ -557,8 +557,8 @@
 		var o = valueVar;
 	
 		var triples = isInverse
-			? [ new sparql.Triple(o, p, s) ]
-			: [ new sparql.Triple(s, p, o) ];
+			? [ new rdf.Triple(o, p, s) ]
+			: [ new rdf.Triple(s, p, o) ];
 		
 		var triplesBlock = new sparql.ElementTriplesBlock(triples);
 		
@@ -638,7 +638,7 @@
 		//console.log("Driver", concept);
 		
 		tmp.elements.push(concept);
-		tmp.elements.push(new sparql.ElementTriplesBlock([new sparql.Triple(conceptVar, p, o)]));
+		tmp.elements.push(new sparql.ElementTriplesBlock([new rdf.Triple(conceptVar, p, o)]));
 		
 		
 		// TODO We could reduce the number of requests if we fetched labels here
@@ -702,7 +702,7 @@
 				new sparql.E_Regex(new sparql.E_Str(new sparql.ExprVar(conceptVar)), searchString, "i"),
 				new sparql.E_Regex(new sparql.ExprVar(labelVar), searchString, "i"));
 		
-		var optionalElement = new sparql.ElementTriplesBlock([new sparql.Triple(conceptVar, property, labelVar)]);
+		var optionalElement = new sparql.ElementTriplesBlock([new rdf.Triple(conceptVar, property, labelVar)]);
 		var optional = new sparql.ElementOptional(optionalElement);		
 
 		element = new sparql.ElementGroup();		
@@ -741,7 +741,7 @@
 				new sparql.E_Regex(new sparql.E_Str(new sparql.ExprVar(facetVar)), searchString, "i"),
 				new sparql.E_Regex(new sparql.ExprVar(labelVar), searchString, "i"));
 		
-		var optionalElement = new sparql.ElementTriplesBlock([new sparql.Triple(facetVar, rdfs.label, labelVar)]);
+		var optionalElement = new sparql.ElementTriplesBlock([new rdf.Triple(facetVar, rdfs.label, labelVar)]);
 		var optional = new sparql.ElementOptional(optionalElement);		
 
 		element = new sparql.ElementGroup();		
@@ -1137,8 +1137,8 @@
 	ns.createElementGeomLonLat = function(geomVar, lonVar, latVar) {
 		var triples = [];
 		
-		triples.push(new sparql.Triple(geomVar, geo.lon, lonVar));
-		triples.push(new sparql.Triple(geomVar, geo.lat, latVar));
+		triples.push(new rdf.Triple(geomVar, geo.lon, lonVar));
+		triples.push(new rdf.Triple(geomVar, geo.lat, latVar));
 		
 		var result = new sparql.ElementTriplesBlock(triples);
 		return result;			

@@ -19,11 +19,6 @@
 	
 	var ns = Jassa.sparql;
 
-	/*
-	 * rdf.Node is the same as sparql.Node, but the former is strongly preferred. 
-	 * This alias for the Node object between the rdf and sparql namespace exists for legacy reasons.
-	 */
-	ns.Node = Jassa.rdf.Node;
 	
 	//var strings = Namespace("org.aksw.ssb.utils.strings");
 	//var strings = require('underscore.strings');
@@ -320,55 +315,7 @@
 	
 	
 	
-	ns.Triple = function(s, p, o) {
-		this.s = s;
-		this.p = p;
-		this.o = o;
-	};
-	
-	ns.Triple.prototype.toString = function() {
-		//return this.s + " " + this.p + " " + this.o + " .";
-		return this.s + " " + this.p + " " + this.o;
-	};
-	
-	/*
-	ns.fnNodeMapWrapper = function(node, fnNodeMap) {
-		var sub = fnNodeMap(node);		 
-		var result = (sub == undefined || sub == null) ? node : sub;
-		return result;
-	};
-	*/
-	
-	ns.Triple.prototype.copySubstitute = function(fnNodeMap) {
-		return new ns.Triple(this.s.copySubstitute(fnNodeMap), this.p.copySubstitute(fnNodeMap), this.o.copySubstitute(fnNodeMap));
-	};
-	
-	ns.Triple.prototype.getSubject = function() {
-		return this.s;
-	};
 
-	ns.Triple.prototype.getProperty = function() {
-		return this.p;
-	};
-	
-	ns.Triple.prototype.getObject = function() {
-		return this.o;
-	};
-	
-	ns.Triple.prototype.getVarsMentioned = function() {
-		var result = [];
-		result = ns.Triple.pushVar(result, this.s);
-		result = ns.Triple.pushVar(result, this.p);
-		result = ns.Triple.pushVar(result, this.o);
-		
-		return result;
-	};
-	
-	
-	ns.Triple.pushVar = function(array, node) {
-		return (node.type != -1) ? array : _.union(array, node.value);
-	};
-	
 	
 	ns.BasicPattern = function(triples) {
 		this.triples = triples ? triples : [];
@@ -715,9 +662,10 @@
 
 		getVarsMentioned: function() {
 			var result = [];
-			for(var i in this.triples) {
-				result = _.union(result, this.triples[i].getVarsMentioned());
-			}
+			_.each(this.triples, function(triple) {
+				result = _.union(result, triple.getVarsMentioned());				
+			});
+
 			return result;
 		},
 
@@ -753,11 +701,13 @@
 		},
 	
 		getVarsMentioned: function() {
-			var result = [];
-			for(var i in this.elements) {
-				result = _.union(result, this.elements[i].getVarsMentioned());
-			}
+			var result = ns.PatternUtils.getVarsMentioned(this.elements);
 			return result;
+//			var result = [];
+//			for(var i in this.elements) {
+//				result = _.union(result, this.elements[i].getVarsMentioned());
+//			}
+//			return result;
 		},
 
 		toString: function() {

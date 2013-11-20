@@ -50,7 +50,7 @@
 				query.projectVars.add(u);
 				query.projectVars.add(l);
 				
-				query.elements.push(new sparql.ElementTriplesBlock([new sparql.Triple(u, rdfs.label, l)]));
+				query.elements.push(new sparql.ElementTriplesBlock([new rdf.Triple(u, rdfs.label, l)]));
 		
 				
 				var filter = null;	
@@ -257,7 +257,7 @@
 		var query = sparql.Query();
 		var u = sparql.Node.v("u");
 		var l = sparql.Node.v("l");
-		query.elements.push(new sparql.ElementTriplesBlock(new sparql.Triple(u, rdfs.label, l)));
+		query.elements.push(new sparql.ElementTriplesBlock(new rdf.Triple(u, rdfs.label, l)));
 		
 		var queryString = "Prefix rdfs:<http://www.w3.org/2000/01/rdf-schema#> Select ?u ?l { ?u rdfs:label ?l . " + filterStr + "Filter(?u In (<" + lookups.join(">,<") + ">)) . }";
 	

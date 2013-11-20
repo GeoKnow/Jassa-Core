@@ -71,16 +71,21 @@
 			else if(this.isLiteral()) {
 				if(that.isLiteral()) {
 					
-					var isSameLex = this.getLiteralLexicalForm() == that.getLiteralLexicalForm();
-					var isSameType = this.getLiteralDatatypeUri() == that.getLiteralDatatypeUri();
-					var isSameLang = this.getLiteralLanguage() == that.getLiteralLanguage();
+					var isSameLex = this.getLiteralLexicalForm() === that.getLiteralLexicalForm();
+					var isSameType = this.getLiteralDatatypeUri() === that.getLiteralDatatypeUri();
+					var isSameLang = this.getLiteralLanguage() === that.getLiteralLanguage();
 					
 					result = isSameLex && isSameType && isSameLang;
 				}
 			}
 			else if(this.isUri()) {
 				if(that.isUri()) {
-					result = this.getUri() == that.getUri();
+					result = this.getUri() === that.getUri();
+				}
+			}
+			else if(this.isVariable()) {
+				if(that.isVariable()) {
+					result = this.getName() === that.getName();
 				}
 			}
 			//else if(this.)
@@ -479,6 +484,54 @@
 		v: ns.NodeFactory.createVar
 	});
 
+	
+	
+	ns.Triple = Class.create({
+		initialize: function(s, p, o) {
+			this.s = s;
+			this.p = p;
+			this.o = o;
+		},
+	
+		toString: function() {
+			return this.s + " " + this.p + " " + this.o;
+		},
+		
+		copySubstitute: function(fnNodeMap) {
+			return new ns.Triple(this.s.copySubstitute(fnNodeMap), this.p.copySubstitute(fnNodeMap), this.o.copySubstitute(fnNodeMap));
+		},
+	
+		getSubject: function() {
+			return this.s;
+		},
+
+		getProperty: function() {
+			return this.p;
+		},
+	
+		getObject: function() {
+			return this.o;
+		},
+	
+		getVarsMentioned: function() {
+			var result = [];
+			ns.Triple.pushVar(result, this.s);
+			ns.Triple.pushVar(result, this.p);
+			ns.Triple.pushVar(result, this.o);	
+			return result;
+		}
+	});
+	
+	
+	ns.Triple.pushVar = function(array, node) {
+		
+		if(node.isVariable()) {
+			_(array).union(node);
+		}
+		
+		return array;
+	};
+	
 	
 })();
 

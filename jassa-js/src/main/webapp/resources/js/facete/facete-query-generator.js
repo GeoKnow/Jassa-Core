@@ -1,6 +1,7 @@
 (function() {
 
 	var util = Jassa.util;
+	var sparql = Jassa.sparql;
 	
 	var ns = Jassa.facete;
 	
@@ -82,21 +83,57 @@
 		 * - ({?s a ex:Foo . ?s ?p ?o }, ?p)
 		 * 
 		 */
-		createFacetConcept: function(path) {
+		createFacetConcept: function(path, isInverse) {
 			var rootFacetNode = this.rootFacetNodeFactory.createFacetNode(); 
 			var baseConcept = this.baseConceptFactory.createConcept();
 			var constraintManager = this.constraintManager;			
 			var constraintElements = constraintManager.createElements(rootFacetNode);
+
+			var facetNode = rootFacetNode.forPath(path);
+			var facetVar = facetNode.getVar();
+
 			
 			var baseElements = baseConcept.getElements();
 			//baseElements.push.apply(baseElements, constraintElements);
 			
-			var facetConceptElements = baseElements.concat(constraintElements);
+			var facetElements; 
+			if(baseConcept.isSubjectConcept()) {
+				facetElements = constraintElements;
+			} else {
+				facetElements = baseElements.concat(constraintElements); 
+			}
 			
-			var facetNode = rootFacetNode.forPath(path);
-			var facetVar = facetNode.getVar();
+			var varsMentioned = sparql.PatternUtils.getVarsMentioned(facetElements); //.getVarsMentioned();
+			var varNames = varsMentioned.map(function(v) { return v.getName(); });
 			
-			var result = new ns.Concept(facetConceptElements, facetVar);
+			var genProperty = new sparql.GeneratorBlacklist(sparql.GenSym.create("p"), varNames);
+			var genObject = new sparql.GeneratorBlacklist(sparql.GenSym.create("o"), varNames);
+			
+			var propertyVar = rdf.NodeFactory.createVar(genProperty.next());
+			var objectVar = rdf.NodeFactory.createVar(genObject.next());
+			
+			// If there are no constraints, and the path points to root (i.e. is empty),
+			// we can use the optimization of using the query ?s a rdf:Property
+			// This makes several assumptions, TODO point to a discussion 
+			// but on large datasets it may work much better than having to scan everything for the properties.
+			
+			var hasConstraints = facetElements.length == 0;
+
+			var triple; 
+			
+			if(!hasConstraints && path.length === 0) {
+				triple = new rdf.Triple(propertyVar, vocab.rdf.type, vocab.rdf.Property);
+			} else {
+				if(!isInverse) {
+					triple = new rdf.Triple(facetVar, propertyVar, objectVar);
+				} else {
+					triple = new rdf.Triple(objectVar, propertyVar, facetVar);
+				}
+			}
+			
+			facetElements.push(new sparql.ElementTriplesBlock([triple]));
+			
+			var result = new ns.Concept(facetElements, facetVar);
 			return result;
 		},
 		
