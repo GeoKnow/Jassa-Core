@@ -6,8 +6,10 @@
 	var ns = Jassa.facete;
 
 	
-	var FacetService = Class.create({
-		
+	ns.FacetService = Class.create({
+		fetchFacets: function(path, isInverse) {
+			throw "Override me";
+		}
 	});
 	
 	
@@ -17,7 +19,6 @@
 			this.qef = queryExecutionFactory;
 			this.facetConceptGenerator = facetConceptGenerator;
 		},
-		
 
 		fetchFacets: function(path, isInverse) {
 			var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
@@ -32,8 +33,28 @@
 			var qe = this.qef.createQueryExecution(query);
 			
 			var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
+
+			
+			var self = this;
+			var result = promise.pipe(function(properties) {
+				var items = self.fetchFacetCounts(path, isInverse, properties, false);
+				
+				
+				return properties;
+			});
+			
 			
 			return promise;
+		},
+		
+		fetchFacetCounts: function(path, isInverse, properties, isNegated) {
+			var facetConceptItems = this.facetConceptGenerator.createConceptFacetValues(path, isInverse, properties, isNegated);
+			
+			_(facetConceptItems).each(function(item) {
+				console.log("Test: " + item);
+			});
+			
+			
 		}
 	});
 	

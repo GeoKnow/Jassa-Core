@@ -169,9 +169,8 @@
 		},
 	
 	
-
 		// Create a new path with a step appended
-		// TODO Maybe replace with clone().append()
+		// TODO Maybe replace with clone().append() - no, because then the path would not be immutable anymore
 		copyAppendStep: function(step) {
 			var newSteps = this.steps.slice(0);
 			newSteps.push(step);

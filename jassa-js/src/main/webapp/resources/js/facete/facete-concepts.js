@@ -141,6 +141,11 @@
 		
 		getFacetValueVar: function() {
 			return this.facetValueVar;
+		},
+		
+		toString: function() {
+			var result = "FacetConcept: ({" + this.elements.join(", ") + "}, " + this.facetVar + ", " + this.facetValueVar + ")";
+			return result;
 		}
 	});
 
