@@ -3,7 +3,7 @@
     $prefix = $_REQUEST['file'];
 
 	if(!isset($prefix)) {
-    	$prefix = "jassa-sponate";
+    	$prefix = "jassa-facete";
 	}
 
 
