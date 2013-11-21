@@ -16,7 +16,7 @@
 			};
 		},
 			
-		resultSetToList: function(rs) {
+		resultSetToList: function(rs, variable) {
 			var result = [];
 			while(rs.hasNext()) {
 				var binding = rs.nextBinding();
@@ -28,7 +28,7 @@
 		},
 			
 		
-		resultSetToInt: function(rs) {
+		resultSetToInt: function(rs, variable) {
 			var result = null;
 
 			if(rs.hasNext()) {
@@ -45,7 +45,11 @@
 
 		
 		fetchList: function(queryExecution, variable) {
-			var result = queryExecution.execSelect().pipe(this.resultSetToList);
+			var self = this;
+			var result = queryExecution.execSelect().pipe(function(rs) {
+				var r = self.resultSetToList(rs, variable);
+				return r;
+			});
 		
 			return result;		
 		},
@@ -56,7 +60,12 @@
 		 * 
 		 */
 		fetchInt: function(queryExecution, variable) {
-			var result = queryExecution.execSelect().pipe(this.resultSetToInt);
+			var self = this;
+			var result = queryExecution.execSelect().pipe(function(rs) {
+				var r = self.resultSetToInt(rs,variable);
+				return r;
+			});
+
 			return result;
 		}
 	};

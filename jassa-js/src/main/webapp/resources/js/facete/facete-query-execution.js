@@ -1,5 +1,8 @@
 (function() {
 
+	
+	var service = Jassa.service;
+	
 	var ns = Jassa.facete;
 
 	
@@ -9,18 +12,28 @@
 	
 	
 	
-	var FacetServiceImpl = Class.create(ns.FacetService, {
-		initialize: function(queryExecutionFactory, facetQueryGenerator) {
+	ns.FacetServiceImpl = Class.create(ns.FacetService, {
+		initialize: function(queryExecutionFactory, facetConceptGenerator) {
 			this.qef = queryExecutionFactory;
-			this.facetQueryGenerator = facetQueryGenerator;
+			this.facetConceptGenerator = facetConceptGenerator;
 		},
 		
 
-		fetchFacets: function() {
-			var query = this.facetQueryGenerator.createQueryFacets();
+		fetchFacets: function(path, isInverse) {
+			var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
 			
+			var query = ns.ConceptUtils.createQueryList(concept);
+			//alert("" + query);
+			// query.setLimit();
+			// query.setOffset();
 			
+			//var query = this.facetQueryGenerator.createQueryFacets();
 			
+			var qe = this.qef.createQueryExecution(query);
+			
+			var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
+			
+			return promise;
 		}
 	});
 	

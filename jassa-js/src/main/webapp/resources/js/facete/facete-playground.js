@@ -37,14 +37,28 @@
 			constraintManager
 		);
 		
-		var fqgf = facete.FacetQueryGeneratorFactoryImpl.createFromFacetConfigProvider(facetConfigProvider, facetStateProvider);
+		var fcgf = new ns.FacetConceptGeneratorFactoryImpl(facetConfigProvider);
+		var facetConceptGenerator = fcgf.createFacetConceptGenerator();
+		
+		var facetService = new facete.FacetServiceImpl(qef, facetConceptGenerator);
+		
+		
+		facetService.fetchFacets(facete.Path.parse("")).done(function(list) {
+			_(list).each(function(item) {
+				console.log("Item: " + item);
+			});
+		});
+		
+		
+		//var fqgf = facete.FacetQueryGeneratorFactoryImpl.createFromFacetConfigProvider(facetConfigProvider, facetStateProvider);
 
-		var queryGenerator = fqgf.createFacetQueryGenerator();
+		
+		//var queryGenerator = fqgf.createFacetQueryGenerator();
 		
 		//var facetConcept = queryGenerator.createFacetConcept(facete.Path.parse("http://foo"));
-		var facetConcept = queryGenerator.createQueryFacetList(facete.Path.parse(""));
-		
-		alert("" + facetConcept);
+//		var facetConcept = queryGenerator.createQueryFacetList(facete.Path.parse(""));
+//		
+//		alert("" + facetConcept);
 		
 		
 	};

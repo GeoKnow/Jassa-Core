@@ -80,8 +80,36 @@
 			result = new facete.Concept(conceptElement, s);
 
 			return result;
-		}
+		},
+		
+		
+		/**
+		 * Creates a query based on the concept
+		 * TODO: Maybe this should be part of a static util class?
+		 */
+		createQueryList: function(concept) {
+			var result = new sparql.Query();
+			
+			result.getProjectVars().add(concept.getVar());
+			var resultElements = result.getElements();
+			var conceptElements = concept.getElements();
 
+			resultElements.push.apply(resultElements, conceptElements)
+			
+			return result;
+		},
+
+		createQueryCount: function(concept, outputVar) {
+			var result = new sparql.Query();
+			
+			result.getProjectVars().add(outputVar, new sparql.E_Count());
+
+			var resultElements = result.getElements();
+			var conceptElements = concept.getElements();
+			resultElements.push.apply(resultElements, conceptElements)
+ 
+			return result;			
+		}
 	};
 
 	
@@ -225,6 +253,8 @@
 			return result;
 		},
 		
+
+		
 		/**
 		 * Remove unnecessary triple patterns from the element:
 		 * Example:
@@ -257,7 +287,7 @@
 			element = new sparql.ElementGroup(elements);
 		}
 		
-		var result = new ns.ConceptInt(element, variable);
+		var result = new ns.Concept(element, variable);
 		
 		return result;
 	};

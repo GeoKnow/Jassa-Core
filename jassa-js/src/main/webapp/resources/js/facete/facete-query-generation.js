@@ -221,7 +221,7 @@
 		 * This method signature is not final yet.
 		 * 
 		 */
-		createFacetConceptCore: function(path, isInverse, enableOptimization) {
+		createConceptFacetsCore: function(path, isInverse, enableOptimization) {
 
 			var facetConfig = this.facetConfig;
 			
@@ -300,10 +300,10 @@
 		 * - ({?s a ex:Foo . ?s ?p ?o }, ?p)
 		 * 
 		 */
-		createFacetConcept: function(path, isInverse) {
-			var facetConcept = this.createFacetConceptCore(path, isInverse, true);
+		createConceptFacets: function(path, isInverse) {
+			var facetConcept = this.createConceptFacetsCore(path, isInverse, true);
 			
-			var result = new ns.Concept(facetConcept.getElements(), facetConcept.getFacetVar());
+			var result = new ns.Concept.createFromElements(facetConcept.getElements(), facetConcept.getFacetVar());
 			return result;
 		},
 
@@ -323,8 +323,8 @@
 		 * 
 		 * @return  
 		 */
-		createFacetValueConcept: function(path, isInverse) {
-			var result = this.createFacetConceptCore(path, isInverse, false);
+		createConceptFacetValues: function(path, isInverse) {
+			var result = this.createConceptFacetsCore(path, isInverse, false);
 			
 			return result;
 		}

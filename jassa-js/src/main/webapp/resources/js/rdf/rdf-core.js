@@ -486,6 +486,15 @@
 
 	
 	
+	ns.getSubstitute = function(node, fnNodeMap) {
+		var result = fnNodeMap(node);
+		if(!result) {
+			result = node;
+		}
+		
+		return result;
+	};
+	
 	ns.Triple = Class.create({
 		initialize: function(s, p, o) {
 			this.s = s;
@@ -498,7 +507,14 @@
 		},
 		
 		copySubstitute: function(fnNodeMap) {
-			return new ns.Triple(this.s.copySubstitute(fnNodeMap), this.p.copySubstitute(fnNodeMap), this.o.copySubstitute(fnNodeMap));
+			var result = new ns.Triple(
+				ns.getSubstitute(this.s, fnNodeMap),
+				ns.getSubstitute(this.p, fnNodeMap),
+				ns.getSubstitute(this.o, fnNodeMap)
+			);
+			
+			return result;
+			//	this.s.copySubstitute(fnNodeMap), this.p.copySubstitute(fnNodeMap), this.o.copySubstitute(fnNodeMap));
 		},
 	
 		getSubject: function() {

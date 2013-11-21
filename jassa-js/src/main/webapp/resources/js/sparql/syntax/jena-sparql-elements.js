@@ -970,36 +970,35 @@
 	};
 	
 	
-	ns.Query = function() {
-		this.type = 0; // select, construct, ask, describe
-		
-		this.distinct = false;
-		this.reduced = false;
-		
-		this.isResultStar = false;
-		
-		this.projectVars = new ns.VarExprList();
-		//this.projectVars = []; // The list of variables to appear in the projection
-		//this.projectExprs = {}; // A map from variable to an expression
-		
-		//this.projection = {}; // Map from var to expr; map to null for using the var directly
-		
-		//this.order = []; // A list of expressions
-		
-		this.groupBy = []; 
-		this.orderBy = [];
-
-		
-		this.elements = [];
-		
-		this.constructTemplate = null;
-		
-		this.limit = null;
-		this.offset = null;		
-	};
+	ns.Query = Class.create({
+		initialize: function() {
+			this.type = 0; // select, construct, ask, describe
+			
+			this.distinct = false;
+			this.reduced = false;
+			
+			this.isResultStar = false;
+			
+			this.projectVars = new ns.VarExprList();
+			//this.projectVars = []; // The list of variables to appear in the projection
+			//this.projectExprs = {}; // A map from variable to an expression
+			
+			//this.projection = {}; // Map from var to expr; map to null for using the var directly
+			
+			//this.order = []; // A list of expressions
+			
+			this.groupBy = []; 
+			this.orderBy = [];
 	
+			
+			this.elements = [];
+			
+			this.constructTemplate = null;
+			
+			this.limit = null;
+			this.offset = null;		
+		},
 	
-	ns.Query.prototype = {
 		getElements: function() {
 			return this.elements;
 		},
@@ -1034,160 +1033,161 @@
 				: "";
 				//console.log("Order: ", this.orderBy);
 			return result;
+		},
+		
+		clone: function() {
+			return this.copySubstitute(ns.fnIdentity);
+		},
+
+		flatten: function() {
+			var result = this.clone();
+
+			var tmp = _.map(result.elements, function(element) { return element.flatten(); });
+
+			var newElements = ns.ElementUtils.flattenElements(tmp);
+			
+			result.elements = newElements;
+
+			return result;
+		},
+		
+		copySubstitute: function(fnNodeMap) {
+			var result = new ns.Query();
+			result.type = this.type;
+			result.distinct = this.distinct;
+			result.reduced = this.reduced;
+			result.isResultStar = this.isResultStar;
+			result.limit = this.limit;
+			result.offset = this.offset;
+	 				
+			result.projectVars = this.projectVars.copySubstitute(fnNodeMap);
+
+			//console.log("PROJECTION  " + this.projectVars + " --- " + result.projectVars);
+
+			/*
+			for(key in this.projection) {
+				var value = this.projection[key]; 
+
+				var k = fnNodeMap(ns.Node.v(key));
+				var v = value ? value.copySubstitute(fnNodeMap) : null;
+				
+				result.projection[k] = v;
+			}*/
+			
+			if(this.constructTemplate) {
+				result.constructTemplate = this.constructTemplate.copySubstitute(fnNodeMap);
+			}
+
+			result.orderBy = this.orderBy == null
+				? null
+				:  _.map(this.orderBy, function(item) { return item.copySubstitute(fnNodeMap); });			
+
+			result.groupBy = this.groupBy == null
+				? null
+				:  _.map(this.groupBy, function(item) { return item.copySubstitute(fnNodeMap); });			
+
+
+			result.elements = _.map(this.elements, function(element) { return element.copySubstitute(fnNodeMap); });		
+
+			//console.log("CLONE ORIG " + this);
+			//console.log("CLONE RES " + result);
+			
+			return result;
+		},
+		
+		
+		/**
+		 * Convenience function for setting limit, offset and distinct from JSON
+		 * 
+		 * @param options
+		 */
+		setOptions: function(options) {
+			if(typeof options === 'undefined') {
+				return;
+			}
+			
+			if(typeof options.limit !== 'undefined') {
+				this.setLimit(options.limit);
+			}
+			
+			if(typeof(options.offset) !== 'undefined') {
+				this.setOffset(options.offset);
+			}
+
+			if(typeof(options.distinct) !== 'undefined') {
+				this.setDistinct(options.distinct);
+			}
+		},
+		
+		setOffset: function(offset) {
+			this.offset = offset ? offset : null;
+		},
+
+		setLimit: function(limit) {
+			if(limit === 0) {
+				this.limit = 0;
+			} else {
+				this.limit = limit ? limit : null;
+			}
+		},
+		
+		setDistinct: function(enable) {
+			this.distinct = (enable === true) ? true : false;
+		},
+
+		toString: function() {
+			switch(this.type) {
+			case ns.QueryType.Select: return this.toStringSelect();
+			case ns.QueryType.Construct: return this.toStringConstruct();
+			
+			}
+		},
+
+			
+		toStringProjection: function() {
+			if(this.isResultStar) {
+				return "*";
+			}
+
+			return "" + this.projectVars;		
+		},
+
+		
+		toStringLimitOffset: function() {
+			var result = "";
+			
+			if(this.limit != null) {
+				result += " Limit " + this.limit;
+			}
+			
+			if(this.offset != null) {
+				result += " Offset " + this.offset;
+			}
+			
+			return result;		
+		},
+		
+
+		toStringSelect: function() {
+			var distinctStr = this.distinct ? "Distinct " : "";
+			
+			//console.log("Elements: ", this.elements);
+			var result = "Select " + distinctStr + this.toStringProjection() + " {" + ns.joinElements(" . ", this.elements) + "} " + this.toStringGroupBy() + this.toStringOrderBy() + this.toStringLimitOffset();
+			
+			return result;		
+		},
+
+		toStringConstruct: function() {
+			var result = "Construct " + this.constructTemplate + " {" + ns.joinElements(" . ", this.elements) + "}" + this.toStringOrderBy() + this.toStringLimitOffset();
+			
+			return result;
 		}
-	};
+	});
 
 	
 	ns.fnIdentity = function(x) { return x; };
 	
-	ns.Query.prototype.clone = function() {
-		return this.copySubstitute(ns.fnIdentity);
-	};
-	
-	ns.Query.prototype.flatten = function() {
-		var result = this.clone();
 
-		var tmp = _.map(result.elements, function(element) { return element.flatten(); });
-
-		var newElements = ns.ElementUtils.flattenElements(tmp);
-		
-		result.elements = newElements;
-
-		return result;
-	};
-	
-	ns.Query.prototype.copySubstitute = function(fnNodeMap) {
-		var result = new ns.Query();
-		result.type = this.type;
-		result.distinct = this.distinct;
-		result.reduced = this.reduced;
-		result.isResultStar = this.isResultStar;
-		result.limit = this.limit;
-		result.offset = this.offset;
- 				
-		result.projectVars = this.projectVars.copySubstitute(fnNodeMap);
-
-		//console.log("PROJECTION  " + this.projectVars + " --- " + result.projectVars);
-
-		/*
-		for(key in this.projection) {
-			var value = this.projection[key]; 
-
-			var k = fnNodeMap(ns.Node.v(key));
-			var v = value ? value.copySubstitute(fnNodeMap) : null;
-			
-			result.projection[k] = v;
-		}*/
-		
-		if(this.constructTemplate) {
-			result.constructTemplate = this.constructTemplate.copySubstitute(fnNodeMap);
-		}
-
-		result.orderBy = this.orderBy == null
-			? null
-			:  _.map(this.orderBy, function(item) { return item.copySubstitute(fnNodeMap); });			
-
-		result.groupBy = this.groupBy == null
-			? null
-			:  _.map(this.groupBy, function(item) { return item.copySubstitute(fnNodeMap); });			
-
-
-		result.elements = _.map(this.elements, function(element) { return element.copySubstitute(fnNodeMap); });		
-
-		//console.log("CLONE ORIG " + this);
-		//console.log("CLONE RES " + result);
-		
-		return result;
-	};
-	
-	
-	/**
-	 * Convenience function for setting limit, offset and distinct from JSON
-	 * 
-	 * @param options
-	 */
-	ns.Query.prototype.setOptions = function(options) {
-		if(typeof options === 'undefined') {
-			return;
-		}
-		
-		if(typeof options.limit !== 'undefined') {
-			this.setLimit(options.limit);
-		}
-		
-		if(typeof(options.offset) !== 'undefined') {
-			this.setOffset(options.offset);
-		}
-
-		if(typeof(options.distinct) !== 'undefined') {
-			this.setDistinct(options.distinct);
-		}
-	};
-	
-	ns.Query.prototype.setOffset = function(offset) {
-		this.offset = offset ? offset : null;
-	};
-
-	ns.Query.prototype.setLimit = function(limit) {
-		if(limit === 0) {
-			this.limit = 0;
-		} else {
-			this.limit = limit ? limit : null;
-		}
-	};
-	
-	ns.Query.prototype.setDistinct = function(enable) {
-		this.distinct = (enable === true) ? true : false;
-	};
-
-	ns.Query.prototype.toString = function() {
-		switch(this.type) {
-		case ns.QueryType.Select: return this.toStringSelect();
-		case ns.QueryType.Construct: return this.toStringConstruct();
-		
-		}
-	};
-
-		
-	ns.Query.prototype.toStringProjection = function() {
-		if(this.isResultStar) {
-			return "*";
-		}
-
-		return "" + this.projectVars;		
-	};
-
-	
-	ns.Query.prototype.toStringLimitOffset = function() {
-		var result = "";
-		
-		if(this.limit != null) {
-			result += " Limit " + this.limit;
-		}
-		
-		if(this.offset != null) {
-			result += " Offset " + this.offset;
-		}
-		
-		return result;		
-	};
-	
-	
-	
-	ns.Query.prototype.toStringSelect = function() {
-		var distinctStr = this.distinct ? "Distinct " : "";
-		
-		//console.log("Elements: ", this.elements);
-		var result = "Select " + distinctStr + this.toStringProjection() + " {" + ns.joinElements(" . ", this.elements) + "} " + this.toStringGroupBy() + this.toStringOrderBy() + this.toStringLimitOffset();
-		
-		return result;		
-	};
-
-	ns.Query.prototype.toStringConstruct = function() {
-		var result = "Construct " + this.constructTemplate + " {" + ns.joinElements(" . ", this.elements) + "}" + this.toStringOrderBy() + this.toStringLimitOffset();
-		
-		return result;
-	};
 	
 	
 	
