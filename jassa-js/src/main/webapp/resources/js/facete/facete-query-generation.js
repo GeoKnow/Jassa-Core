@@ -113,26 +113,107 @@
 		}
 
 	});
-	
-
-	// TODO Probably it is better to just make the "dataSource" an abstraction,
-	// rather than the facet concept generator.
-	ns.FacetGeneratorDataProvider = Class.create({
-		getRootFacetNode: function() {
-			
-		},
-		getBaseConcept: function() {
-			
-		},
-	});
 
 	
-	ns.FacetConceptGeneratorDirect = Class.create({
-		initialize: function(baseConcept, rootFacetNode, constraintManager, facetState) {
+	/**
+	 * This is just a POJO
+	 * 
+	 */
+	ns.FacetGeneratorConfig = Class.create({
+		initialize: function(baseConcept, rootFacetNode, constraintManager) {
 			this.baseConcept = baseConcept;
 			this.rootFacetNode = rootFacetNode;
 			this.constraintManager = constraintManager;
-			this.facetState = facetState;
+		},
+
+		getBaseConcept: function() {
+			return this.baseConcept;
+		},
+		
+		getRootFacetNode: function() {
+			return this.rootFacetNode;			
+		},
+		
+		getConstraintManager: function() {
+			return this.constraintManager;			
+		}
+	});
+
+
+	// TODO Probably it is better to just make the "dataSource" an abstraction,
+	// rather than the facet concept generator.
+	ns.FacetGeneratorConfigProvider = Class.create({
+		getConfig: function() {
+			throw "Override me";			
+		},
+	});
+	
+	
+	ns.FacetGeneratorConfigProviderConst = Class.create(ns.FacetGeneratorConfigProvider, {
+		initialize: function(facetConfig) {
+			this.facetConfig = facetConfig;
+		},
+		
+		getConfig: function() {
+			return this.facetConfig;
+		}
+	});
+		
+	ns.FacetGeneratorConfigProviderIndirect = Class.create(ns.FacetGeneratorConfigProvider, {
+		initialize: function(baseConceptFactory, rootFacetNodeFactory, constraintManager) {
+			this.baseConceptFactory = baseConceptFactory;
+			this.rootFacetNodeFactory = rootFacetNodeFactory;
+			this.constraintManager = constraintManager;
+		},
+		
+		getConfig: function() {
+			var baseConcept = this.baseConceptFactory.createConcept();
+			var rootFacetNode = this.rootFacetNodeFactory.createFacetNode(); 
+			var constraintManager = this.constraintManager;			
+			//var constraintElements = constraintManager.createElements(rootFacetNode);
+			
+			var result = new ns.FacetGeneratorConfig(baseConcept, rootFacetNode, constraintManager);
+			return result;
+		}
+	});
+
+	
+	ns.FacetConceptGeneratorFactory = Class.create({
+		createFacetConceptGenerator: function() {
+			throw "Implement me";
+		}
+	});
+	
+	
+	/**
+	 * Retrieves a facetConfig from a facetConfigProvider and uses it
+	 * for the creation of a facetConceptGenerator.
+	 * 
+	 * These layers of indirection are there to allow creating a facetConceptFactory whose state
+	 * can be made static* - so whose state is based on a snapshot of the states of 
+	 * {baseConcept, rootFacetNode, constraintManager}.
+	 * 
+	 * *Currently the contract does not enforce this; the design is just aimed at enabling this.
+	 * 
+	 * Multiple calls to createFacetConfigGenerator may yield new objects with different configurations.
+	 * 
+	 */
+	ns.FacetConceptGeneratorFactoryImpl = Class.create(ns.FacetConceptGeneratorFactory, {
+		initialize: function(facetConfigProvider) {
+			this.facetConfigProvider = facetConfigProvider;
+		},
+		
+		createFacetConceptGenerator: function() {
+			var facetConfig = this.facetConfigProvider.getConfig();
+			
+			var result = new ns.FacetConceptGeneratorImpl(facetConfig);
+			return result;
+		}
+	});
+
+	ns.FacetConceptGeneratorImpl = Class.create(ns.FacetConceptGenerator, {
+		initialize: function(facetConfig) {
+			this.facetConfig = facetConfig;
 		},
 		
 
@@ -142,9 +223,13 @@
 		 */
 		createFacetConceptCore: function(path, isInverse, enableOptimization) {
 
-			var rootFacetNode = this.rootFacetNode; 
-			var baseConcept = this.baseConcept;
-			var constraintManager = this.constraintManager;			
+			var facetConfig = this.facetConfig;
+			
+			var baseConcept = facetConfig.getBaseConcept();
+			var rootFacetNode = facetConfig.getRootFacetNode(); 
+			var constraintManager = facetConfig.getConstraintManager();
+			
+			
 			var constraintElements = constraintManager.createElements(rootFacetNode);
 
 			var facetNode = rootFacetNode.forPath(path);
@@ -246,46 +331,6 @@
 	});
 	
 
-	ns.FacetConceptGeneratorDelegate = Class.create(ns.FacetConceptGenerator, {
-		getDelegate: function() {
-			throw "Override me";
-		},
-		
-		createFacetConcept: function(path, isInverse) {
-			var delegate = this.getDelegate();
-			var result = delegate.createFacetConcept(path, isInverse);
-			return result;
-		},
-
-		createFacetValueConcept: function(path, isInverse) {
-			var delegate = this.getDelegate();
-			var result = delegate.createFacetValueConcept(path, isInverse);
-			return result;
-		}
-	});
-	
-
-	ns.FacetConceptGeneratorIndirect = Class.create(ns.FacetConceptGeneratorDelegate, {
-		initialize: function(baseConceptFactory, rootFacetNodeFactory, constraintManager, facetStateProvider) {
-			this.baseConceptFactory = baseConceptFactory;
-			this.rootFacetNodeFactory = rootFacetNodeFactory;
-			this.constraintManager = constraintManager;
-			this.facetStateProvider = facetStateProvider;
-		},
-
-		getDelegate: function() {
-			var rootFacetNode = this.rootFacetNodeFactory.createFacetNode(); 
-			var baseConcept = this.baseConceptFactory.createConcept();
-			var constraintManager = this.constraintManager;			
-			var constraintElements = constraintManager.createElements(rootFacetNode);
-
-			var result = new ns.FacetConceptGenerator(baseConcept, rootFacetNode, constraintManager);
-			
-			return result;
-		}
-	});
-		
-
 	// TODO Rename; make more specific
 	ns.createConcept = function(facetNode, constraintManager, path, includeSelfConstraints) {
 		var rootNode = this.facetNode.getRootNode();
@@ -310,12 +355,41 @@
 	};
 	
 	
+	
+	ns.FacetQueryGeneratorFactory = Class.create({
+		createFacetQueryGenerator: function() {
+			throw "Override me";
+		}
+	});
+	
+	
+	ns.FacetQueryGeneratorFactoryImpl = Class.create(ns.FacetQueryGeneratorFactory, {
+		initialize: function(facetConceptGeneratorFactory, facetStateProvider) {
+			this.facetConceptGeneratorFactory = facetConceptGeneratorFactory;
+			this.facetStateProvider = facetStateProvider;
+		},
+		
+		createFacetQueryGenerator: function() {
+			var facetConceptGenerator = this.facetConceptGeneratorFactory.createFacetConceptGenerator(); 
+
+			var result = new ns.FacetQueryGeneratorImpl(facetConceptGenerator, this.facetStateProvider);
+			return result;
+		}
+	});
+
+	ns.FacetQueryGeneratorFactoryImpl.createFromFacetConfigProvider = function(facetConfigProvider, facetStateProvider) {
+		var fcgf = new ns.FacetConceptGeneratorFactoryImpl(facetConfigProvider);
+		
+		var result = new ns.FacetQueryGeneratorFactoryImpl(fcgf, facetStateProvider);
+		return result;
+	};
+	
 	/**
 	 * Combines the FacetConceptGenerator with a facetStateProvider
 	 * in order to craft query objects.
 	 * 
 	 */
-	ns.FacetQueryGenerator = Class.create({
+	ns.FacetQueryGeneratorImpl = Class.create({
 		initialize: function(facetConceptFactory, facetStateProvider) {
 			this.facetConceptFactory = facetConceptFactory;
 			this.facetStateProvider = facetStateProvider;
@@ -335,11 +409,15 @@
 		 * 
 		 * 
 		 */
-		createFacetQuery: function(path, isInverse) {
+		createQueryFacetList: function(path, isInverse) {
 			var concept = this.facetConceptFactory.createFacetConcept(path, isInverse);
 			
 			var facetState = facetStateProvider.getFacetState(path, isInverse);
 			
+			return concept;
+		},
+		
+		createQueryFacetCount: function() {
 			
 		},
 		
@@ -546,3 +624,47 @@
 	});
 	
 })();
+
+
+
+
+
+//ns.FacetConceptGeneratorDelegate = Class.create(ns.FacetConceptGenerator, {
+//getDelegate: function() {
+//	throw "Override me";
+//},
+//
+//createFacetConcept: function(path, isInverse) {
+//	var delegate = this.getDelegate();
+//	var result = delegate.createFacetConcept(path, isInverse);
+//	return result;
+//},
+//
+//createFacetValueConcept: function(path, isInverse) {
+//	var delegate = this.getDelegate();
+//	var result = delegate.createFacetValueConcept(path, isInverse);
+//	return result;
+//}
+//});
+
+
+//ns.FacetConceptGeneratorIndirect = Class.create(ns.FacetConceptGeneratorDelegate, {
+//initialize: function(baseConceptFactory, rootFacetNodeFactory, constraintManager, facetStateProvider) {
+//	this.baseConceptFactory = baseConceptFactory;
+//	this.rootFacetNodeFactory = rootFacetNodeFactory;
+//	this.constraintManager = constraintManager;
+//	this.facetStateProvider = facetStateProvider;
+//},
+//
+//getDelegate: function() {
+//	var rootFacetNode = this.rootFacetNodeFactory.createFacetNode(); 
+//	var baseConcept = this.baseConceptFactory.createConcept();
+//	var constraintManager = this.constraintManager;			
+//	var constraintElements = constraintManager.createElements(rootFacetNode);
+//
+//	var result = new ns.FacetConceptGenerator(baseConcept, rootFacetNode, constraintManager);
+//	
+//	return result;
+//}
+//});
+

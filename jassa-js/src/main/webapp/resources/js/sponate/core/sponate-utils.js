@@ -8,34 +8,39 @@
 	var ns = Jassa.sponate;
 
 	
-	ns.ServiceSponateSparqlHttp = Class.create({
-		initialize: function(rawService) {
-			this.rawService = rawService;
-		},
-		
-		execSelect: function(query, options) {
-			var promise = this.rawService.execSelect(query, options);
-			
-			var result = promise.pipe(function(json) {
-				var bindings = json.results.bindings;
-
-				var tmp = bindings.map(function(b) {
-					//console.log('Talis Json' + JSON.stringify(b));
-					var bindingObj = sparql.Binding.fromTalisJson(b);
-					//console.log('Binding obj: ' + bindingObj);
-					return bindingObj;					
-				});
-				
-				var it = new ns.IteratorArray(tmp);
-				
-				//console.log()
-				
-				return it;
-			});
-			
-			return result;
-		}
-	});
+	/**
+	 * @Deprecated - Do not use - will be removed asap.
+	 * Superseded by service.QueryExecutionFactoryHttp
+	 * 
+	 */
+//	ns.ServiceSponateSparqlHttp = Class.create({
+//		initialize: function(rawService) {
+//			this.rawService = rawService;
+//		},
+//		
+//		execSelect: function(query, options) {
+//			var promise = this.rawService.execSelect(query, options);
+//			
+//			var result = promise.pipe(function(json) {
+//				var bindings = json.results.bindings;
+//
+//				var tmp = bindings.map(function(b) {
+//					//console.log('Talis Json' + JSON.stringify(b));
+//					var bindingObj = sparql.Binding.fromTalisJson(b);
+//					//console.log('Binding obj: ' + bindingObj);
+//					return bindingObj;					
+//				});
+//				
+//				var it = new ns.IteratorArray(tmp);
+//				
+//				//console.log()
+//				
+//				return it;
+//			});
+//			
+//			return result;
+//		}
+//	});
 
 	
 	/**
@@ -43,17 +48,17 @@
 	 * Only SPARQL supported yet.
 	 * 
 	 */
-	ns.ServiceUtils = {
-	
-		createSparqlHttp: function(serviceUrl, defaultGraphUris, httpArgs) {
-		
-			var rawService = new sparql.SparqlServiceHttp(serviceUrl, defaultGraphUris, httpArgs);
-			var result = new ns.ServiceSponateSparqlHttp(rawService);
-			
-			return result;
-		}	
-	};
-	
+//	ns.ServiceUtils = {
+//	
+//		createSparqlHttp: function(serviceUrl, defaultGraphUris, httpArgs) {
+//		
+//			var rawService = new sparql.SparqlServiceHttp(serviceUrl, defaultGraphUris, httpArgs);
+//			var result = new ns.ServiceSponateSparqlHttp(rawService);
+//			
+//			return result;
+//		}	
+//	};
+//	
 
 	/*
 	ns.AliasedElement = Class.create({

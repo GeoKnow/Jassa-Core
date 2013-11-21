@@ -31,13 +31,15 @@
 		var rootFacetNode = facete.FacetNode.createRoot(baseVar);
 		var facetStateProvider = new facete.FacetStateProviderImpl();		
 		
-		var queryGenerator = new facete.FaceteQueryGenerator(
+		var facetConfigProvider = new facete.FacetGeneratorConfigProviderIndirect(
 			new facete.ConceptFactoryConst(baseConcept),
 			new facete.FacetNodeFactoryConst(rootFacetNode),
-			constraintManager,
-			facetStateProvider
+			constraintManager
 		);
 		
+		var fqgf = facete.FacetQueryGeneratorFactoryImpl.createFromFacetConfigProvider(facetConfigProvider, facetStateProvider);
+
+		var queryGenerator = fqgf.createFacetQueryGenerator();
 		
 		//var facetConcept = queryGenerator.createFacetConcept(facete.Path.parse("http://foo"));
 		var facetConcept = queryGenerator.createFacetConcept(facete.Path.parse(""));
