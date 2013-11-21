@@ -412,7 +412,7 @@
 		createQueryFacetList: function(path, isInverse) {
 			var concept = this.facetConceptFactory.createFacetConcept(path, isInverse);
 			
-			var facetState = facetStateProvider.getFacetState(path, isInverse);
+			var facetState = this.facetStateProvider.getFacetState(path, isInverse);
 			
 			return concept;
 		},

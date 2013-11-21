@@ -42,7 +42,7 @@
 		var queryGenerator = fqgf.createFacetQueryGenerator();
 		
 		//var facetConcept = queryGenerator.createFacetConcept(facete.Path.parse("http://foo"));
-		var facetConcept = queryGenerator.createFacetConcept(facete.Path.parse(""));
+		var facetConcept = queryGenerator.createQueryFacetList(facete.Path.parse(""));
 		
 		alert("" + facetConcept);
 		
