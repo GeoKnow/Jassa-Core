@@ -32,8 +32,8 @@
 				ngScope.$apply();
 			}
 			
-		}).fail(function() {
-			ngDeferred.fail();
+		}).fail(function(data) {
+			ngDeferred.reject(data);
 		});
 		
 		return ngDeferred.promise;

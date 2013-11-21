@@ -45,13 +45,14 @@
 
 	var rdf = Jassa.rdf;
 	var sparql = Jassa.sparql;
+	var service = Jassa.service;
 	var sponate = Jassa.sponate;
 
 	/*
 	 * Sponate
 	 */
-	var service = sponate.ServiceUtils.createSparqlHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
-	var store = new sponate.StoreFacade(service, prefixes);
+	var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
+	var store = new sponate.StoreFacade(qef, prefixes);
 
 	store.addMap({
 		name: 'castles',

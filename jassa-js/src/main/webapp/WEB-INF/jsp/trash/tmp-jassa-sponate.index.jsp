@@ -58,30 +58,32 @@
 	var rdf = Jassa.rdf;
 	var sparql = Jassa.sparql;
 	var sponate = Jassa.sponate;
-
+	var service = Jassa.service;
+	
 	/*
 	 * Sponate
 	 */
-	var service = sponate.ServiceUtils.createSparqlHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
+	//var service = sponate.ServiceUtils.createSparqlHttp('http://localhost/sparql');
+	var service = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']); //sponate.ServiceUtils.createSparqlHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
 	var store = new sponate.StoreFacade(service, prefixes);
 
 	// Rule of thumb: If you use optional in the from attribute, you are probably doing it wrong
 
-	var mode = 0;
+	var mode = 1;
 	if(mode == 0) {
 		
 		store.addMap({
-			name: 'projects',
+			name: 'castles',
 			template: [{
 				id: '?s',
 				name: '?l',
-				partners: [{
-					id: '?o',
-					name: '?pl',
+				owners: [{
+					id: '?pa',
+					name: '?pal',
 					amount: '?a',
 				}]
 			}],
-			from: '{ Select * { ?s a fp7o:Project ; rdfs:label ?l ; fp7o:funding [ fp7o:partner [ rdfs:label ?pl ] ; fp7o:amount ?a ] } Limit 10 }'
+			from: '{ Select * { ?s a fp7o:Project ; rdfs:label ?l ; fp7o:funding [ fp7o:partner ?pa ; fp7o:amount ?a ] . ?pa rdfs:label ?pal } Limit 100 }'
 		});
 
 	} else if(mode == 1) {
@@ -132,10 +134,48 @@
 		});
 	}
 	
-	var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
-	var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
-	var c = sparql.ElementUtils.makeElementDistinct(a, b);
-	console.log('distinct: ' + c.element, c.map);
+	//var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
+	//var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
+	var a = sparql.ElementString.create('?s a ?l');
+	var b = sparql.ElementString.create('?s <http://ex.org> ?l');
+	
+	var vs = rdf.Node.v('s');
+	var vl = rdf.Node.v('l');
+	
+	var vsv = rdf.Node.uri('<http://s>');
+	var vlv = rdf.NodeFactory.createPlainLiteral('test');
+
+	var binding = new sparql.Binding();
+	binding.put(vs, vsv);
+	binding.put(vs, vlv);
+	
+	var joinNode = sponate.JoinBuilderElement.create(a);
+	var foo = joinNode.join([vs], b, [vs]);
+	//var bar = foo.join([vl], b, [vs]);
+	joinNode.join([vs], a, [vl]);
+
+	var joinBuilder = foo.getJoinBuilder();
+	var elements = joinBuilder.getElements();
+	var els = new sparql.ElementGroup(elements);
+	var aliasToVarMap = joinBuilder.getAliasToVarMap();
+	
+	
+	var rowMapper = new sponate.RowMapperAlias(aliasToVarMap);
+	var aliasToBinding = rowMapper.map(binding);
+	
+	
+	
+	console.log('Final Element: ' + els);
+	console.log('Var map:',  aliasToVarMap);
+	console.log('Alias to Binding: ', JSON.stringify(aliasToBinding));
+	
+//	var varMap = sparql.ElementUtils.createJoinVarMap(a.getVarsMentioned(), b.getVarsMentioned(), [sparql.Node.v('s')], [sparql.Node.v('l')]);
+//	var c = sparql.ElementUtils.createRenamedElement(b, varMap);
+	
+//	console.log('distinct: ' + c + ' ' + varMap.getMap(),  varMap);
+	
+	//var joinGraph = new ns.JoinGraphElement();
+	//var alias = joinGraph.create
 	
 	// Creating a join: 
 	
@@ -154,23 +194,24 @@
 	myModule.factory('myService', function($rootScope, $q) {
 		return {
 			getCastles: function(filterText) {
-				var criteria;
+				var criteria = {};
 				//criteria = {name: {$or: ['bar', 'foo']}};
-				criteria = {owners: {$elemMatch: {name: {$regex: 'foo'}}}};
+//				criteria = {owners: {$elemMatch: {name: {$regex: 'foo'}}}};
 
 				if(filterText != null && filterText.length > 0) {
-//					criteria = {name: {$regex: filterText}};
+					//criteria = {name: {$regex: filterText}};
 					//criteria = {name: {$or: [{$regex: filterText}, {$regex: 'orp'}]}};
 
-					criteria = {owners: {$elemMatch: {name: {$regex: filterText}}}};
+					//criteria = {owners: {$elemMatch: {name: {$regex: filterText}}}};
 
-// 					criteria = {
-// 							$or: [
-// 							      {name: {$regex: filterText}},
-// 							      {owners: {$elemMatch: {name: {$regex: filterText}}}}
-// 					]};
+					criteria = {
+							$or: [
+							      {name: {$regex: filterText}},
+							      {owners: {$elemMatch: {name: {$regex: filterText}}}}
+					]};
 				}
  				
+//				criteria = {};
 				var promise = store.castles.find(criteria).asList();
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 				return result;
@@ -211,17 +252,17 @@
 			</form>
 		
 			<table class="table table-striped">
-				<tr><th>Image</th><th>Name</th><th>Owners</th></tr>
+				<tr><th>Project</th><th>Partner</th><th>Amount</th></tr>
 				<tr ng-repeat="castle in castles">
+					<td>{{castle.name}}</td>
 					<td>
-						<div class="image-frame">
-							<img class="image" src="{{castle.depiction.slice(1, -1)}}" />
-						</div>
-					</td>
-					<td><a href="{{castle.id.slice(1, -1)}}">{{castle.name}}</a></td>
-					<td>{{(castle.owners | map:'name').join(', ')}}</td>
+						<ul ng-repeat="owner in castle.owners">
+							<li>{{owner.name}}, {{owner.amount}}</li>
+						</ul>
+					<td>
 				</tr>
 			</table>
+
 		</div>
 	</div>
 </body>

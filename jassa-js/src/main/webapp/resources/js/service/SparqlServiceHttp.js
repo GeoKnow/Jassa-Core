@@ -5,6 +5,7 @@
  */			
 (function($) {
 
+	var sparql= Jassa.sparql;
 	var util = Jassa.util;
 	
 	var ns = Jassa.service;

@@ -77,6 +77,7 @@
 
 								<param>service/query-executions.js</param>
 								<param>service/query-execution-factories.js</param>
+								<param>service/query-execution-utils.js</param>
 
 								<param>sparql/sparql-expr-eval.js</param>
 								

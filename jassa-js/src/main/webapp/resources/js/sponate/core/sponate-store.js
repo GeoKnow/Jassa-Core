@@ -1,5 +1,7 @@
 (function() {
 
+	
+	var util = Jassa.util;
 	var sparql = Jassa.sparql;
 	
 	var ns = Jassa.sponate;
@@ -208,7 +210,7 @@
 				// TODO
 				
 				while(it.hasNext()) {
-					var binding = it.next();
+					var binding = it.nextBinding();
 					
 					instancer.process(binding);
 				}
@@ -235,7 +237,7 @@
 					console.log('[DEBUG] ' + delta + ' items filtered on the client ('+ fil + '/' + all + ' remaining) using criteria ' + JSON.stringify(criteria));
 
 					
-					result = new ns.IteratorArray(filtered);
+					result = new util.IteratorArray(filtered);
 					
 				} else {
 					throw 'Implement me';

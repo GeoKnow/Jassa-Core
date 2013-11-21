@@ -2,6 +2,30 @@
 
 	var ns = Jassa.facete;
 
+	
+	var FacetService = Class.create({
+		
+	});
+	
+	
+	
+	var FacetServiceImpl = Class.create(ns.FacetService, {
+		initialize: function(queryExecutionFactory, facetQueryGenerator) {
+			this.qef = queryExecutionFactory;
+			this.facetQueryGenerator = facetQueryGenerator;
+		},
+		
+
+		fetchFacets: function() {
+			var query = this.facetQueryGenerator.createQueryFacets();
+			
+			
+			
+		}
+	});
+	
+	
+	
 	var Todo = {
 	
 		/**
