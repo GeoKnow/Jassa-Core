@@ -44,7 +44,7 @@
 //	});
 	
 
-	ns.ConceptItem = Class.create({
+	ns.FacetConceptItem = Class.create({
 		initialize: function(step, concept) {
 			this.step = step;
 			this.concept = concept;
@@ -54,7 +54,7 @@
 			return this.step;
 		},
 		
-		getConcept: function() {
+		getFacetConcept: function() {
 			return this.concept;
 		},
 		
@@ -476,7 +476,7 @@
 				genericElements.push(filterElement);
 			}
 			
-			var genericConceptItem = new ns.ConceptItem(null, genericFacetConcept);
+			var genericConceptItem = new ns.FacetConceptItem(null, genericFacetConcept);
 			
 			result.push(genericConceptItem);
 			
@@ -507,7 +507,7 @@
 			//var targetConcept = ns.createConceptForPath(rootFacetNode, constraintManager, path, true);
 			//var subNode = facetFacadeNode.forProperty(stepfacetUri.value, step.isInverse);
 				
-			var result = new ns.ConceptItem(step, targetConcept);
+			var result = new ns.FacetConceptItem(step, targetConcept);
 			return result;
 		}
 		

@@ -47,11 +47,27 @@
 			return promise;
 		},
 		
+		
+		//elements, limit, variable, outputVar, groupVars, useDistinct, options
 		fetchFacetCounts: function(path, isInverse, properties, isNegated) {
 			var facetConceptItems = this.facetConceptGenerator.createConceptFacetValues(path, isInverse, properties, isNegated);
 			
+			
+			var outputVar = rdf.NodeFactory.createVar("_c_");
+			
 			_(facetConceptItems).each(function(item) {
-				console.log("Test: " + item);
+			
+				var facetConcept = item.getFacetConcept();
+				
+				var groupVar = facetConcept.getFacetVar();
+				var countVar = facetConcept.getFacetValueVar(); 
+				var elements = facetConcept.getElements();
+			
+				debugger;
+				var query = ns.QueryUtils.createQueryCount(elements, null, countVar, outputVar, [groupVar], true); 
+				
+				
+				console.log("Test: " + query);
 			});
 			
 			

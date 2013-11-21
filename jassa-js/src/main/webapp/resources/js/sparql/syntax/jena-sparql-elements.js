@@ -878,7 +878,7 @@
 			this.vars.push(v);
 			
 			if(expr) {
-				this.varToExpr[v.value] = expr;
+				this.varToExpr[v.getName()] = expr;
 			}
 		},
 		
@@ -888,13 +888,19 @@
 		},
 		
 		entries: function() {
-			var result = [];
-			for(var i = 0; i < this.vars.length; ++i) {
-				var v = this.vars[i];
-				var expr = this.varToExpr[v.value];
-				
-				result.push({v:v, expr:expr});
-			}
+			var self = this;
+			var result = _(this.vars).map(function(v) {
+				var expr = self.varToExpr[v.getName()];
+
+				//return expr;
+				return {v: v, expr: expr};
+			});
+			
+//			for(var i = 0; i < this.vars.length; ++i) {
+//				var v = this.vars[i];
+//				
+//				result.push({v:v, expr:expr});
+//			}
 
 			return result;
 		},

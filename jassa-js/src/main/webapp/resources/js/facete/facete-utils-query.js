@@ -103,17 +103,14 @@
 			
 			//result.groupBy.push(outputVar);
 			if(groupVars) {
-				for(var i = 0; i < groupVars.length; ++i) {
-					var groupVar = groupVars[i];				
-					//if(groupVar.value !== variable.value) {
-						result.projectVars.add(groupVar);
-						result.groupBy.push(new sparql.ExprVar(groupVar));
-					//}
-				}
+				_(groupVars).each(function(groupVar) {
+					result.getProjectVars().add(groupVar);
+					result.getGroupBy().push(new sparql.ExprVar(groupVar));
+				});
 			}
 			
-			result.projectVars.add(outputVar, new sparql.E_Count(exprVar, useDistinct));
-			ns.applyQueryOptions(result, options);
+			result.getProjectVars().add(outputVar, new sparql.E_Count(exprVar, useDistinct));
+			//ns.applyQueryOptions(result, options);
 			
 	//debugger;
 			//console.log("Created count query:" + result + " for element " + element);

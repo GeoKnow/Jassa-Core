@@ -110,6 +110,8 @@
 								<param>facete/facete-constraint-manager.js</param>
 								<param>facete/facete-trees.js</param>
 
+								<param>facete/facete-utils-query.js</param>
+
 								<param>facete/facete-query-generation.js</param>
 								<param>facete/facete-query-execution.js</param>
 
