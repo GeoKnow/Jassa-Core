@@ -47,9 +47,10 @@
 			var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
 
 			var pathVar = facetNode.getVar();
+			var exprVar = new sparql.ExprVar(pathVar);
 			
 			var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];		
-			var exprs = [new sparql.E_Equals(pathVar, constraintSpec.getValue())]; //sparql.NodeValue.makeNode(constraintSpec.getValue()))];
+			var exprs = [new sparql.E_Equals(exprVar, constraintSpec.getValue())]; //sparql.NodeValue.makeNode(constraintSpec.getValue()))];
 			
 			var result = new ns.ElementsAndExprs(elements, exprs);
 			

@@ -89,6 +89,7 @@
 		 */
 		createQueryList: function(concept) {
 			var result = new sparql.Query();
+			result.setDistinct(true);
 			
 			result.getProjectVars().add(concept.getVar());
 			var resultElements = result.getElements();
@@ -102,7 +103,7 @@
 		createQueryCount: function(concept, outputVar) {
 			var result = new sparql.Query();
 			
-			result.getProjectVars().add(outputVar, new sparql.E_Count());
+			result.getProjectVars().add(outputVar, new sparql.E_Count(concept.getVar(), true));
 
 			var resultElements = result.getElements();
 			var conceptElements = concept.getElements();

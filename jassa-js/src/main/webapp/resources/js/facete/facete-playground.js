@@ -20,9 +20,7 @@
 		var constraintManager = new facete.ConstraintManager();
 		
 		
-		var path = facete.Path.fromString("http://foo");
 
-		//constraintManager.addConstraint(new facete.ConstraintSpecPathValue("equal", path, sparql.NodeValue.makeInteger(5)));
 
 		
 		var baseVar = rdf.NodeFactory.createVar("s");
@@ -41,6 +39,15 @@
 		var facetConceptGenerator = fcgf.createFacetConceptGenerator();
 		
 		var facetService = new facete.FacetServiceImpl(qef, facetConceptGenerator);
+		
+
+		
+		constraintManager.addConstraint(new facete.ConstraintSpecPathValue(
+			"equal",
+			facete.Path.parse("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+			sparql.NodeValue.makeNode(rdf.NodeFactory.createUri("http://www.w3.org/2002/07/owl#Class"))
+		));
+
 		
 		
 		facetService.fetchFacets(facete.Path.parse("")).done(function(list) {
