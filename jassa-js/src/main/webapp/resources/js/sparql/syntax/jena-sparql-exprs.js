@@ -258,7 +258,7 @@
 		},
 	
 		copySubstitute: function(fnNodeMap) {		
-			var newElements = _.map(this.nodes, function(x) { return x.copySubstitute(fnNodeMap); });
+			var newElements = _.map(this.nodes, function(x) { return rdf.getSubstitute(x, fnNodeMap); });
 			return new ns.E_In(this.variable.copySubstitute(fnNodeMap), newElements);
 		},
 	

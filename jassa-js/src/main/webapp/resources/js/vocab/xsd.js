@@ -2,20 +2,21 @@
 	
 	var util = Jassa.vocab.util;
 	var ns = Jassa.vocab.xsd;
-	
-	var p = 'http://www.w3.org/2001/XMLSchema#';
+
+	var p = "http://www.w3.org/2001/XMLSchema#";
 
 	// String versions
 	ns.str = {
-		xboolean: p + 'boolean',
-		xint: p + 'int',
-		decimal: p + 'decimal',
-		xfloat: p + 'float',
-		xdouble: p + 'double',
-		xstring: p + 'string',
+		xboolean: p + "boolean",
+		xint: p + "int",
+		xinteger: p + "integer",
+		decimal: p + "decimal",
+		xfloat: p + "float",
+		xdouble: p + "double",
+		xstring: p + "string",
 	
-		date: p + 'date',
-	    dateTime: p + 'dateTime'		
+		date: p + "date",
+	    dateTime: p + "dateTime"		
 	};
 	
 	

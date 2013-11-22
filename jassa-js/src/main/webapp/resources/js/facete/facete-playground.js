@@ -51,8 +51,11 @@
 		
 		
 		facetService.fetchFacets(facete.Path.parse("")).done(function(list) {
+			
+			//alert(JSON.stringify(list));
+			
 			_(list).each(function(item) {
-				console.log("Item: " + item);
+				console.log("FacetItem: " + JSON.stringify(item));
 			});
 		});
 		

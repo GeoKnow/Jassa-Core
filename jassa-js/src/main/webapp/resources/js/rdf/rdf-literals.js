@@ -22,6 +22,7 @@
 	};
 	
 	ns.registerRdfDatype(xsd.str.xint, ns.DatatypeLabels.xinteger);
+	ns.registerRdfDatype(xsd.str.xinteger, ns.DatatypeLabels.xinteger);
 	ns.registerRdfDatype(xsd.str.xstring, ns.DatatypeLabels.xstring);
 	ns.registerRdfDatype(xsd.str.xfloat, ns.DatatypeLabels.xfloat);
 

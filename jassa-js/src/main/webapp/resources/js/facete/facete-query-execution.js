@@ -1,4 +1,4 @@
-(function() {
+(function($) {
 
 	
 	var service = Jassa.service;
@@ -36,15 +36,24 @@
 
 			
 			var self = this;
-			var result = promise.pipe(function(properties) {
-				var items = self.fetchFacetCounts(path, isInverse, properties, false);
+			
+			var deferred = $.Deferred();
+
+			promise.done(function(properties) {
+				var promise = self.fetchFacetCounts(path, isInverse, properties, false);
 				
-				
-				return properties;
+				promise.done(function(r) {
+					deferred.resolve(r);
+				}).fail(function() {
+					deferred.fail();
+				});
+
+			}).fail(function() {
+				deferred.fail();
 			});
 			
 			
-			return promise;
+			return deferred.promise();
 		},
 		
 		
@@ -55,7 +64,8 @@
 			
 			var outputVar = rdf.NodeFactory.createVar("_c_");
 			
-			_(facetConceptItems).each(function(item) {
+			var self = this;
+			var promises = _(facetConceptItems).map(function(item) {
 			
 				var facetConcept = item.getFacetConcept();
 				
@@ -63,14 +73,47 @@
 				var countVar = facetConcept.getFacetValueVar(); 
 				var elements = facetConcept.getElements();
 			
-				debugger;
 				var query = ns.QueryUtils.createQueryCount(elements, null, countVar, outputVar, [groupVar], true); 
 				
+				var qe = self.qef.createQueryExecution(query);
 				
-				console.log("Test: " + query);
+				//qe.setTimeout()
+				
+				var promise = qe.execSelect().pipe(function(rs) {
+					var r = [];
+					while(rs.hasNext()) {
+						var binding = rs.nextBinding();
+						
+						r.push({
+							facet: binding.get(groupVar),
+							count: binding.get(outputVar).getLiteralValue()
+						});
+					}
+					return r;
+				});
+				
+				//console.log("Test: " + query);
+				return promise;
 			});
 			
-			
+	
+			var d = $.Deferred();
+			$.when.apply(window, promises).done(function() {
+				var r = [];
+				
+				for(var i = 0; i < arguments.length; ++i) {
+					var items = arguments[i];
+					//alert(items);
+					
+					r.push.apply(r, items);
+				}
+
+				d.resolve(r);
+			}).fail(function() {
+				d.fail();
+			})
+
+			return d.promise();
 		}
 	});
 	
@@ -330,4 +373,5 @@
 		}
 	};
 
-})();
+})(jQuery);
+
