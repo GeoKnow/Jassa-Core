@@ -66,6 +66,7 @@
 	var service = Jassa.service;
 	var sponate = Jassa.sponate;
 	var serv = Jassa.service;
+	var util = Jassa.util;
 	
 	var facete = Jassa.facete;
 	
@@ -96,19 +97,21 @@
 
 
 	//  
-	var facetStateProvider = new facete.FacetStateProviderImpl();		
+	//var facetStateProvider = new facete.FacetStateProviderImpl();		
 
-	facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
+	var expansionSet = new util.HashSet();
+	expansionSet.add(new facete.Path());
+	
+	//facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
 	
 	var fctService = new facete.FacetServiceImpl(qef, facetConceptGenerator); //, facetStateProvider);
 
 	
-	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, facetStateProvider);
+	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, expansionSet);
 	/**
 	fctService.setExpanded(path);
 	fctService.
 	**/
-	
 	
 	
 // 	facetService.fetchFacets(facete.Path.parse("")).done(function(list) {
@@ -153,13 +156,26 @@
 	});
 
 	myModule.controller('MyCtrl', function($scope, facetService) {
-		$scope.filterTable = function() {
-			$scope.facet = facetService.fetchFacets();
+		$scope.refreshFacets = function() {
+			//$scope.facet = facetService.fetchFacets();
+			facetService.fetchFacets().then(function(data) {
+				$scope.facet = data;
+				//$scope.$apply();
+			});
 		};
 		
 		$scope.init = function() {
-			$scope.filterTable();
+			$scope.refreshFacets();
 		};
+		
+		$scope.toggleCollapsed = function(path) {
+			util.CollectionUtils.toggleItem(expansionSet, path);
+			
+			console.log("ExpansionSet: " + expansionSet);
+			
+			//facetStateProvider.getMap().put(path, new facete.FacetStateImpl(true, null, null));			
+			$scope.refreshFacets();
+		}
 	});
 		
 	</script>
@@ -167,8 +183,8 @@
 	<script type="text/ng-template" id="facet-tree-item.html">
 		<div>
 			<div class="facet-row" ng-class="{'mui-selected': facet.selected==true}">
-				<a ng-show="facet.state.isExpanded()" href="" ng-click="facet.toggleCollapsed()"><span class="glyphicon glyphicon-chevron-down"></span></a>
-				<a ng-show="!facet.state.isExpanded()" href="" ng-click="facet.toggleCollapsed()"><span class="glyphicon glyphicon-chevron-right"></span></a>
+				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
+				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
 				<a title="{{facet.item.getNode().getUri()}}" href="" ng-click="facet.toggleSelected()">{{facet.item.getNode().getUri()}}</a>
 				<span class="label label-info">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>

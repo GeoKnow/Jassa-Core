@@ -8,9 +8,10 @@
 	
 	
 	ns.FacetTreeServiceImpl = Class.create({
-		initialize: function(facetService, facetStateProvider) {
+		initialize: function(facetService, expansionSet) { //facetStateProvider) {
 			this.facetService = facetService;
-			this.facetStateProvider = facetStateProvider;
+			this.expansionSet = expansionSet;
+			//this.facetStateProvider = facetStateProvider;
 		},
 		
 		fetchFacetTree: function() {
@@ -40,33 +41,45 @@
 				var i = 0;
 				_(facetItems).each(function(facetItem) {
 					
+					//debugger;
 					var path = facetItem.getPath();
 
 										
 					var uri = facetItem.getNode().getUri();
-					var childPath = path.copyAppendStep(new facete.Step(uri, false));
+					
+					var isExpanded = self.expansionSet.contains(path);
+					//var childPath = path.copyAppendStep(new facete.Step(uri, false));
 
 					// Check if the node corresponding to the path is expanded so
 					// that we need to fetch the child facets
-					var childFacetState = this.facetStateProvider.getFacetState(childPath);
+					//var facetState = this.facetStateProvider.getFacetState(path);
 
-					console.log("facetState:", childFacetState);
+//					console.log("facetState:", childFacetState);
+//					console.log("childPath:" + childPath);
+					//console.log("childPath:" + facetItem.getPath());
 
-					data[i] = {
+					
+					var dataItem = {
 						item: facetItem,
-						state: childFacetState,
+						isExpanded: isExpanded,
+						//state: facetState,
 						children: null
 					};
 					++i;
 
+					data.push(dataItem);
 					
 					// TODO: Fetch the distinct value count for the path
-					if(!(childFacetState && childFacetState.isExpanded())) {
+					if(!isExpanded) {
 						return;
 					}
+//					if(!(facetState && facetState.isExpanded())) {
+//						return;
+//					}
+					console.log("Got a child facet for path " + path);
 					
-					var childPromise = self.fetchFacetTreeRec(childPath).pipe(function(childItems) {
-						data[i].children = childItems;
+					var childPromise = self.fetchFacetTreeRec(path).pipe(function(childItems) {
+						dataItem.children = childItems;
 					});
 
 					childPromises.push(childPromise);
@@ -206,7 +219,15 @@
 					while(rs.hasNext()) {
 						var binding = rs.nextBinding();
 						
-						var facetItem = new ns.FacetItem(path, binding.get(groupVar), binding.get(outputVar).getLiteralValue());
+						var propertyNode = binding.get(groupVar);
+						var propertyName = propertyNode.getUri();
+						
+						var step = new ns.Step(propertyName, isInverse);
+						var childPath = path.copyAppendStep(step);
+						
+						var distinctValueCount = binding.get(outputVar).getLiteralValue();
+						
+						var facetItem = new ns.FacetItem(childPath, propertyNode, distinctValueCount);
 						r.push(facetItem);
 					}
 					return r;

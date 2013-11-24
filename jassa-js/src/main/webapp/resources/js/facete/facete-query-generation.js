@@ -520,7 +520,7 @@
 				}
 			});
 			
-			console.log("excludePropertyNames: ", excludePropertyNames);
+			//console.log("excludePropertyNames: ", excludePropertyNames);
 			
 			// The first part of the result is formed by conceptItems for the constrained steps
 			var result = this.createConceptItems(facetNode, constrainedSteps);

@@ -123,8 +123,8 @@
 	
 	ns.HashMap = Class.create({
 		initialize: function(fnEquals, fnHash) {
-			this.fnEquals = ns.defaultEquals; //fnEquals ? fnEquals : _.isEqual;
-			this.fnHash = ns.defaultHashCode; //fnHash ? fnHash : (function(x) { return '' + x; });
+			this.fnEquals = ns.defaultEquals;
+			this.fnHash = ns.defaultHashCode;
 			
 			this.hashToBucket = {};
 		},
@@ -217,7 +217,7 @@
 		entries: function() {
 			var result = [];
 			
-			_.each(this.hashToBucket, function(bucket) {
+			_(this.hashToBucket).each(function(bucket) {
 				result.push.apply(result, bucket);
 			});
 			
@@ -275,12 +275,50 @@
 		}
 	});
 
+
 	ns.HashSet = Class.create({
 		initialize: function(fnEquals, fnHash) {
+			this.map = new ns.HashMap(fnEquals, fnHash);
+		},
+		
+		add: function(item) {
+			this.map.put(item, true);
+		},
+		
+		contains: function(item) {
+			var result = this.map.containsKey(item);
+			return result;
+		},
+		
+		remove: function(item) {
+			this.map.remove(item);
+		},
+		
+		entries: function() {
+			var result = _(this.map.entries()).map(function(entry) {
+				//return entry.getKey();
+				return entry.key;
+			});
 			
+			return result;
+		},
+		
+		toString: function() {
+			var entries = this.entries();
+			var result = "{" + entries.join(", ") + "}";
+			return result;
 		}
-		
-		
 	});
+	
+	ns.CollectionUtils = {
+		toggleItem: function(collection, item) {
+			if(collection.contains(item)) {
+				collection.remove(item);
+			}
+			else {
+				collection.add(item);
+			}
+		}	
+	};
 	
 })();
