@@ -6,7 +6,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
 	<title>Sponate Example: DBpedia Castles</title>
-	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/3.0.1/css/bootstrap.min.css" />
 	
 	${cssIncludes}
 	
@@ -34,8 +34,8 @@
 	</style>
 	
 	
-	
 	<script src="resources/libs/jquery/1.9.1/jquery.js"></script>
+	<script src="resources/libs/twitter-bootstrap/3.0.1/js/bootstrap.js"></script>
 	<script src="resources/libs/underscore/1.4.4/underscore.js"></script>
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
 	<script src="resources/libs/prototype/1.7.1/prototype.js"></script>

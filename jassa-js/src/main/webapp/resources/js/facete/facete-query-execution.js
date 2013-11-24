@@ -4,7 +4,100 @@
 	var service = Jassa.service;
 	
 	var ns = Jassa.facete;
+	
+	
+	
+	ns.FacetTreeServiceImpl = Class.create({
+		initialize: function(facetService, facetStateProvider) {
+			this.facetService = facetService;
+			this.facetStateProvider = facetStateProvider;
+		},
+		
+		fetchFacetTree: function() {
+			var path = new ns.Path.parse();
+			
+			var result = this.fetchFacetTreeRec(path);
+			
+			result.done(function(facetTree) { console.log("FacetTree: ", facetTree); });
+			
+			return result;
+		},
+		
+		fetchFacetTreeRec: function(path) {
+			
+			var self = this;
+			
+			
+			var result = $.Deferred();
+			
+			var promise = this.facetService.fetchFacets(path);
+			promise.done(function(facetItems) {
 
+				var data = [];
+				
+				var childPromises = [];
+				
+				var i = 0;
+				_(facetItems).each(function(facetItem) {
+					
+					var path = facetItem.getPath();
+
+										
+					var uri = facetItem.getNode().getUri();
+					var childPath = path.copyAppendStep(new facete.Step(uri, false));
+
+					// Check if the node corresponding to the path is expanded so
+					// that we need to fetch the child facets
+					var childFacetState = this.facetStateProvider.getFacetState(childPath);
+
+					console.log("facetState:", childFacetState);
+
+					data[i] = {
+						item: facetItem,
+						state: childFacetState,
+						children: null
+					};
+					++i;
+
+					
+					// TODO: Fetch the distinct value count for the path
+					if(!(childFacetState && childFacetState.isExpanded())) {
+						return;
+					}
+					
+					var childPromise = self.fetchFacetTreeRec(childPath).pipe(function(childItems) {
+						data[i].children = childItems;
+					});
+
+					childPromises.push(childPromise);
+				});
+
+				
+				$.when.apply(window, childPromises)
+					.done(function() {
+
+//						var data = [];
+//						_(arguments).each(function(arg) {
+//							console.log('got arg', arg);
+//						});
+//						
+//						var item = {
+//							path: path,
+//							distinctValueCount: 
+//						};
+						
+						result.resolve(data);
+					}).
+					fail(function() {
+						result.fail();
+					});
+				
+			});
+			
+			return result.promise();
+		}
+	});
+	
 	
 	ns.FacetService = Class.create({
 		fetchFacets: function(path, isInverse) {
@@ -13,13 +106,42 @@
 	});
 	
 	
+	ns.FacetItem = Class.create({
+		initialize: function(path, node, distinctValueCount) {
+			this.path = path;
+			this.node = node;
+			this.distinctValueCount = distinctValueCount;
+		},
+
+//		getUri: functino() {
+//			return node.getUri 
+//		},
+		getNode: function() {
+			return this.node;
+		},
+		
+		getPath: function() {
+			return this.path;
+		},
+		
+		getDistinctValueCount: function() {
+			return this.distinctValueCount;
+		}
+	});
 	
+
 	ns.FacetServiceImpl = Class.create(ns.FacetService, {
 		initialize: function(queryExecutionFactory, facetConceptGenerator) {
 			this.qef = queryExecutionFactory;
 			this.facetConceptGenerator = facetConceptGenerator;
 		},
 
+		
+		createConceptFacetValues: function(path, excludeSelfConstraints) {
+			var concept = this.facetConceptGenerator.createConceptResources(path, excludeSelfConstraints);
+			return concept;
+		},
+		
 		fetchFacets: function(path, isInverse) {
 			var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
 			
@@ -84,10 +206,8 @@
 					while(rs.hasNext()) {
 						var binding = rs.nextBinding();
 						
-						r.push({
-							facet: binding.get(groupVar),
-							count: binding.get(outputVar).getLiteralValue()
-						});
+						var facetItem = new ns.FacetItem(path, binding.get(groupVar), binding.get(outputVar).getLiteralValue());
+						r.push(facetItem);
 					}
 					return r;
 				});
@@ -118,6 +238,9 @@
 	});
 	
 	
+	
+	
+	// Below code needs to be ported or removed
 	
 	var Todo = {
 	

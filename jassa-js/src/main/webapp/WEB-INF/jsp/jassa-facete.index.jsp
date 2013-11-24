@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html ng-app="SponateDBpediaExample">
+<html ng-app="FaceteDBpediaExample">
 
 <head>
 	<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-	<title>Sponate Example: DBpedia Castles</title>
-	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" />
+	<title>Facete Example: DBpedia</title>
+	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/3.0.1/css/bootstrap.min.css" />
 	
 	${cssIncludes}
 	
@@ -36,9 +36,7 @@
 	
 	
 	<script src="resources/libs/jquery/1.9.1/jquery.js"></script>
-<!-- 	<script type="text/javascript"> -->
-// 		$ = jQuery;
-<!-- 	</script> -->
+	<script src="resources/libs/twitter-bootstrap/3.0.1/js/bootstrap.js"></script>
 	
 	<script src="resources/libs/underscore/1.4.4/underscore.js"></script>
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
@@ -65,21 +63,126 @@
 
 	var rdf = Jassa.rdf;
 	var sparql = Jassa.sparql;
+	var service = Jassa.service;
 	var sponate = Jassa.sponate;
 	var serv = Jassa.service;
 	
 	var facete = Jassa.facete;
 	
 	
-	facete.test();
+	//facete.test();
 	
-	var myModule = angular.module('SponateDBpediaExample', []);
+	var qef = new service.QueryExecutionFactoryHttp("http://localhost/sparql", []);
+
+	/**
+	 * Facete
+	 */
+	var constraintManager = new facete.ConstraintManager();
+	
+	var baseVar = rdf.NodeFactory.createVar("s");
+	var baseConcept = facete.ConceptUtils.createSubjectConcept(baseVar);
+	var rootFacetNode = facete.FacetNode.createRoot(baseVar);
+	
+	// Based on above objects, create a provider for the configuration
+	// which the facet service can build upon
+	var facetConfigProvider = new facete.FacetGeneratorConfigProviderIndirect(
+		new facete.ConceptFactoryConst(baseConcept),
+		new facete.FacetNodeFactoryConst(rootFacetNode),
+		constraintManager
+	);
+	
+	var fcgf = new facete.FacetConceptGeneratorFactoryImpl(facetConfigProvider);
+	var facetConceptGenerator = fcgf.createFacetConceptGenerator();
+
+
+	//  
+	var facetStateProvider = new facete.FacetStateProviderImpl();		
+
+	facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
+	
+	var fctService = new facete.FacetServiceImpl(qef, facetConceptGenerator); //, facetStateProvider);
 
 	
+	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, facetStateProvider);
+	/**
+	fctService.setExpanded(path);
+	fctService.
+	**/
+	
+	
+	
+// 	facetService.fetchFacets(facete.Path.parse("")).done(function(list) {
+		
+// 		//alert(JSON.stringify(list));
+		
+// 		_(list).each(function(item) {
+// 			console.log("FacetItem: " + JSON.stringify(item));
+// 		});
+	
+	/**
+	 * Angular
+	 */
+	
+	
+	var myModule = angular.module('FaceteDBpediaExample', []);
+
+	
+	myModule.factory('facetService', function($rootScope, $q) {
+		return {
+			fetchFacets: function() {
+				//var promise = fctService.fetchFacets(facete.Path.parse("")).pipe(function(items) {
+				var promise = fctTreeService.fetchFacetTree(facete.Path.parse("")).pipe(function(items) {
+					var rootItem = new facete.FacetItem(new facete.Path(), rdf.NodeFactory.createUri("http://example.org/root"), null);
+					
+					return {
+						item: rootItem,
+						state: new facete.FacetStateImpl(true, null, null),
+						children: items
+					};
+				});
+
+				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
+				
+// 				result.then(function(foo) {
+// 					console.log("foo: ", foo);
+// 				});
+
+				return result;
+			}
+	   };
+	});
+
+	myModule.controller('MyCtrl', function($scope, facetService) {
+		$scope.filterTable = function() {
+			$scope.facet = facetService.fetchFacets();
+		};
+		
+		$scope.init = function() {
+			$scope.filterTable();
+		};
+	});
+		
 	</script>
+
+	<script type="text/ng-template" id="facet-tree-item.html">
+		<div>
+			<div class="facet-row" ng-class="{'mui-selected': facet.selected==true}">
+				<a ng-show="facet.state.isExpanded()" href="" ng-click="facet.toggleCollapsed()"><span class="glyphicon glyphicon-chevron-down"></span></a>
+				<a ng-show="!facet.state.isExpanded()" href="" ng-click="facet.toggleCollapsed()"><span class="glyphicon glyphicon-chevron-right"></span></a>
+				<a title="{{facet.item.getNode().getUri()}}" href="" ng-click="facet.toggleSelected()">{{facet.item.getNode().getUri()}}</a>
+				<span class="label label-info">{{facet.item.getDistinctValueCount()}}</span>	
+			</div>
+		
+ 			<div style="padding-left: {{12 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></li>
+		</div>
+	</script>
+
 </head>
 
-<body>
+<body ng-controller="MyCtrl" data-ng-init="init()">
+
+	<div ng-include="'facet-tree-item.html'">
+	</div>
 
 </body>
 

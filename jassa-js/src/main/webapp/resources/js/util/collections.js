@@ -95,11 +95,36 @@
 		}
 	});
 	
+	ns.defaultEquals = function(a, b) {
+		var result;
+		if(a && a.equals) {
+			result = a.equals(b);
+		}
+		else if(b && b.equals) {
+			result = b.equals(a);
+		}
+		else {
+			result = _.isEqual(a, b);
+		}
+		
+		return result;
+	};
+	
+	ns.defaultHashCode = function(a) {
+		if(a && a.hashCode) {
+			result = a.hashCode();
+		}
+		else {
+			result = "" + a;
+		}
+		
+		return result;
+	}
 	
 	ns.HashMap = Class.create({
 		initialize: function(fnEquals, fnHash) {
-			this.fnEquals = fnEquals ? fnEquals : _.isEqual;
-			this.fnHash = fnHash ? fnHash : (function(x) { return '' + x; });
+			this.fnEquals = ns.defaultEquals; //fnEquals ? fnEquals : _.isEqual;
+			this.fnHash = ns.defaultHashCode; //fnHash ? fnHash : (function(x) { return '' + x; });
 			
 			this.hashToBucket = {};
 		},

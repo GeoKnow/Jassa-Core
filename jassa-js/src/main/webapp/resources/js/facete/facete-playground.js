@@ -42,11 +42,11 @@
 		
 
 		
-		constraintManager.addConstraint(new facete.ConstraintSpecPathValue(
-			"equal",
-			facete.Path.parse("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-			sparql.NodeValue.makeNode(rdf.NodeFactory.createUri("http://www.w3.org/2002/07/owl#Class"))
-		));
+//		constraintManager.addConstraint(new facete.ConstraintSpecPathValue(
+//			"equal",
+//			facete.Path.parse("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+//			sparql.NodeValue.makeNode(rdf.NodeFactory.createUri("http://www.w3.org/2002/07/owl#Class"))
+//		));
 
 		
 		
@@ -59,6 +59,9 @@
 			});
 		});
 		
+		
+		var cn = facetService.createConceptFacetValues(facete.Path.parse(""));
+		console.log("FacetValues: " + cn);
 		
 		//var fqgf = facete.FacetQueryGeneratorFactoryImpl.createFromFacetConfigProvider(facetConfigProvider, facetStateProvider);
 

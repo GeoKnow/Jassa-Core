@@ -157,6 +157,10 @@
 			return true;			
 		},
 		
+		hashCode: function() {
+			return this.toString();
+		},
+		
 		// a equals b = a startsWidth b && a.len = b.len
 		equals: function(other) {
 			var n = this.steps.length;

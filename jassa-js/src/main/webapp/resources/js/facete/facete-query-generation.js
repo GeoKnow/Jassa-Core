@@ -123,19 +123,40 @@
 
 	
 	ns.FacetState = Class.create({
-		isOpen: function() {
+		isExpanded: function() {
 			throw "Override me";
 		},
 		
-		getResultSetRange: function() {
-			throw "Override me"
+		getResultRange: function() {
+			throw "Override me";
 		},
 		
-		getPartitionRange: function() {
-			throw "Override me"			
+		getAggregationRange: function() {
+			throw "Override me";
+		}				
+	});
+
+	ns.FacetStateImpl = Class.create(ns.FacetState, {
+		initialize: function(isExpanded, resultRange, aggregationRange) {
+			this._isExpanded = isExpanded;
+			this.resultRange = resultRange;
+			this.aggregationRange = aggregationRange;
+		},
+		
+		isExpanded: function() {
+			return this._isExpanded;
+		},
+		
+		getResultRange: function() {
+			return this.resultRange; 
+		},
+		
+		getAggregationRange: function() {
+			return this.aggregationRange;			
 		}		
 	});
 	
+
 	ns.FacetStateProvider = Class.create({
 		getFacetState: function(path) {
 			throw "Override me";
@@ -272,9 +293,53 @@
 			this.facetConfig = facetConfig;
 		},
 		
-
+		
 		/**
+		 * Create a concept for the set of resources at a given path
+		 * 
+		 * 
+		 */
+		createConceptResources: function(path, excludeSelfConstraints) {
+			var facetConfig = this.facetConfig;
+			
+			var baseConcept = facetConfig.getBaseConcept();
+			var rootFacetNode = facetConfig.getRootFacetNode(); 
+			var constraintManager = facetConfig.getConstraintManager();
+
+			
+			var excludePath = excludeSelfConstraints ? path : null;			
+			var constraintElements = constraintManager.createElements(rootFacetNode, excludePath);
+
+			var facetNode = rootFacetNode.forPath(path);
+			var facetVar = facetNode.getVar();
+
+			
+			var baseElements = baseConcept.getElements();
+
+			var facetElements; 
+			if(baseConcept.isSubjectConcept()) {
+				facetElements = constraintElements.length > 0 ? constraintElements : baseConcept.getElements(); 
+			} else {
+				facetElements = baseElements.concat(constraintElements); 
+			}
+			
+			var pathElements = facetNode.getElements();
+			facetElements.push.apply(facetElements, pathElements);
+
+			// TODO Fix the API - it should only need one call
+			var finalElements = sparql.ElementUtils.flatten(facetElements);
+			finalElements = sparql.ElementUtils.flattenElements(finalElements);
+			
+			//var result = new ns.Concept(finalElements, propertyVar);
+			var result = new ns.Concept(finalElements, facetVar);
+			return result;
+		},
+		
+		/**
+		 * Creates a concept for the facets at a given path
+		 * 
 		 * This method signature is not final yet.
+		 *
 		 * 
 		 */
 		createConceptFacetsCore: function(path, isInverse, enableOptimization, singleProperty) { //excludeSelfConstraints) {
