@@ -2,7 +2,7 @@
 
 ### Introduction
 This module, which is part of the "JAscript Suite for Sparql Access (Jassa)", contains core RDF classes which can serve as a solid foundation for JavaScript-based Semantic Web applications.
-The design of this module follows closely the one of the (Apache Jena)[http://jena.apache.org] Java project.
+The design of this module follows closely the one of the [Apache Jena](http://jena.apache.org) Java project.
 Thus, if you are already familiar with Jena, you are already familiar with Jassa-RDF. 
 
 ### Architecture
@@ -36,11 +36,11 @@ This separation exists because literals require the xsd vocabulary, whereas the 
  * `Object getLiteralValue()`: Returns the object of the literal.
  * `String getLiteralLexicalForm()`: Returns the lexical form of the literal.
  * `RdfDatatype getLiteralDatatype()`: Returns the RDF Datatype object. RdfDatatype bundles a URI with a `Object parse(String lexicalForm)` and `String unparse(Object value)` methods.
- * `getLiteralDatatypeUri()`: Returns the URI of the RDF datatype.
- * `isBlank()`: true iff the node corresponds to a blank node.
- * `isUri()`: true iff the node corresponds to a URI.
- * `isLiteral()`: true iff the node corresponds to a literal.
- * `isVariable()`: true iff the node represents a variable.
+ * `String getLiteralDatatypeUri()`: Returns the URI of the RDF datatype.
+ * `boolean isBlank()`: true iff the node corresponds to a blank node.
+ * `boolean isUri()`: true iff the node corresponds to a URI.
+ * `boolean isLiteral()`: true iff the node corresponds to a literal.
+ * `boolean isVariable()`: true iff the node represents a variable.
  * `boolean equals(Node)`: Compares two nodes for equivalence.
 
 * `AnonId`: Interface for blank node ids.
