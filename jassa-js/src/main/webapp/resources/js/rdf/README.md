@@ -1,14 +1,14 @@
-==The Jassa RDF module
+##The Jassa RDF module
 
-=== Introduction
+### Introduction
 This module, which is part of the "JAscript Suite for Sparql Access (Jassa)", contains core RDF classes which can serve as a solid foundation for JavaScript-based Semantic Web applications.
 The design of this module follows closely the one of the (Apache Jena)[http://jena.apache.org] Java project.
 Thus, if you are already familiar with Jena, you are already familiar with Jassa-RDF. 
 
-=== Architecture
+### Architecture
 Jassa uses `prototype.js`'s `Class` object which offers a high level abstraction for the definition of interfaces and the creation of inheritance hierarchies.
 
-=== Usage
+### Usage
 All classes reside in the `rdf` namespace of the Jassa object:
 
     <!-- Required libraries -->
@@ -22,9 +22,9 @@ All classes reside in the `rdf` namespace of the Jassa object:
     var rdf = Jassa.rdf;
 
 
-=== Public API
+### Public API
 
-The RDF module is based on the files (rdf-core.js)[jassa-js/src/main/webapp/resources/js/rdf/rdf-core.js] and (rdf-literals.js)[jassa-js/src/main/webapp/resources/js/rdf/rdf-literals.js].
+The RDF module is based on the files [rdf-core.js](jassa-js/src/main/webapp/resources/js/rdf/rdf-core.js) and [rdf-literals.js](jassa-js/src/main/webapp/resources/js/rdf/rdf-literals.js).
 This separation exists because literals require the xsd vocabulary, whereas the xsd vocabulary is expressed using classes of `rdf-core.js`.
 
 * The `Node` hierarchy. This is the same hierarchy as used in Jena. `Node` is an interface with the concrete implementations `Node_Blank`, `Node_Uri`, `Node_Literal`, and `Node_Variable`. It is recommended to create instances of `Node` using the `NodeFactory`. In practice, one should only rely on the `Node` interface. In general, all methods below return the appropriate result for the node if applicable, otherwise they should die horribly.
