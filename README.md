@@ -5,8 +5,8 @@ This repository contains several tools for JavaScript based Sparql access. It wo
 The highlights of this repository are:
 
 * A high level JavaScript API for RDF. Provides core RDF classes (such as Node and Triple), SPARQL classes (such as Query, Element, Expr) and Service classes (such QueryExecutionFactoryHttp, QueryExecutionHttp). If you are familiar with [Apache Jena](http://jena.apache.org), you have most likely seen these names before.
-* The '''Facete'''-API, a powerful faceted search API for generic faceted search on SPARQL endpoints. Under heavy development - TODO Add demo link.
-* The '''Sponate'''-API, a SPARQL-to-JSON mapper which is somewhat similar to [Hibernate](http://hibernate.org) (Sponate = SParql, jsON, hiberNATE). This component unfolds its full potential in combination with latest generation frameworks that keep the DOM and controller logic separate, e.g. [AngularJS](http://angularjs.org/). (Possibly also [Ember.js](http://emberjs.com/), but at present we only develop using the former framework).
+* The _Facete_-API, a powerful faceted search API for generic faceted search on SPARQL endpoints. Under heavy development - TODO Add demo link.
+* The _Sponate_-API, a SPARQL-to-JSON mapper which is somewhat similar to [Hibernate](http://hibernate.org) (Sponate = SParql, jsON, hiberNATE). This component unfolds its full potential in combination with latest generation frameworks that keep the DOM and controller logic separate, e.g. [AngularJS](http://angularjs.org/). (Possibly also [Ember.js](http://emberjs.com/), but at present we only develop using the former framework).
 
 ## Terminology
 
@@ -44,51 +44,51 @@ Jassa depends on the following libraries:
 
 Adjust paths and versions to your needs.
 
-    ```html
-    <html>
-        <head>
-            <script src="resources/libs/jquery/1.9.1/jquery.js"></script>
-            <script src="resources/libs/underscore/1.4.4/underscore.js"></script>
-            <script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
-            <script src="resources/libs/prototype/1.7.1/prototype.js"></script>
+```html
+<html>
+    <head>
+        <script src="resources/libs/jquery/1.9.1/jquery.js"></script>
+        <script src="resources/libs/underscore/1.4.4/underscore.js"></script>
+        <script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
+        <script src="resources/libs/prototype/1.7.1/prototype.js"></script>
 
-            <script src="resources/libs/jassa/0.5.0/jassa.js"></script>
+        <script src="resources/libs/jassa/0.5.0/jassa.js"></script>
 
-            <script type="text/javascript">
-                _.mixin(_.str.exports());
+        <script type="text/javascript">
+            _.mixin(_.str.exports());
 
-                // The Jassa object is now readily available
-                // We hope that the name Jassa is sufficiently exotic to never cause a name clash
-                // But who knows. I wished JavaScript had native namespace support...
-	        console.log("The Jassa object: ", Jassa);
-            </script>
-        </head>
-    </html>
-    ```
+            // The Jassa object is now readily available
+            // We hope that the name Jassa is sufficiently exotic to never cause a name clash
+            // But who knows. I wished JavaScript had native namespace support...
+        console.log("The Jassa object: ", Jassa);
+        </script>
+    </head>
+</html>
+```
 
 ## NodeJs-based Set Up
 
 Example of a nodejs based set up:
 
-    ```js
-    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+```js
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
-    $ = require('jquery');
+$ = require('jquery');
 
-    $.support.cors = true;
-    $.ajaxSettings.xhr = function () {
-        return new XMLHttpRequest;
-    }
+$.support.cors = true;
+$.ajaxSettings.xhr = function () {
+    return new XMLHttpRequest;
+}
 
-    require('prototype');
+require('prototype');
 
-    _ = require('underscore');
-    _.str = require('underscore.string');
+_ = require('underscore');
+_.str = require('underscore.string');
 
-    _.mixin(_.str.exports());
+_.mixin(_.str.exports());
 
-    var Jassa = require('jassa');
-    ```
+var Jassa = require('jassa');
+```
 
 
 ## Components and Usage
@@ -111,19 +111,19 @@ terms of `rdf` classes, however literals require the xsd vocabulary.
 
 Example usage:
 
-    ```js
-    var rdf = Jassa.rdf;
-    var vocab = Jassa.vocab;
+```js
+var rdf = Jassa.rdf;
+var vocab = Jassa.vocab;
 
-    var s = rdf.NodeFactory.createVar("s");
-    var p = vocab.rdf.type;
-    var o = rdf.NodeFactory.createUri("http://example.org/ontology/MyClass");
+var s = rdf.NodeFactory.createVar("s");
+var p = vocab.rdf.type;
+var o = rdf.NodeFactory.createUri("http://example.org/ontology/MyClass");
 
-    var triple = new ns.Triple(s, p, o);
+var triple = new ns.Triple(s, p, o);
 
-    console.log("Triple: " + triple);
-    console.log("Subject is a variable: " + triple.getSubject().isVar());
-    ```
+console.log("Triple: " + triple);
+console.log("Subject is a variable: " + triple.getSubject().isVar());
+```
 
 ### The `sparql` module
 
@@ -133,50 +133,50 @@ alse exist the `Expr` and `Element` class hierarchies known from Apache Jena.
 
 Example usage:
 
-    ```js
-    var rdf = Jassa.rdf;
-    var sparql = Jassa.sparql;
+```js
+var rdf = Jassa.rdf;
+var sparql = Jassa.sparql;
 
-    var query = new sparql.Query();
-    var s = rdf.NodeFactory.createVar("s");
-    var p = rdf.NodeFactory.createVar("p");
-    var o = rdf.NodeFactory.createVar("o");
+var query = new sparql.Query();
+var s = rdf.NodeFactory.createVar("s");
+var p = rdf.NodeFactory.createVar("p");
+var o = rdf.NodeFactory.createVar("o");
 
-    var triple = new rdf.Triple(s, p, o);
+var triple = new rdf.Triple(s, p, o);
 
-    query.setElement(new sparql.ElementTriplesBlock([triple]));
-    query.setResultStar(true);
-    query.setLimit(10);
+query.setElement(new sparql.ElementTriplesBlock([triple]));
+query.setResultStar(true);
+query.setLimit(10);
 
-    console.log("QueryString: " + query);
-    ```
+console.log("QueryString: " + query);
+```
 
 ### The `service` module
 
 The service module provides an abstraction layer for communicating with a SPARQL endpoint.
 
-    ```js
-    var service = Jassa.rdf;
+```js
+var service = Jassa.rdf;
 
-    var qef = new service.QueryExecutionFactoryHttp(
-              "http://dbpedia.org/sparql",
-              ["http://dbpedia.org"]
-    );
+var qef = new service.QueryExecutionFactoryHttp(
+          "http://dbpedia.org/sparql",
+          ["http://dbpedia.org"]
+);
 
-    var qe = qef.createQueryExecution("Select * { ?s ?p ?o } Limit 10");
-    qe.setTimeout(5000); // timout in milliseconds
+var qe = qef.createQueryExecution("Select * { ?s ?p ?o } Limit 10");
+qe.setTimeout(5000); // timout in milliseconds
 
-    qe.execSelect()
-        .done(function(rs) {
-            while(rs.hasNext()) {
-                var binding = rs.nextBinding();
-                console.log("Got binding: " + binding);
-            }
-        })
-        .fail(function(err) {
-            console.log("An error occurred: ", err);
-        });
-    ```
+qe.execSelect()
+    .done(function(rs) {
+        while(rs.hasNext()) {
+            var binding = rs.nextBinding();
+            console.log("Got binding: " + binding);
+        }
+    })
+    .fail(function(err) {
+        console.log("An error occurred: ", err);
+    });
+```
 
 Successful execution of a SPARQL queries yields a `ResultSet` object, which is essentially an iterator over `Binding` objects.
 A binding is a map that associates variables with values (instances of `rdf.Node`) or null.
