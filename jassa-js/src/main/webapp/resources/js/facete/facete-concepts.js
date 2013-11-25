@@ -95,7 +95,7 @@
 			var resultElements = result.getElements();
 			var conceptElements = concept.getElements();
 
-			resultElements.push.apply(resultElements, conceptElements)
+			resultElements.push.apply(resultElements, conceptElements);
 			
 			return result;
 		},

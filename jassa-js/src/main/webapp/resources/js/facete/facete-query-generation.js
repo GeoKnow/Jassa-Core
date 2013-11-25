@@ -331,7 +331,7 @@
 			finalElements = sparql.ElementUtils.flattenElements(finalElements);
 			
 			//var result = new ns.Concept(finalElements, propertyVar);
-			var result = new ns.Concept(finalElements, facetVar);
+			var result = ns.Concept.createFromElements(finalElements, facetVar);
 			return result;
 		},
 		

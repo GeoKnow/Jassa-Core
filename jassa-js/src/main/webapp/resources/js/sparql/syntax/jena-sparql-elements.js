@@ -1093,7 +1093,12 @@
 				:  _.map(this.groupBy, function(item) { return item.copySubstitute(fnNodeMap); });			
 
 
-			result.elements = _.map(this.elements, function(element) { return element.copySubstitute(fnNodeMap); });		
+			result.elements = _(this.elements).map(function(element) {
+//				console.log("Element: ", element);
+//				debugger;
+				var r = element.copySubstitute(fnNodeMap);
+				return r;
+			});		
 
 			//console.log("CLONE ORIG " + this);
 			//console.log("CLONE RES " + result);

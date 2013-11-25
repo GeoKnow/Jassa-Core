@@ -88,6 +88,11 @@
 					result = this.getName() === that.getName();
 				}
 			}
+			else if(this.isBlank()) {
+				if(that.isBlank()) {
+					result = this.getBlankNodeLabel() === that.getBlankNodeLabel(); 
+				}
+			}
 			//else if(this.)
 			else {
 				throw 'not implemented yet';
@@ -125,8 +130,8 @@
 	
 	ns.Node_Blank = Class.create(ns.Node_Concrete, {
 		// Note: id is expected to be an instance of AnonId
-		initialize: function(id) {
-			this.id = id;
+		initialize: function(anonId) {
+			this.anonId = anonId;
 		},
 		
 		isBlank: function() {
@@ -134,7 +139,11 @@
 		},
 		
 		getBlankNodeId: function() {
-			return id;
+			return anonId;
+		},
+		
+		toString: function() {
+			return "_:" + this.anonId;
 		}
 	});
 	
@@ -286,6 +295,10 @@
 
 		getLabelString: function() {
 			return label;
+		},
+		
+		toString: function() {
+			return this.label;
 		}
 	});
 	
@@ -386,6 +399,10 @@
 	
 	
 	ns.NodeFactory = {
+		createAnon: function(anonId) {
+			return new ns.Node_Blank(anonId);
+		},
+			
 		createUri: function(uri) {
 			return new ns.Node_Uri(uri);
 		},
@@ -456,7 +473,8 @@
 			var result;
 			switch(talisJson.type) {
 				case 'bnode':
-					throw 'Not implemented yet';
+					var anonId = new ns.AnonIdStr(talisJson.value);
+					result = new ns.NodeFactory.createAnon(anonId);
 					break;
 				case 'uri': 
 					result = ns.NodeFactory.createUri(talisJson.value);	

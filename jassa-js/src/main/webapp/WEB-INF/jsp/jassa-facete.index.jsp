@@ -7,6 +7,7 @@
 
 	<title>Facete Example: DBpedia</title>
 	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/3.0.1/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" />
 	
 	${cssIncludes}
 	
@@ -41,8 +42,12 @@
 	<script src="resources/libs/underscore/1.4.4/underscore.js"></script>
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
 	<script src="resources/libs/prototype/1.7.1/prototype.js"></script>
+
 	<script src="resources/libs/angularjs/1.0.8/angular.js"></script>
-	
+<!-- 	<script src="resources/libs/angularjs/1.2.0-rc.2/angular.js"></script>	 -->
+	<script src="resources/libs/angular-ui/0.6.0/ui-bootstrap-tpls-0.6.0.js"></script>
+	<script src="resources/libs/ui-router/0.2.0/angular-ui-router.js"></script>
+
 
 	${jsIncludes}
 
@@ -127,7 +132,7 @@
 	 */
 	
 	
-	var myModule = angular.module('FaceteDBpediaExample', []);
+	var myModule = angular.module('FaceteDBpediaExample', ['ui.bootstrap']);
 
 	
 	myModule.factory('facetService', function($rootScope, $q) {
@@ -155,6 +160,17 @@
 	   };
 	});
 
+	myModule.controller('MyCtrl2', function($scope) {
+		$scope.totalItems = 64;
+		$scope.currentPage = 4;
+		$scope.maxSize = 5;
+		
+		$scope.setPage = function (pageNo) {
+		  $scope.currentPage = pageNo;
+		};
+	});
+				
+				
 	myModule.controller('MyCtrl', function($scope, facetService) {
 		$scope.refreshFacets = function() {
 			//$scope.facet = facetService.fetchFacets();
@@ -175,7 +191,32 @@
 			
 			//facetStateProvider.getMap().put(path, new facete.FacetStateImpl(true, null, null));			
 			$scope.refreshFacets();
-		}
+		};
+		
+		$scope.toggleSelected = function(path) {
+			
+			var concept = fctService.createConceptFacetValues(path);
+			var query = facete.ConceptUtils.createQueryList(concept);
+			console.log("query: ", query);
+ 			var qe = qef.createQueryExecution(query);
+			var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
+			
+			promise.done(function(items) {
+				//console.log("items: ", items);
+
+				$scope.facetValues = items;
+				$scope.$apply();
+			});
+			
+// 			qe.execSelect().done(function(rs) {
+// 				while(rs.hasNext()) {
+// 					var binding = rs.nextBinding();
+					
+// 				}
+// 			});
+			
+			//alert("test");
+		};
 	});
 		
 	</script>
@@ -185,7 +226,7 @@
 			<div class="facet-row" ng-class="{'mui-selected': facet.selected==true}">
 				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
 				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
-				<a title="{{facet.item.getNode().getUri()}}" href="" ng-click="facet.toggleSelected()">{{facet.item.getNode().getUri()}}</a>
+				<a title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
 				<span class="label label-info">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>
 		
@@ -193,13 +234,23 @@
 		</div>
 	</script>
 
+	<script type="text/ng-template" id="result-set-browser.html">
+		<ul>
+		    <li ng-repeat="item in facetValues">{{item.toString()}}</li>
+        </ul>
+    	<pagination class="pagination-small" total-items="totalItems" page="currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
+	</script>
 </head>
 
-<body ng-controller="MyCtrl" data-ng-init="init()">
+<body>
 
-	<div ng-include="'facet-tree-item.html'">
+	<div ng-controller="MyCtrl" data-ng-init="init()">
+		<div ng-include="'facet-tree-item.html'"></div>
+<!-- 	</div> -->
+
+<!-- 	<div ng-controller="MyCtrl2"> -->
+		<div ng-include="'result-set-browser.html'"></div>	
 	</div>
-
 </body>
 
 </html>
