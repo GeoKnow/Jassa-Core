@@ -24,7 +24,7 @@ All classes reside in the `rdf` namespace of the Jassa object:
 
 ### Public API
 
-The RDF module is based on the files [rdf-core.js](jassa-js/src/main/webapp/resources/js/rdf/rdf-core.js) and [rdf-literals.js](jassa-js/src/main/webapp/resources/js/rdf/rdf-literals.js).
+The RDF module is based on the files [rdf-core.js](rdf-core.js) and [rdf-literals.js](rdf-literals.js).
 This separation exists because literals require the xsd vocabulary, whereas the xsd vocabulary is expressed using classes of `rdf-core.js`.
 
 * The `Node` hierarchy. This is the same hierarchy as used in Jena. `Node` is an interface with the concrete implementations `Node_Blank`, `Node_Uri`, `Node_Literal`, and `Node_Variable`. It is recommended to create instances of `Node` using the `NodeFactory`. In practice, one should only rely on the `Node` interface. In general, all methods below return the appropriate result for the node if applicable, otherwise they should die horribly.
