@@ -175,7 +175,7 @@
 // 					]};
 				}
  				
-				var promise = store.castles.find(criteria).limit(10).skip(5).asList();
+				var promise = store.castles.find(criteria).limit(10).skip(10).asList();
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 				return result;
 	        }
@@ -222,7 +222,7 @@
 							<img class="image" src="{{castle.depiction.slice(1, -1)}}" />
 						</div>
 					</td>
-					<td><a href="{{castle.id.slice(1, -1)}}">{{castle.name}}</a></td>
+					<td><a href="{{castle.id.slice(1, -1)}}" target="_blank">{{castle.name}}</a></td>
 					<td>{{(castle.owners | map:'name').join(', ')}}</td>
 				</tr>
 			</table>
