@@ -44,6 +44,7 @@ Jassa depends on the following libraries:
 
 Adjust paths and versions to your needs.
 
+    ```html
     <html>
         <head>
             <script src="resources/libs/jquery/1.9.1/jquery.js"></script>
@@ -63,11 +64,13 @@ Adjust paths and versions to your needs.
             </script>
         </head>
     </html>
+    ```
 
 ## NodeJs-based Set Up
 
 Example of a nodejs based set up:
 
+    ```js
     var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
 
     $ = require('jquery');
@@ -85,7 +88,7 @@ Example of a nodejs based set up:
     _.mixin(_.str.exports());
 
     var Jassa = require('jassa');
-
+    ```
 
 
 ## Components and Usage
@@ -108,6 +111,7 @@ terms of `rdf` classes, however literals require the xsd vocabulary.
 
 Example usage:
 
+    ```js
     var rdf = Jassa.rdf;
     var vocab = Jassa.vocab;
 
@@ -119,6 +123,7 @@ Example usage:
 
     console.log("Triple: " + triple);
     console.log("Subject is a variable: " + triple.getSubject().isVar());
+    ```
 
 ### The `sparql` module
 
@@ -128,6 +133,7 @@ alse exist the `Expr` and `Element` class hierarchies known from Apache Jena.
 
 Example usage:
 
+    ```js
     var rdf = Jassa.rdf;
     var sparql = Jassa.sparql;
 
@@ -143,12 +149,13 @@ Example usage:
     query.setLimit(10);
 
     console.log("QueryString: " + query);
-
+    ```
 
 ### The `service` module
 
 The service module provides an abstraction layer for communicating with a SPARQL endpoint.
 
+    ```js
     var service = Jassa.rdf;
 
     var qef = new service.QueryExecutionFactoryHttp(
@@ -169,6 +176,7 @@ The service module provides an abstraction layer for communicating with a SPARQL
         .fail(function(err) {
             console.log("An error occurred: ", err);
         });
+    ```
 
 Successful execution of a SPARQL queries yields a `ResultSet` object, which is essentially an iterator over `Binding` objects.
 A binding is a map that associates variables with values (instances of `rdf.Node`) or null.
