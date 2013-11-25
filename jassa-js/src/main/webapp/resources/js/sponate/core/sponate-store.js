@@ -6,6 +6,26 @@
 	
 	var ns = Jassa.sponate;
 	
+	ns.QueryConfig = Class.create({
+		initialize: function(criteria, limit, offset) {
+			this.criteria = criteria;
+			this.limit = limit;
+			this.offset = offset;
+		},
+		
+		getCriteria: function() {
+			return this.criteria;
+		},
+		
+		getLimit: function() {
+			return this.limit;
+		},
+		
+		getOffset: function() {
+			return this.offset;
+		}
+	});
+	
 	/**
 	 * The cursor is both a flow api and a result set / iterator.
 	 * 
@@ -60,7 +80,25 @@
 	ns.QueryFlow = Class.create({
 		initialize: function(store, criteria) {
 			this.store = store;
-			this.criteria = criteria;
+			this.config = {};
+			
+			this.config.criteria = criteria;
+//			this.criteria = criteria;
+//			
+//			this.limit = null;
+//			this.offset = null;
+		},
+		
+		skip: function(offset) {
+			this.config.offset = offset;
+			
+			return this;
+		},
+		
+		limit: function(limit) {
+			this.config.limit = limit;
+			
+			return this;
 		},
 		
 		/*
@@ -97,9 +135,12 @@
 		
 		// TODO This is a hack right now - not sure how to design the execution yet
 		execute: function() {
-			var config = {
-				criteria: this.criteria
-			};
+//			var config = {
+//				criteria: this.criteria,
+//				limit: this.limit,
+//				offset: this.offset
+//			};
+			var config = new ns.QueryConfig(this.config.criteria, this.config.limit, this.config.offset);
 			
 			var result = this.store.execute(config);
 			return result;
@@ -141,7 +182,9 @@
 			// b) post processors
 			
 			var context = this.context;
-			var criteria = config.criteria;
+			var criteria = config.getCriteria();
+			var limit = config.getLimit();
+			var offset = config.getOffset();
 			
 			//console.log('context', JSON.stringify(this.context), this.context.getNameToMapping());
 			
@@ -167,13 +210,13 @@
 			//console.log('mapping:', mapping);
 			
 			// Retrieve the mapping's table and the associated element
-			var element = this.context.getElement(mapping.getTableName());
-			
-			
+			var element = this.context.getElement(mapping.getTableName());			
 			
 			var pattern = mapping.getPattern();
 			//console.log('Pattern here ' + JSON.stringify(pattern));
-						
+
+			
+			
 			
 			var vars = pattern.getVarsMentioned();
 			//console.log('' + vars);
@@ -183,6 +226,32 @@
 			if(pattern instanceof ns.PatternMap) {
 				idExpr = pattern.getKeyExpr();
 			}
+			
+						
+			var requireSubQuery = limit != null || offset != null;
+			if(requireSubQuery) {
+				
+				var idVar;
+				if(!(idExpr instanceof sparql.ExprVar)) {
+					console.log("[ERROR] Currently the idExpr must be a variable when used with limit and offset. This restriction can be lifted but is not implemented yet :(");
+					throw "Bailing out";
+				}
+				idVar = idExpr.asVar();
+				
+				var subQuery = new sparql.Query();
+				
+				var subQueryElements = subQuery.getElements();
+				subQueryElements.push(element);
+				subQuery.setLimit(limit);
+				subQuery.setOffset(offset);
+				subQuery.setDistinct(true);
+				subQuery.getProjectVars().add(idVar);
+				element = new sparql.ElementGroup([
+				                                   new sparql.ElementSubQuery(subQuery),
+				                                   element]);
+
+			}
+
 			
 			//console.log('' + pattern, idExpr);
 			//console.log('idExpr' + idExpr);

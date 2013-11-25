@@ -98,7 +98,8 @@
 					name: '?on'
 				}]
 			}],
-			from: '{ Select * { ?s a dbpedia-owl:Castle ; rdfs:label ?l ; foaf:depiction ?d ; dbpedia-owl:owner ?o . ?o rdfs:label ?on . Filter(langMatches(lang(?l), "en")) . Filter(langMatches(lang(?on), "en")) } Limit 10 }'
+			//from: '{ Select * { ?s a dbpedia-owl:Castle ; rdfs:label ?l ; foaf:depiction ?d ; dbpedia-owl:owner ?o . ?o rdfs:label ?on . Filter(langMatches(lang(?l), "en")) . Filter(langMatches(lang(?on), "en")) } Limit 10 }'
+			from: '?s a dbpedia-owl:Castle ; rdfs:label ?l ; foaf:depiction ?d ; dbpedia-owl:owner ?o . ?o rdfs:label ?on . Filter(langMatches(lang(?l), "en")) . Filter(langMatches(lang(?on), "en"))'
 		});
 		
 	} else if(mode == 2) {
@@ -174,7 +175,7 @@
 // 					]};
 				}
  				
-				var promise = store.castles.find(criteria).asList();
+				var promise = store.castles.find(criteria).limit(10).skip(5).asList();
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 				return result;
 	        }

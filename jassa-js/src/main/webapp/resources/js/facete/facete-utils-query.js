@@ -60,6 +60,50 @@
 			return result;
 		},
 
+		
+//		createElementSubQuery: function(elements, limit, offset) {
+//			if(limit == null && offset == null) {
+//				return elements;
+//			}
+//			
+//			var subQuery = new sparql.Query();
+//			
+//			var subQueryElements = subQuery.getElements();
+//			subQueryElements.push.apply(subQueryElements, elements);
+//
+//			//subQuery.setResultStar(true);
+//			subQuery.setLimit(limit);
+//			subQuery.setOffset(offset);
+//			
+//			var resultElement = new sparql.ElementSubQuery(subQuery);			
+//
+//			return resultElement;
+//		},
+			
+//			if(groupVars) {
+//				for(var i = 0; i < groupVars.length; ++i) {					
+//					var groupVar = groupVars[i];					
+//					subQuery.projectVars.add(groupVar);
+//					//subQuery.groupBy.push(groupVar);
+//				}
+//			}
+//			
+//			if(variable) {
+//				subQuery.projectVars.add(variable);
+//			}
+//			
+//			if(subQuery.projectVars.vars.length === 0) {
+//		    	subQuery.isResultStar = true;
+//			}
+//			
+//			subQuery.limit = limit;
+//			
+//			result.getElements().push(new sparql.ElementSubQuery(subQuery));			
+//			} else {
+//				var resultElements = result.getElements();
+//				resultElements.push.apply(resultElements, elements);
+//			}
+//		},
 			
 		/**
 		 * Creates a query with Count(Distinct ?variable)) As outputVar for an element.
