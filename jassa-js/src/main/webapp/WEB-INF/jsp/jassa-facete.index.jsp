@@ -64,8 +64,9 @@
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
 	<script src="resources/libs/prototype/1.7.1/prototype.js"></script>
 
-	<script src="resources/libs/angularjs/1.0.8/angular.js"></script>
+<!-- 	<script src="resources/libs/angularjs/1.0.8/angular.js"></script> -->
 <!-- 	<script src="resources/libs/angularjs/1.2.0-rc.2/angular.js"></script>	 -->
+	<script src="resources/libs/angularjs/1.2.0-rc.3/angular.js"></script>	
 	<script src="resources/libs/angular-ui/0.6.0/ui-bootstrap-tpls-0.6.0.js"></script>
 	<script src="resources/libs/ui-router/0.2.0/angular-ui-router.js"></script>
 
@@ -182,17 +183,63 @@
 	});
 
 	myModule.controller('MyCtrl2', function($scope) {
+		
 		$scope.totalItems = 64;
-		$scope.currentPage = 4;
+		$scope.currentPage = 1;
 		$scope.maxSize = 5;
 		
-		$scope.setPage = function (pageNo) {
-		  $scope.currentPage = pageNo;
+		var updateItems = function() {
+			console.log("Update");
+
+			var path = $scope.path;
+			if(path == null) {
+				return;
+			}
+
+			var concept = fctService.createConceptFacetValues(path);
+			var query = facete.ConceptUtils.createQueryList(concept);			
+			
+			var pageSize = 10;
+			
+			query.setLimit(pageSize);
+			query.setOffset(($scope.currentPage - 1)* pageSize)
+			
+ 			var qe = qef.createQueryExecution(query);
+			var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
+			
+			promise.done(function(items) {
+				//console.log("items: ", items);
+
+				
+				$scope.facetValues = items;
+				$scope.$apply();
+			});
+
 		};
+
+
+		$scope.$watch('currentPage', function() {			
+			console.log("Change");
+			updateItems();
+		});
+
+// 		$scope.$watchCollection('[currentPage, maxSize]', function() {
+// 			updateItems();
+// 		});
+		
+		$scope.$on("facetSelected", function(ev, path) {
+
+			$scope.currentPage = 1;
+			$scope.path = path;
+			
+			updateItems();
+		});
+		
+		
 	});
 				
 				
-	myModule.controller('MyCtrl', function($scope, facetService) {
+	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
 		$scope.refreshFacets = function() {
 			//$scope.facet = facetService.fetchFacets();
 			facetService.fetchFacets().then(function(data) {
@@ -214,21 +261,11 @@
 			$scope.refreshFacets();
 		};
 		
+		
 		$scope.toggleSelected = function(path) {
-			
-			var concept = fctService.createConceptFacetValues(path);
-			var query = facete.ConceptUtils.createQueryList(concept);
-			console.log("query: ", query);
- 			var qe = qef.createQueryExecution(query);
-			var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
-			
-			promise.done(function(items) {
-				//console.log("items: ", items);
 
-				$scope.facetValues = items;
-				$scope.$apply();
-			});
-			
+			$rootScope.$broadcast("facetSelected", path);
+						
 // 			qe.execSelect().done(function(rs) {
 // 				while(rs.hasNext()) {
 // 					var binding = rs.nextBinding();
@@ -260,7 +297,7 @@
 		<ul>
 		    <li ng-repeat="item in facetValues">{{item.toString()}}</li>
         </ul>
-    	<pagination class="pagination-small" total-items="totalItems" page="currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
+    	<pagination class="pagination-small" total-items="totalItems" page="$parent.currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
 	</script>
 </head>
 
@@ -270,9 +307,9 @@
 		<div style="width: 30%">
 			<div ng-include="'facet-tree-item.html'"></div>
 		</div>
-<!-- 	</div> -->
+	</div>
 
-<!-- 	<div ng-controller="MyCtrl2"> -->
+	<div ng-controller="MyCtrl2">
 		<div ng-include="'result-set-browser.html'"></div>	
 	</div>
 </body>
