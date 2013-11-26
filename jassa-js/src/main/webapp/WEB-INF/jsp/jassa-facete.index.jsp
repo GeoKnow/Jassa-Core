@@ -197,23 +197,33 @@
 			}
 
 			var concept = fctService.createConceptFacetValues(path);
-			var query = facete.ConceptUtils.createQueryList(concept);			
-			
-			var pageSize = 10;
-			
-			query.setLimit(pageSize);
-			query.setOffset(($scope.currentPage - 1)* pageSize)
-			
- 			var qe = qef.createQueryExecution(query);
-			var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
-			
-			promise.done(function(items) {
-				//console.log("items: ", items);
+			var countVar = rdf.NodeFactory.createVar("_c_");
+			var queryCount = facete.ConceptUtils.createQueryCount(concept, countVar);
+ 			var qeCount = qef.createQueryExecution(queryCount);
+			var promise = service.ServiceUtils.fetchInt(qeCount, countVar);
+			promise.done(function(count) {
+				$scope.totalItems = count;
 
+				var query = facete.ConceptUtils.createQueryList(concept);			
 				
-				$scope.facetValues = items;
-				$scope.$apply();
+				var pageSize = 10;
+				
+				query.setLimit(pageSize);
+				query.setOffset(($scope.currentPage - 1)* pageSize)
+				
+	 			var qe = qef.createQueryExecution(query);
+				var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
+				
+				promise.done(function(items) {
+					//console.log("items: ", items);
+
+					
+					$scope.facetValues = items;
+					$scope.$apply();
+				});
+				
 			});
+			
 
 		};
 

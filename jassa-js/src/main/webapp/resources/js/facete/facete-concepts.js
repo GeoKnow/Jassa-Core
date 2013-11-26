@@ -103,7 +103,7 @@
 		createQueryCount: function(concept, outputVar) {
 			var result = new sparql.Query();
 			
-			result.getProjectVars().add(outputVar, new sparql.E_Count(concept.getVar(), true));
+			result.getProjectVars().add(outputVar, new sparql.E_Count(new sparql.ExprVar(concept.getVar()), true));
 
 			var resultElements = result.getElements();
 			var conceptElements = concept.getElements();
