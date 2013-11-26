@@ -18,6 +18,27 @@
 	    vertical-align: middle;
 	}
 	
+	.facet-row:hover {
+	    background-color: #bbccff;
+	}
+	
+	.highlite {
+	    background-color: #ddeeff;
+	}
+	
+	.frame {
+		border: 1px;
+		border-collapse: true;
+		border-style: solid;
+		border-color: #cccccc;
+		padding-right: 0px;
+/* 		padding-bottom: 16px; */
+ 		margin-top: 3px;
+ 		margin-bottom: 3px;
+/*  		background-color: #eeeeee; */
+/* 		background-color: #EEEEEE; */
+	}
+	
 	.image-frame {
 		display: table;
 
@@ -222,15 +243,16 @@
 	</script>
 
 	<script type="text/ng-template" id="facet-tree-item.html">
-		<div>
-			<div class="facet-row" ng-class="{'mui-selected': facet.selected==true}">
+		<div ng-class="{'frame': facet.isExpanded}">
+			<div class="facet-row" ng-class="{'highlite': facet.isExpanded}">
 				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
 				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
 				<a title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
-				<span class="label label-info">{{facet.item.getDistinctValueCount()}}</span>	
+				<span style="float: right" class="label label-info">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>
-		
- 			<div style="padding-left: {{12 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></li>
+
+			<span ng-show="facet.isExpanded && facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>
+ 			<div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></li>
 		</div>
 	</script>
 
@@ -245,7 +267,9 @@
 <body>
 
 	<div ng-controller="MyCtrl" data-ng-init="init()">
-		<div ng-include="'facet-tree-item.html'"></div>
+		<div style="width: 30%">
+			<div ng-include="'facet-tree-item.html'"></div>
+		</div>
 <!-- 	</div> -->
 
 <!-- 	<div ng-controller="MyCtrl2"> -->

@@ -1,6 +1,6 @@
 {
   "name": "jassa",
-  "version": "0.0.1",
+  "version": "0.5.0",
   "description": "JAvascript Suite for Sparql Access",
   "main": "./jassa.js",
   "scripts": {
