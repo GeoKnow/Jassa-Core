@@ -185,10 +185,99 @@ Currently, the API is only implemented for SPARQL endpoints that yield [Talis RD
 
 ### Facete
 
-TBD
+Facete is library for faceted search based on _concepts_ and _constraints_.
+Conceptually, a facete-concept is a pair comprised of SPARQL graph pattern and a variable that appears in it.
+
+Facete then allows one to retrieve a concept's properties and sub-properties under a (possibly empty) set of constraints.
+
+TODO Add demo, complete example below (service is missing)
+
+```js
+var service = Jassa.service;
+var facete = Jassa.facete;
+
+var constraintManager = new facete.ConstraintManager();
+
+var baseVar = rdf.NodeFactory.createVar("s");
+var baseConcept = facete.ConceptUtils.createSubjectConcept(baseVar);
+var rootFacetNode = facete.FacetNode.createRoot(baseVar);
+
+// Based on above objects, create a provider for the configuration
+// which the facet service can build upon
+var facetConfigProvider = new facete.FacetGeneratorConfigProviderIndirect(
+	new facete.ConceptFactoryConst(baseConcept),
+	new facete.FacetNodeFactoryConst(rootFacetNode),
+	constraintManager
+);
+
+var fcgf = new facete.FacetConceptGeneratorFactoryImpl(facetConfigProvider);
+var facetConceptGenerator = fcgf.createFacetConceptGenerator();
+
+
+var expansionSet = new util.HashSet();
+expansionSet.add(new facete.Path());
+
+var facetService = new facete.FacetServiceImpl(qef, facetConceptGenerator);
+var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet);
+
+facetService.fetchFacets()
+    .done(function(facetTree) {
+        console.log("FacetTree: " + JSON.stringify(facetTree));
+    })
+    .fail(function(err) {
+        console.log("An error occurred: ", err);
+    });
+```
 
 ### Sponate
 
+Sponate is a SPARQL-to-JSON mapper.
+TODO Add more description...
 
-TBD
+```js
+var service = Jassa.service;
+var sponate = Jassa.sponate;
 
+var prefixes = {
+	'dbpedia-owl': 'http://dbpedia.org/ontology/',
+	'dbpedia': 'http://.org/resource/',
+	'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
+	'foaf': 'http://xmlns.com/foaf/0.1/'
+};
+
+var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
+
+var store = new sponate.StoreFacade(qef, prefixes);
+
+store.addMap({
+	name: 'castles',
+	template: [{
+		id: '?s',
+		name: '?l',
+		depiction: '?d',
+		owners: [{
+			id: '?o',
+			name: '?on'
+		}]
+	}],
+	from: '?s a dbpedia-owl:Castle ; rdfs:label ?l ; '
+	     + 'foaf:depiction ?d ; dbpedia-owl:owner ?o .'
+	     + '?o rdfs:label ?on .'
+	     + 'Filter(langMatches(lang(?l), "en"))'
+	     + 'Filter(langMatches(lang(?on), "en"))'
+});
+
+var criteria = {name: {$regex: filterText}};
+var flow = store.castles.find(criteria).limit(10).skip(10)
+
+flow.asList()
+	.done(function(docs) {
+	    _(docs).each(function(doc) {
+	        console.log("JSON document: " + JSON.stringify(doc));
+	    });
+	})
+	.fail(function(err) {
+        console.log("An error occurred: ", err);
+	});
+\end{lstlisting}
+```
