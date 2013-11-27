@@ -295,7 +295,7 @@
 				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
 				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
 				<a title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
-				<span style="float: right" class="label label-info">{{facet.item.getDistinctValueCount()}}</span>	
+				<span style="float: right" class="badge">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>
 
 			<span ng-show="facet.isExpanded && facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>
@@ -304,10 +304,16 @@
 	</script>
 
 	<script type="text/ng-template" id="result-set-browser.html">
-		<ul>
-		    <li ng-repeat="item in facetValues">{{item.toString()}}</li>
-        </ul>
-    	<pagination class="pagination-small" total-items="totalItems" page="$parent.currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
+		<div class="frame">
+			<form ng-submit="filterTable()">
+			    <input type="text" ng-model="filterText" />
+				<input class="btn-primary" type="submit" value="Filter" />
+			</form>
+			<ul>
+			    <li ng-repeat="item in facetValues">{{item.toString()}}</li>
+        	</ul>
+    		<pagination class="pagination-small" total-items="totalItems" page="$parent.currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
+		</div>
 	</script>
 </head>
 

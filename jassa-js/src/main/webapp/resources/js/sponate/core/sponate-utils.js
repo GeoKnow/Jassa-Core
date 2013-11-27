@@ -123,8 +123,8 @@
 			return result;
 		},
 
-		join: function(sourceJoinVars, targetElement, targetJoinVars) {
-			var result = this.joinBuilder.addJoin(this.alias, sourceJoinVars, targetElement, targetJoinVars);
+		join: function(sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
+			var result = this.joinBuilder.addJoin(this.alias, sourceJoinVars, targetElement, targetJoinVars, targetAlias);
 
 			return result;
 		}		
@@ -140,7 +140,7 @@
 	 * 
 	 */
 	ns.JoinBuilderElement = Class.create({
-		initialize: function(rootElement) {
+		initialize: function(rootElement, rootAlias) {
 
 			if(rootElement == null) {
 				console.log('[Error] Root element must not be null');
@@ -151,12 +151,13 @@
 			this.usedVarNames = [];
 			this.usedVars = [];
 
-			this.aliasGenerator = new sparql.GenSym('a');
+			//this.aliasGenerator = new sparql.GenSym('a');
 			this.varNameGenerator = new sparql.GeneratorBlacklist(new sparql.GenSym('v'), this.usedVarNames); 
 			
 
 			this.aliasToState = {};
-			this.rootAlias = this.aliasGenerator.next();
+			this.rootAlias = rootAlias;
+			//this.rootAlias = this.aliasGenerator.next();
 			
 
 			var rootState = this.createTargetState(this.rootAlias, new util.HashBidiMap(), [], rootElement, []);
@@ -244,12 +245,12 @@
 		},
 		
 
-		
-		addJoin: function(sourceAlias, sourceJoinVars, targetElement, targetJoinVars) {
+
+		addJoin: function(sourceAlias, sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
 			var sourceState = this.aliasToState[sourceAlias];
 			var sourceVarMap = sourceState.varMap;
 
-			var targetAlias = this.aliasGenerator.next();
+			//var targetAlias = this.aliasGenerator.next();
 			var targetState = this.createTargetState(targetAlias, sourceVarMap, sourceJoinVars, targetElement, targetJoinVars);
 						
 			//var targetVarMap = targetState.varMap;			
@@ -299,8 +300,8 @@
 		}
 	}
 
-	ns.JoinBuilderElement.create = function(rootElement) {
-		var joinBuilder = new ns.JoinBuilderElement(rootElement);
+	ns.JoinBuilderElement.create = function(rootElement, rootAlias) {
+		var joinBuilder = new ns.JoinBuilderElement(rootElement, rootAlias);
 		var result = joinBuilder.getRootNode();
 		
 		return result;

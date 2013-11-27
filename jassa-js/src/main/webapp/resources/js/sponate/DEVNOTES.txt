@@ -1,0 +1,65 @@
+A major goal of Sponate is to unify access to labels and provide conflict resolution.
+
+
+var labelElementFactory
+
+{
+	name: 'labels',
+	scope: { prefLangs: ['en', 'de', 'fr', ''] }
+	scopeProvider: null // indirection
+	vars: { // Convenient row mapper
+	    foo: 'lang(?l)'
+	},
+	template: [{
+		id: '?s',
+  		label: '?l | doreplace(old, new)' // false -> old, true -> new
+	}],
+	from: '?s rdfs:label ?l',
+	joinConceptProvider: someObject // optional
+}
+
+
+
+
+
+Maybe rather than a priority function it is already sufficient to just have a function that
+compares a prior value (possibly null) with the new one.
+This is probably the best approach.
+
+So then the thing is, that based on an array of preferred languages, one has to
+configure the conflict resulution and also make them part of the from-element....
+
+Is there a non-verbose way of doing that?
+
+
+
+
+
+
+Priority functions:
+- The first argument is the expression value (instance of NodeValue or null)
+- The second argument is the whole binding
+
+var priority = function(nodeValue, binding)
+
+//label: { $config: { value: '?l', priority:} }
+
+
+
+Priorities must be non-negative, otherwise values will be discarded
+
+
+
+
+Client side criterias, skip and limit...
+
+Lets assume we cannot completely translate a criteria to SPARQL filter conditions.
+This means that the response of the server may be more general than what was requested.
+
+
+
+
+
+
+
+

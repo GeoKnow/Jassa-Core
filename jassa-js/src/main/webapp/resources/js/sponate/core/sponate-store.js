@@ -153,6 +153,9 @@
 	 * 
 	 * TODO We need to attach a post processor, e.g. for ?/ label
 	 * 
+	 * TODO Pagination will break with criteria queries as the criteria-to-sparql translation is not working yet
+	 *   
+	 * 
 	 */
 	ns.Store = Class.create({
 		/**
@@ -226,6 +229,17 @@
 			if(pattern instanceof ns.PatternMap) {
 				idExpr = pattern.getKeyExpr();
 			}
+
+			
+			
+			var sortConditions = []
+			if(idExpr != null) {
+				//console.log('Expr' + JSON.stringify(idExpr));
+				
+				var sc = new sparql.SortCondition(idExpr, 1);
+
+				sortConditions.push(sc);
+			}
 			
 						
 			var requireSubQuery = limit != null || offset != null;
@@ -249,6 +263,8 @@
 				element = new sparql.ElementGroup([
 				                                   new sparql.ElementSubQuery(subQuery),
 				                                   element]);
+				var orderBys = subQuery.getOrderBy();
+				orderBys.push.apply(orderBys, sortConditions);
 
 			}
 
@@ -266,7 +282,9 @@
 				
 				var sc = new sparql.SortCondition(idExpr, 1);
 
-				query.getOrderBy().push(sc);
+				var orderBys = query.getOrderBy();
+				orderBys.push.apply(orderBys, sortConditions);
+				//query.getOrderBy().push(sc);
 			}
 			//query.setLimit(10);
 			
