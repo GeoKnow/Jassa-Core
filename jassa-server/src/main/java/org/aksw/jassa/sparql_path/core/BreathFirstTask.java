@@ -14,7 +14,6 @@ import javax.sql.DataSource;
 import org.aksw.commons.util.StreamUtils;
 import org.aksw.jassa.sparql_path.core.domain.Path;
 import org.aksw.jassa.sparql_path.core.domain.Step;
-import org.aksw.sparqlify.util.SparqlifyUtils;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.google.common.base.Function;
@@ -159,7 +158,7 @@ public class BreathFirstTask {
 	*/
 	
 	public static DataSource createDb() throws IOException, SQLException {
-		DataSource ds = SparqlifyUtils.createDefaultDatabase("paths");
+		DataSource ds = null;// SparqlifyUtils.createDefaultDatabase("paths");
 
 		PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
 		org.springframework.core.io.Resource r = resolver.getResource("paths.sql");

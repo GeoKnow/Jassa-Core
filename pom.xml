@@ -36,25 +36,7 @@
 	<properties>
 
 		<!-- Dependency Versions -->
-<!-- 		<jena-sparql-api.version>2.10.0-14</jena-sparql-api.version> -->
-
-		<jetty.version>9.0.0.v20130308</jetty.version>
-		<jetty-plugin.version>8.1.10.v20130312</jetty-plugin.version>
-		<maven-war-plugin.version>2.3</maven-war-plugin.version>
-		<!-- <org.mortbay.jetty.version>7.0.0.pre5</org.mortbay.jetty.version> -->
-		<spring.version>3.1.2.RELEASE</spring.version>
-		<!-- <atmosphere.version>1.0.12</atmosphere.version> -->
-		<atmosphere-jquery.version>1.0.9</atmosphere-jquery.version>
-
-		<!-- DON'T TOUCH THESE VERSIONS OR KITTENS WILL DIE -->
-		<!-- <jersey.version>1.8</jersey.version> -->
-		<jersey-spring.version>1.12</jersey-spring.version>
-		<jersey-json.version>1.12</jersey-json.version>
-		<!-- <jersey-json.version>1.17.1</jersey-json.version> -->
-		<javaee-api.version>6.0</javaee-api.version>
-
-		<joda-time.version>2.2</joda-time.version>
-
+		<jena-sparql-api.version>2.10.0-20</jena-sparql-api.version>
 
 		<slf4j.version>1.6.0</slf4j.version>
 		<log4j.version>1.2.14</log4j.version>
@@ -80,21 +62,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.aksw.facete</groupId>
-				<artifactId>facete-client</artifactId>
-				<version>${project.version}</version>
-				<type>war</type>
-			</dependency>
-
-                        <dependency>
-                                <groupId>org.aksw.facete</groupId>
-                                <artifactId>facete-server</artifactId>
-                                <version>${project.version}</version>
-                                <type>war</type>
-                        </dependency>
-
-
 
 			<!-- Jena SPARQL API -->
 <!-- 			<dependency> -->
@@ -108,71 +75,20 @@
 <!-- 				<version>${jena-sparql-api.version}</version> -->
 <!-- 			</dependency> -->
 
-
-	<dependency>
-		<groupId>org.aksw.sparqlify</groupId>
-		<artifactId>sparqlify-core</artifactId>
-		<version>0.6.4</version>
-
-		<exclusions>
-			<exclusion>
-				<!-- Using org.slf4j:jcl-over-slf4j instead -->
-				<!-- TODO Not sure why Sparqlify provides this - actually its (should be) excluded there -->
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>org.activiti</groupId>
-				<artifactId>activiti-engine</artifactId>			
-			</exclusion>
-		</exclusions>
-	</dependency>
-
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.atmosphere</groupId> -->
-<!-- 				<artifactId>atmosphere-jquery</artifactId> -->
-<!-- 				<version>${atmosphere-jquery.version}</version> -->
-<!-- 				<scope>provided</scope> -->
-<!-- 				<type>war</type> -->
-<!-- 			</dependency> -->
-
-			<!-- Jersey -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>com.sun.jersey.contribs</groupId> -->
-<!-- 				<artifactId>jersey-spring</artifactId> -->
-<!-- 				<version>${jersey-spring.version}</version> -->
-<!-- 			</dependency> -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>javax</groupId> -->
-<!-- 				<artifactId>javaee-api</artifactId> -->
-<!-- 				<version>${javaee-api.version}</version> -->
-<!-- 				<scope>provided</scope> -->
-<!-- 			</dependency> -->
-
-
+			<dependency>
+				<groupId>org.aksw.sparqlify</groupId>
+				<artifactId>sparqlify-core</artifactId>
+				<version>0.6.5-SNAPSHOT</version>
+			</dependency>
 
 			<!-- Logging -->
-			<dependency>
-				<groupId>log4j</groupId>
-				<artifactId>log4j</artifactId>
-				<version>${log4j.version}</version>
-				<type>jar</type>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>${slf4j.version}</version>
-				<type>jar</type>
-				<scope>compile</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-ext</artifactId>
-				<version>${slf4j.version}</version>
-				<type>jar</type>
-				<scope>compile</scope>
-			</dependency>
+<!-- 			<dependency> -->
+<!-- 				<groupId>org.slf4j</groupId> -->
+<!-- 				<artifactId>slf4j-ext</artifactId> -->
+<!-- 				<version>${slf4j.version}</version> -->
+<!-- 				<type>jar</type> -->
+<!-- 				<scope>compile</scope> -->
+<!-- 			</dependency> -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-log4j12</artifactId>
@@ -180,101 +96,6 @@
 				<type>jar</type>
 				<scope>runtime</scope>
 			</dependency>
-
-
-
-			<!-- <dependency> -->
-			<!-- <groupId>org.aksw.sparqlify</groupId> -->
-			<!-- <artifactId>sparqlify-core</artifactId> -->
-			<!-- <version>0.2-SNAPSHOT</version> -->
-			<!-- </dependency> -->
-
-
-			<!-- AKSW Commons -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.aksw.commons</groupId> -->
-<!-- 				<artifactId>util</artifactId> -->
-<!-- 				<version>${aksw-commons.version}</version> -->
-<!-- 				<scope>compile</scope> -->
-<!-- 			</dependency> -->
-
-
-			<!-- Database Connectivity -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>postgresql</groupId> -->
-<!-- 				<artifactId>postgresql</artifactId> -->
-<!-- 				<version>8.4-701.jdbc4</version> -->
-<!-- 				<type>jar</type> -->
-<!-- 				<scope>compile</scope> -->
-<!-- 			</dependency> -->
-			<!-- <dependency> -->
-			<!-- <groupId>org.postgis</groupId> -->
-			<!-- <artifactId>postgis-jdbc</artifactId> -->
-			<!-- <version>1.3.3</version> -->
-			<!-- <type>jar</type> -->
-			<!-- <scope>compile</scope> -->
-			<!-- </dependency> -->
-
-
-			<!-- JDBC Connection Pooling -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>com.jolbox</groupId> -->
-<!-- 				<artifactId>bonecp</artifactId> -->
-<!-- 				<version>0.7.1.RELEASE</version> -->
-<!-- 			</dependency> -->
-
-
-			<!-- Used for SQL-Escapting (StringEscapeUtils) -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>commons-lang</groupId> -->
-<!-- 				<artifactId>commons-lang</artifactId> -->
-<!-- 				<version>2.4</version> -->
-<!-- 				<type>jar</type> -->
-<!-- 				<scope>compile</scope> -->
-<!-- 			</dependency> -->
-
-
-			<!-- Command Line Argument Parsing -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>commons-cli</groupId> -->
-<!-- 				<artifactId>commons-cli</artifactId> -->
-<!-- 				<version>1.2</version> -->
-<!-- 				<type>jar</type> -->
-<!-- 				<scope>compile</scope> -->
-<!-- 			</dependency> -->
-
-<!-- 			<dependency> -->
-<!-- 				<groupId>net.sf.opencsv</groupId> -->
-<!-- 				<artifactId>opencsv</artifactId> -->
-<!-- 				<version>2.3</version> -->
-<!-- 			</dependency> -->
-
-
-			<!-- Not sure if we need this for getting Jena to work -->
-			<!-- <dependency> -->
-			<!-- <groupId>xerces</groupId> -->
-			<!-- <artifactId>xercesImpl</artifactId> -->
-			<!-- <version>2.10.0</version> -->
-			<!-- <scope>runtime</scope> -->
-			<!-- </dependency> -->
-
-
-			<!-- Collection Libraries -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>com.google.guava</groupId> -->
-<!-- 				<artifactId>guava</artifactId> -->
-<!-- 				<version>11.0</version> -->
-<!-- 				<type>jar</type> -->
-<!-- 				<scope>compile</scope> -->
-<!-- 			</dependency> -->
-
-
-			<!-- Time Library -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>joda-time</groupId> -->
-<!-- 				<artifactId>joda-time</artifactId> -->
-<!-- 				<version>${joda-time.version}</version> -->
-<!-- 			</dependency> -->
 
 			<!-- Gson: Java to Json conversion -->
 			<dependency>
@@ -284,18 +105,13 @@
 				<scope>compile</scope>
 			</dependency>
 
+
 			<!-- Testing -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.11</version>
 				<scope>test</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.tuckey</groupId>
-				<artifactId>urlrewritefilter</artifactId>
-				<version>4.0.3</version>
 			</dependency>
 
 		</dependencies>
@@ -328,7 +144,7 @@
 				<configuration>
 					<arguments>-P!source-artifacts</arguments>
 					<useReleaseProfile>false</useReleaseProfile>
-					<goals>-Dmaven.test.skip=true deploy</goals>
+					<goals>-Dmaven.test.skip=true deploy</goals>					
 				</configuration>
 			</plugin>
 
@@ -458,27 +274,6 @@
 			<name>University Leipzig, AKSW Maven2 Snapshot Repository</name>
 			<url>http://maven.aksw.org/repository/snapshots/</url>
 		</repository>
-
-		<repository>
-			<id>maven2-repository.java.net</id>
-			<name>Java.net Repository for Maven</name>
-			<url>http://download.java.net/maven/2/</url>
-			<layout>default</layout>
-		</repository>
-
-		<!-- JBoss repo for the maven tattletale plugin that checks for duplicate 
-			classes in war files -->
-		<repository>
-			<id>jboss</id>
-			<url>https://repository.jboss.org/nexus/content/repositories/releases</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-
 	</repositories>
 
 

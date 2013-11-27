@@ -4,23 +4,22 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
-import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
 import org.aksw.jassa.sparql_path.core.algorithm.ConceptPathFinder;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
 import org.aksw.jassa.sparql_path.core.domain.Path;
-import org.jgrapht.graph.DefaultEdge;
+import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
+import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.util.iterator.Map1;
 
-class EdgeTransition
-	extends DefaultEdge
-{
-	public EdgeTransition() {
-	}
-}
+//class EdgeTransition
+//	extends DefaultEdge
+//{
+//	public EdgeTransition() {
+//	}
+//}
 
 /**
  * Just some idea:
@@ -54,7 +53,7 @@ class PropertySummaryCreator {
 }
 
 
-public class Main {
+public class MainCli {
 	
 	
 	
