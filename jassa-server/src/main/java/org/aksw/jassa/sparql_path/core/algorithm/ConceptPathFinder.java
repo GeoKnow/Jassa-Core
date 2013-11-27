@@ -5,8 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
-import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.aksw.jassa.sparql_path.core.BreathFirstTask;
 import org.aksw.jassa.sparql_path.core.NeighborProvider;
 import org.aksw.jassa.sparql_path.core.NeighborProviderModel;
@@ -19,6 +17,8 @@ import org.aksw.jassa.sparql_path.core.domain.Step;
 import org.aksw.jassa.sparql_path.utils.QueryExecutionUtils;
 import org.aksw.jassa.sparql_path.utils.QueryGenerationUtils;
 import org.aksw.jassa.sparql_path.utils.VarUtils;
+import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
+import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.aksw.sparqlify.core.algorithms.GeneratorBlacklist;
 
 import com.hp.hpl.jena.graph.Node;
