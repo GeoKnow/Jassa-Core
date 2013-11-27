@@ -423,7 +423,7 @@
 		 * 
 		 */
 		createTypedLiteralFromValue: function(val, typeUri) {
-			var dtype = rdf.RdfDatatypes[typeUri];
+			var dtype = ns.RdfDatatypes[typeUri];
 			if(!dtype) {
 				console.log('[ERROR] No dtype for ' + typeUri);
 				throw 'Bailing out';
@@ -432,9 +432,9 @@
 			var lex = dtype.unparse(val);
 			var lang = null;
 			
-			var literalLabel = new rdf.LiteralLabel(val, lex, lang, dtype);
+			var literalLabel = new ns.LiteralLabel(val, lex, lang, dtype);
 			
-			var result = new rdf.Node_Literal(literalLabel);
+			var result = new ns.Node_Literal(literalLabel);
 			
 			return result;
 		},
@@ -445,7 +445,7 @@
 		 * 
 		 */
 		createTypedLiteralFromString: function(str, typeUri) {
-			var dtype = rdf.RdfDatatypes[typeUri];
+			var dtype = ns.RdfDatatypes[typeUri];
 			if(!dtype) {
 				console.log('[ERROR] No dtype for ' + typeUri);
 				throw 'Bailing out';
@@ -458,9 +458,9 @@
 			//var lex = s; //dtype.parse(str);
 			var lang = null;
 			
-			var literalLabel = new rdf.LiteralLabel(val, lex, lang, dtype);
+			var literalLabel = new ns.LiteralLabel(val, lex, lang, dtype);
 			
-			var result = new rdf.Node_Literal(literalLabel);
+			var result = new ns.Node_Literal(literalLabel);
 			
 			return result;
 		},
