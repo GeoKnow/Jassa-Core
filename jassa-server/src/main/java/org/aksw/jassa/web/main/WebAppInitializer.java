@@ -32,23 +32,22 @@ public class WebAppInitializer
 		AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
 		dispatcherContext.register(WebMvcConfig.class);
 		
-		ServletRegistration.Dynamic adminServlet = servletContext.addServlet("sparqlify-admin-api", new SpringServlet());
-		adminServlet.setInitParameter("com.sun.jersey.config.property.packages", "org.aksw.sparqlify.admin.web.api");
-		adminServlet.addMapping("/manager/*");
+		ServletRegistration.Dynamic adminServlet = servletContext.addServlet("jassa-api", new SpringServlet());
+		adminServlet.setInitParameter("com.sun.jersey.config.property.packages", "org.aksw.jassa.web.api");
+		adminServlet.addMapping("/api/*");
 		adminServlet.setLoadOnStartup(1);
 		
-		ServletRegistration.Dynamic endpointServlet = servletContext.addServlet("sparqlify-endpoints", new SpringServlet());
-		endpointServlet.setInitParameter("com.sun.jersey.config.property.packages", "org.aksw.sparqlify.admin.web.endpoint");
-		endpointServlet.setLoadOnStartup(1);
-		endpointServlet.addMapping("/services/*");
-		
-		// Register and map the dispatcher servlet
-		ServletRegistration.Dynamic dispatcherServlet = servletContext.addServlet("sparqlify-dispatcher", new DispatcherServlet(dispatcherContext));
-		//dispatcherServlet.set
-//		dispatcherServlet.addMapping("");
-		dispatcherServlet.addMapping("*.do");
-		//dispatcherServlet.addMapping("/**");
-		dispatcherServlet.setLoadOnStartup(1);
-
+//		ServletRegistration.Dynamic endpointServlet = servletContext.addServlet("sparqlify-endpoints", new SpringServlet());
+//		endpointServlet.setInitParameter("com.sun.jersey.config.property.packages", "org.aksw.sparqlify.admin.web.endpoint");
+//		endpointServlet.setLoadOnStartup(1);
+//		endpointServlet.addMapping("/services/*");
+//		
+//		// Register and map the dispatcher servlet
+//		ServletRegistration.Dynamic dispatcherServlet = servletContext.addServlet("sparqlify-dispatcher", new DispatcherServlet(dispatcherContext));
+//		//dispatcherServlet.set
+////		dispatcherServlet.addMapping("");
+//		dispatcherServlet.addMapping("*.do");
+//		//dispatcherServlet.addMapping("/**");
+//		dispatcherServlet.setLoadOnStartup(1);
 	}	
 }
