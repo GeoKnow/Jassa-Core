@@ -111,6 +111,7 @@
 	};
 	
 	ns.defaultHashCode = function(a) {
+		var result;
 		if(a && a.hashCode) {
 			result = a.hashCode();
 		}

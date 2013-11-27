@@ -1,7 +1,8 @@
 (function() {
 
 	var ns = Jassa.facete;
-	
+	var sparql = Jassa.sparql;
+	var rdf = Jassa.rdf;
 
 	/**
 	 * 

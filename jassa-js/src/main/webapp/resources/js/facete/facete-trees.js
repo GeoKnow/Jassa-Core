@@ -530,7 +530,7 @@
 		generator = generator ? generator : new sparql.GenSym("fv");
 		
 		var varNode = new ns.VarNode(varName, generator);		
-		result = new ns.FacetNode(varNode);
+		var result = new ns.FacetNode(varNode);
 		return result;
 	};
 

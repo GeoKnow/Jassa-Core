@@ -3,6 +3,7 @@
 	var vocab = Jassa.vocab;
 	var util = Jassa.util;
 	var sparql = Jassa.sparql;
+	var rdf = Jassa.rdf;
 	
 	var ns = Jassa.facete;
 

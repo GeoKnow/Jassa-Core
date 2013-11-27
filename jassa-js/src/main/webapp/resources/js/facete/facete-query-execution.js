@@ -2,6 +2,7 @@
 
 	
 	var service = Jassa.service;
+	var rdf = Jassa.rdf;
 	
 	var ns = Jassa.facete;
 	

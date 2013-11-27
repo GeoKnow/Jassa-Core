@@ -8,10 +8,10 @@
 	ns.createDefaultConstraintElementFactories = function() {
 		var result = new util.ObjectMap();
 	
-		result.put("exist", new facete.ConstraintElementFactoryExist());
-		result.put("equal", new facete.ConstraintElementFactoryEqual());
+		result.put("exist", new ns.ConstraintElementFactoryExist());
+		result.put("equal", new ns.ConstraintElementFactoryEqual());
 		//registry.put("range", new facete.ConstaintElementFactoryRange());		
-		result.put("bbox", new facete.ConstraintElementFactoryBBoxRange());
+		result.put("bbox", new ns.ConstraintElementFactoryBBoxRange());
 
 		
 		return result;

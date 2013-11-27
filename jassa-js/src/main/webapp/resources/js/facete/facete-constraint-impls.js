@@ -69,8 +69,8 @@
 
 	ns.ConstraintElementFactoryBBoxRange = Class.create(ns.ConstraintElementFactory, {
 		initialize: function() {
-			this.stepX = new facete.Step(vocab.wgs84.str.lon);
-			this.stepY = new facete.Step(vocab.wgs84.str.la);
+			this.stepX = new ns.Step(vocab.wgs84.str.lon);
+			this.stepY = new ns.Step(vocab.wgs84.str.la);
 		},
 		
 		createElementsAndExprs: function(rootFacetNode, spec) {

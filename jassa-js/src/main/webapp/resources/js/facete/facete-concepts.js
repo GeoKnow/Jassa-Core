@@ -3,6 +3,7 @@
 	var sparql = Jassa.sparql;
 	
 	var ns = Jassa.facete;
+	var rdf = Jassa.rdf;
 
 	
 	/**
@@ -77,7 +78,7 @@
 
 			//pathManager = new facets.PathManager(s.value);
 			
-			result = new facete.Concept(conceptElement, s);
+			var result = new ns.Concept(conceptElement, s);
 
 			return result;
 		},
