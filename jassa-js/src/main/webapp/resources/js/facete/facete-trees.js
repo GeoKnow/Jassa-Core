@@ -644,12 +644,6 @@
 			var result = this.wrap(fn);
 			return result;
 		},
-		
-		forProperty: function(propertyName, isInverse) {
-			var fn = this.facetNode.forProperty(propertyName, isInverse);
-			var result = this.wrap(fn);
-			return result;				
-		},
 
 		createConstraint: function(json) {
 			if(json.type != "equals") {
