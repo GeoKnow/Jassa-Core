@@ -154,7 +154,7 @@
 	var joinNode = sponate.JoinBuilderElement.create(a, aliasGenerator.next());
 	var foo = joinNode.join([vs], b, [vs], aliasGenerator.next());
 	//var bar = foo.join([vl], b, [vs]);
-	joinNode.join([vs], a, [vl], aliasGenerator.next());
+	joinNode.leftJoin([vs], a, [vl], aliasGenerator.next());
 
 	var joinBuilder = foo.getJoinBuilder();
 	var elements = joinBuilder.getElements();
@@ -211,6 +211,9 @@
 							      {name: {$regex: filterText}},
 							      {owners: {$elemMatch: {name: {$regex: filterText}}}}
 					]};
+					
+					//criteria = {name: {$regex: filterText}};
+					
 				}
  				
 //				criteria = {};

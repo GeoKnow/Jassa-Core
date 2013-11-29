@@ -6,7 +6,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GeoKnow/Jassa.git"
+  },
   "author": "Claus Stadler",
-  "license": "BSD"
+  "license": "BSD",
+  "dependencies": {
+    "xmlhttprequest": "~1.6.0",
+    "jquery": "~1.8.3",
+    "underscore": "~1.5.2",
+    "underscore.string": "~2.3.3",
+    "prototype": "~0.0.5"
+  }
 }

@@ -86,8 +86,10 @@
 			var result;
 			if(criterias.length == 1) {
 				result = criterias[0];
-			} else { 			
-				result = new ns.CriteriaLogicalAnd(criterias);
+			} else {
+			    
+			    // TODO Not sure if the path argument is correct here
+				result = new ns.CriteriaLogicalAnd(new ns.AttrPath(), criterias);
 			}
 
 			return result;
@@ -205,6 +207,7 @@
 		},
 		
 		accept: function(visitor) {
+		    console.log('Not overridden');
 			throw 'Not overridden';
 		}
 	});
@@ -217,7 +220,13 @@
 		
 		getOpName: function() {
 			return this.opName;
-		}
+		},
+		
+		accept: function(visitor) {
+//		    debugger;
+            var result = ns.callVisitor('visitCriteria' + this.opName, this, arguments);
+            return result;
+        }
 	});
 	
 	
@@ -272,15 +281,28 @@
 		
 	});
 
+    ns.CriteriaPathValue = Class.create(ns.CriteriaPath, {
+        initialize: function($super, opName, attrPath, value) {
+            $super(opName, attrPath);
+            this.value = value;
+        },
+
+        getValue: function() {
+            return this.value;
+        },
+        
+        toString: function() {
+            return '(' + attrPath + ' ' + this.opName + ' ' + this.value + ')'; 
+        }
+    });
 
 	
 	/**
 	 * @param the document on which to apply the criteria 
 	 */
-	ns.CriteriaEq = Class.create(ns.CriteriaPath, {
+	ns.CriteriaEq = Class.create(ns.CriteriaPathValue, {
 		initialize: function($super, attrPath, value) {
-			$super('$eq', attrPath);
-			this.value = value;
+			$super('$eq', attrPath, value);
 		},
 		
 		$match: function(doc, val) {
@@ -363,33 +385,46 @@
 			this.regex = regex;
 		},
 		
+		getRegex: function() {
+		    return this.regex;
+		},
+		
 		$match: function(doc, val) {
 			var result = this.regex.test(val);
 
 			return result;
-		},
-		
-		accept: function(visitor) {
-			var result = this.callVisitor('visitRegex', this, arguments);
-			return result;
 		}
+		
+//		accept: function(visitor) {
+//			var result = this.callVisitor('visitRegex', this, arguments);
+//			return result;
+//		}
 	});
 
 	
 
+    ns.CriteriaPathCollection = Class.create(ns.CriteriaPath, {
+        initialize: function($super, opName, attrPath, criterias) {
+            $super(opName, attrPath);
+            this.criterias = criterias;
+        },
+        
+        getCriterias: function() {
+            return this.criterias;
+        },
+        
+        toString: function() {
+            return '[' + this.criterias.join(', ') + ']';
+        }
+    });
 
 	/**
 	 * A criteria where
 	 * 
 	 */
-	ns.CriteriaLogicalAnd = Class.create(ns.CriteriaBase, {
-		initialize: function($super, criterias) {
-			$super('$and');
-			this.criterias = criterias;
-		},
-		
-		getCriterias: function() {
-			return this.criterias;
+	ns.CriteriaLogicalAnd = Class.create(ns.CriteriaPathCollection, {
+		initialize: function($super, attrPath, criterias) {
+			$super('$and', attrPath, criterias);
 		},
 		
 		match: function(doc) {
@@ -403,15 +438,15 @@
 	});
 		
 
-	ns.CriteriaLogicalOr = Class.create(ns.CriteriaPath, {
+	ns.CriteriaLogicalOr = Class.create(ns.CriteriaPathCollection, {
 		initialize: function($super, attrPath, criterias) {
-			$super('$or', attrPath);
-			this.criterias = criterias;
+			$super('$or', attrPath, criterias);
+			//this.criterias = criterias;
 		},
 		
-		getCriterias: function() {
-			return this.criterias;
-		},
+//		getCriterias: function() {
+//			return this.criterias;
+//		},
 		
 		$match: function(doc, val) {
 
@@ -421,12 +456,13 @@
 			});
 			
 			return result;
-		},
-		
-		accept: function(visitor) {
-			var result = this.callVisitor('visitLogicalOr', this, arguments);
-			return result;
 		}
+//		,
+//		
+//		accept: function(visitor) {
+//			var result = this.callVisitor('visitLogicalOr', this, arguments);
+//			return result;
+//		}
 
 	});
 		
@@ -437,15 +473,15 @@
 	 * "Matching arrays must have at least one element that matches all specified criteria."
 	 * 
 	 */
-	ns.CriteriaElemMatch = Class.create(ns.CriteriaPath, {
+	ns.CriteriaElemMatch = Class.create(ns.CriteriaPathCollection, {
 		initialize: function($super, attrPath, criterias) {
-			$super('$elemMatch', attrPath);
-			this.criterias = criterias;
+			$super('$elemMatch', attrPath, criterias);
+//			this.criterias = criterias;
 		},
 		
-		getCriterias: function() {
-			return this.criterias;
-		},
+//		getCriterias: function() {
+//			return this.criterias;
+//		},
 		
 		$match: function(doc, val) {
 			if(!_(val).isArray()) {

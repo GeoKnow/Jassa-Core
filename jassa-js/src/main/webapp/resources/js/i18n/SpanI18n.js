@@ -5,7 +5,7 @@
 	
 	var ns = utils;
 
-	
+		
 	/**
 	 * A class that fills in approprate labels for spans, such as
 	 * &gt;span data-uri="http://..." /h&lt;

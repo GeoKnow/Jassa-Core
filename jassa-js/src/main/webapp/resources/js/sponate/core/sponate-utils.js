@@ -81,6 +81,11 @@
 	});
 	*/
 	
+	ns.JoinType = {
+	        INNER_JOIN: 'inner_join',
+	        LEFT_JOIN: 'left_join'
+	};
+	
 	/**
 	 * A convenient facade on top of a join builder
 	 * 
@@ -112,26 +117,122 @@
 		// 
 		// joinBuilder.getRowMapper();
 		// joinBuilder.getElement();
-		getJoinNodes: function() {
+		// TODO: Result must include joinType
+		getJoinNodeInfos: function() {
 			var state = this.joinBuilder.getState(this.alias);
 			
 			var joinBuilder = this.joinBuilder;
-			var result = _(state.joins).map(function(alias) {
-				return this.joinBuilder.getJoinNode(alias);
+			var result = _(state.getJoinInfos()).map(function(joinInfo) {
+				var alias = joinInfo.getAlias();
+			    var targetJoinNode = this.joinBuilder.getJoinNode(alias);
+			   
+			    var r = new ns.JoinNodeInfo(targetJoinNode, joinInfo.getJoinType());
+			    return r;
 			});
 			
 			return result;
 		},
 
-		join: function(sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
-			var result = this.joinBuilder.addJoin(this.alias, sourceJoinVars, targetElement, targetJoinVars, targetAlias);
+		joinAny: function(joinType, sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
+			var result = this.joinBuilder.addJoin(joinType, this.alias, sourceJoinVars, targetElement, targetJoinVars, targetAlias);
 
 			return result;
-		}		
+		},
+		
+		join: function(sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
+		    var result = this.joinAny(ns.JoinType.INNER_JOIN, sourceJoinVars, targetElement, targetJoinVars, targetAlias);
+		    return result;
+		},
+
+		leftJoin: function(sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
+            var result = this.joinAny(ns.JoinType.LEFT_JOIN, sourceJoinVars, targetElement, targetJoinVars, targetAlias);
+            return result;
+        }
 	});
 	
-
+	
+	
 	/**
+	 * 
+	 * 
+	 */
+	ns.JoinNodeInfo = Class.create({
+	    initialize: function(joinNode, joinType) {
+	        this.joinNode = joinNode;
+	        this.joinType = joinType;
+	    },
+
+        getJoinNode: function() {
+            return this.joinNode;
+        },
+       
+        getJoinType: function() {
+            return this.joinType;
+        },
+       
+        toString: function() {
+            return this.joinType + " " + this.joinNode;
+        }
+	});
+	
+	
+	/**
+	 * This object just holds information
+	 * about the join type of a referred alias. 
+	 * 
+	 */
+	ns.JoinInfo = Class.create({
+	   initialize: function(alias, joinType) {
+	       this.alias = alias;
+	       this.joinType = joinType;
+	   },
+	   
+	   getAlias: function() {
+	       return this.alias;
+	   },
+	   
+	   getJoinType: function() {
+	       return this.joinType;
+	   },
+	   
+	   toString: function() {
+	       return this.joinType + " " + this.alias;
+	   }
+	});
+
+	
+	ns.JoinTargetState = Class.create({
+	    initialize: function(varMap, joinNode, element) {
+	        this.varMap = varMap;
+	        this.joinNode = joinNode;
+	        this.element = element;
+	        this.joinInfos = [];
+	    },
+	    
+	    getVarMap: function() {
+	        return this.varMap;
+	    },
+	    
+	    getJoinNode: function() {
+	        return this.joinNode;
+	    },
+	    
+	    getElement: function() {
+	        return this.element;
+	    },
+	    
+	    getJoinInfos: function() {
+	        return this.joinInfos;
+	    }
+	});
+	
+	/**
+	 * Aliases are automatically assigned if none is given explicitly
+	 * 
+	 * The alias can be retrieved using
+	 * joinNode.getAlias();
+	 * 
+	 * 
 	 * a: castle
 	 * 
 	 * 
@@ -151,20 +252,19 @@
 			this.usedVarNames = [];
 			this.usedVars = [];
 
-			//this.aliasGenerator = new sparql.GenSym('a');
+			this.aliasGenerator = new sparql.GenSym('a');
 			this.varNameGenerator = new sparql.GeneratorBlacklist(new sparql.GenSym('v'), this.usedVarNames); 
 			
 
 			this.aliasToState = {};
-			this.rootAlias = rootAlias;
-			//this.rootAlias = this.aliasGenerator.next();
-			
+			this.rootAlias = rootAlias ? rootAlias : this.aliasGenerator.next(); 
+			 
 
 			var rootState = this.createTargetState(this.rootAlias, new util.HashBidiMap(), [], rootElement, []);
 
 			this.aliasToState[this.rootAlias] = rootState;
 			
-			this.rootNode = rootState.joinNode; //new ns.JoinNode(rootAlias);
+			this.rootNode = rootState.getJoinNode(); //new ns.JoinNode(rootAlias);
 		},
 
 		getRootNode: function() {
@@ -174,7 +274,7 @@
 		getJoinNode: function(alias) {
 			var state = this.aliasToState[alias];
 			
-			var result = state ? state.joinNode : null;
+			var result = state ? state.getJoinNode() : null;
 			
 			return result;
 		},
@@ -186,7 +286,7 @@
 	
 		getElement: function(alias) {
 			var state = this.aliasToState[alias];
-			var result = state ? state.element : null;
+			var result = state ? state.getElement() : null;
 			return result;
 		},
 		
@@ -234,48 +334,95 @@
 			
 			var result = new ns.JoinNode(this, targetAlias);
 
-			var targetState = {
-				varMap: targetVarMap,
-				joinNode: result,
-				element: newTargetElement,
-				joins: []
-			};
-
+			var targetState = new ns.JoinTargetState(targetVarMap, result, newTargetElement); 
+//			
+//			var targetState = {
+//				varMap: targetVarMap,
+//				joinNode: result,
+//				element: newTargetElement,
+//				joins: []
+//			};
+//
 			return targetState;
 		},
 		
 
 
-		addJoin: function(sourceAlias, sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
+		addJoin: function(joinType, sourceAlias, sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
 			var sourceState = this.aliasToState[sourceAlias];
-			var sourceVarMap = sourceState.varMap;
+			var sourceVarMap = sourceState.getVarMap();
 
-			//var targetAlias = this.aliasGenerator.next();
+			if(!targetAlias) {
+			    targetAlias = this.aliasGenerator.next();
+			}
+
 			var targetState = this.createTargetState(targetAlias, sourceVarMap, sourceJoinVars, targetElement, targetJoinVars);
 						
 			//var targetVarMap = targetState.varMap;			
 			//var newTargetVars = targetVarMap.getInverse().keyList();
 			
-			
-			sourceState.joins.push(targetAlias);
+			// TODO support specification of join types (i.e. innerJoin, leftJoin)
+			var joinInfo = new ns.JoinInfo(targetAlias, joinType);
+			sourceState.getJoinInfos().push(joinInfo);
+			//sourceState.joins.push(targetAlias);
 			
 
 			this.aliasToState[targetAlias] = targetState;
 			
-			var result = targetState.joinNode;
+			var result = targetState.getJoinNode();
 			return result;
+		},
+
+		
+		getElementsRec: function(node) {
+		    var resultElements = [];
+		    
+	        var element = node.getElement();
+	        resultElements.push(element);
+
+		    
+		    var children = node.getJoinNodeInfos();
+		    
+		    var self = this;
+		    _(children).each(function(child) {
+	            var childNode = child.getJoinNode();
+		        var childElements = self.getElementsRec(childNode);
+
+		        var childElement = new sparql.ElementGroup(childElements);
+
+
+		        var joinType = child.getJoinType();
+		        switch(joinType) {
+		        case ns.JoinType.LEFT_JOIN:
+		            childElement = new sparql.ElementOptional(childElement);
+		            break;
+		        case ns.JoinType.INNER_JOIN:
+		            break;
+		        default:
+		            console.log('[ERROR] Unsupported join type: ' + joinType);
+		            throw 'Bailing out';
+		        }
+		        resultElements.push(childElement);
+		    });
+		    
+		    return resultElements;
 		},
 		
 		getElements: function() {
-			var result = [];
-			
+		    var rootNode = this.getRootNode();
+		    
+		    var result = this.getElementsRec(rootNode);
+		    return result;
+		    
+			//var result = [];
+			/*
 			var rootNode = this.getRootNode();
 
 			util.TreeUtils.visitDepthFirst(rootNode, ns.JoinBuilderUtils.getChildren, function(node) {
 				result.push(node.getElement());
 				return true;
 			});
-			
+			*/
 			return result;
 		},
 		
@@ -441,8 +588,10 @@
 						aliasToJoins[sourceAlias] = joins;
 					}
 					
+					// TODO What was the idea behind isTransient?
+					// I think it was like this: If we want to fetch distinct resources based on a left join's lhs, and there is no constrain on the rhs, we can skip the join
 					var join = {
-						targetAlias: targetAlias,
+						targetAlias: targetAlias,						
 						isTransient: true
 					};
 					
@@ -513,7 +662,7 @@
 	
 
 	/**
-	 * 
+	 * Not used
 	 */
 	ns.Graph = Class.create({
 		initialize: function(fnCreateNode, fnCreateEdge) {

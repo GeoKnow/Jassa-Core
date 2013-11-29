@@ -97,7 +97,11 @@
 	
 	var facete = Jassa.facete;
 	
-	
+// 	alert(rdf.NodeFactory.parseRdfTerm('_:boo'));
+// 	alert(rdf.NodeFactory.parseRdfTerm('<http://example.org>'));
+// 	alert(rdf.NodeFactory.parseRdfTerm('"foo"'));
+// 	alert(rdf.NodeFactory.parseRdfTerm('"bar"@en'));
+// 	alert(rdf.NodeFactory.parseRdfTerm('"baz"^^<http://www.w3.org/2001/XMLSchema#string>'));
 	//facete.test();
 	
 	var qef = new service.QueryExecutionFactoryHttp("http://localhost/sparql", []);

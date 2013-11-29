@@ -85,7 +85,74 @@
 			return result;
 		}
 	};
-			
+
+	
+	ns.ElementFactory = Class.create({
+	    createElement: function() {
+	        throw "Not overridden";
+	    }
+	});
+
+	
+	/**
+	 * Element factory returning an initially provided object
+	 */
+	ns.ElementFactoryConst = Class.create(ns.ElementFactory, {
+	    initialize: function(element) {
+	        this.element = element;
+	    },
+	    
+	    createElement: function() {
+	        return this.element;
+	    }
+	});
+	
+	
+	/**
+	 * This factory creates an element Based on two elements (a, b) and corresponding join variables.
+	 * 
+	 * The variables in the first element are retained, whereas those of the
+	 * second element are renamed as needed.
+	 * 
+	 * The purpose of this class is to support joining a concept created from faceted search
+	 * with a sponate sparql element.
+	 * 
+	 * Example:
+	 * {?x a Castle} join {?y rdfs:label} on (?x = ?y)
+	 * after the join, the result will be
+	 * {?y a Castle . ?y rdfs:label}
+	 * 
+	 * 
+	 * 
+	 * 
+	 */
+	ns.ElementFactoryJoin = Class.create(ns.ElementFactory, {
+	   initialize: function(elementFactoryA, elementFactoryB, joinVarsA, joinVarsB, joinType) {
+	       this.elementFactoryA = elementFactoryA;
+	       this.elementFactoryB = elementFactoryB;
+	       this.joinVarsA = joinVarsA;
+	       this.joinVarsB = joinVarsB;
+	       this.joinType = joinType;
+	   },
+	   
+	   createElement: function() {
+	       
+	       var elementA = this.elementFactoryA.createElement();
+	       var elementB = this.elementFactoryB.createElement();
+	       
+	       var rootJoinNode = sponate.JoinBuilderElement.create(elementB);
+	       
+	       var joinNode = rootJoinNode.join(this.joinVarsA, elementA, this.joinVarsB, aliasGenerator.next());
+
+	       var joinBuilder = joinNode.getJoinBuilder();
+	       var elements = joinBuilder.getElements();
+	       var result = new sparql.ElementGroup(elements);
+	       var aliasToVarMap = joinBuilder.getAliasToVarMap();
+
+	       return result;
+	   }
+	});
+	
 	
 	ns.ElementUtils = {
 		flatten: function(elements) {

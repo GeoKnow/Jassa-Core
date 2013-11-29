@@ -35,6 +35,10 @@ var Jassa = {
 	
 	util: {
 		//collection: {}
+	},
+	
+	client: {
+	    
 	}
 };
 

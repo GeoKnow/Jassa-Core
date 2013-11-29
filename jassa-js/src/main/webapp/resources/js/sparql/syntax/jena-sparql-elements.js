@@ -263,6 +263,7 @@
 			}
 			
 
+			// TODO Add a cache
 			var re = new RegExp(prefix + ':(\\w+)', 'g');
 
 			result = result.replace(re, '<' + url + '$1>');

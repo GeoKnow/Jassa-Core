@@ -394,9 +394,25 @@
 		}
 	});
 	
-	
-	
-	
+
+	// TODO Move to util package
+	// http://stackoverflow.com/questions/249791/regex-for-quoted-string-with-escaping-quotes
+    ns.strRegex = /"([^"\\]*(\\.[^"\\]*)*)"/;
+
+    /**
+     * 
+     */
+	ns.parseUri = function(str, prefixes) {
+	    var result;
+	    if(str.charAt(0) == '<') {
+	        result = str.slice(1, -1);
+	    } else {
+	        console.log('[ERROR] Cannot deal with ' + str);
+	        throw 'Not implemented';
+	    }  
+	    
+	    return result;
+	};
 	
 	ns.NodeFactory = {
 		createAnon: function(anonId) {
@@ -493,6 +509,97 @@
 			}
 			
 			return result;
+		},
+		
+		
+//		_parseUri: function(str, prefixes) {
+//		    if(str.charAt(0) == '<'))
+//		    
+//		    if(str.indexOf(''))
+//		},
+		
+		/**
+		 * Parses an RDF term and returns an rdf.Node object
+		 * 
+		 * blankNode: _:
+		 * uri: <http://foo>
+		 * plainLiteral ""@foo
+		 * typedLiteral""^^<>
+		 */
+		parseRdfTerm: function(str, prefixes) {
+		    if(!str) {
+		        console.log('[ERROR] Null Pointer Exception');
+		        throw 'Bailing out';
+		    }
+		    		    
+	        str = str.trim();
+
+		    if(str.length == 0) {
+                console.log('[ERROR] Empty string');
+                throw 'Bailing out';		        
+		    }
+		    		    
+		    var c = str.charAt(0);
+
+		    var result;
+		    switch(c) {
+		    case '<': 
+		        var uriStr = str.slice(1, -1);
+		        result = ns.NodeFactory.createUri(uriStr);
+		        break;
+		    case '_':
+		        var anonId = new ns.AnonId(c);
+		        result = ns.NodeFactory.createAnon(anonId);
+		        break;
+		    case '"':
+		        var matches = ns.strRegex.exec(str);
+		        var match = matches[0];
+		        var val = match.slice(1, -1);
+		    
+		        
+		        //console.log('match: ' + match);
+		        
+		        var l = match.length;
+		        var d = str.charAt(l);
+		        
+		        if(!d) {
+		            debugger;
+                    var result = ns.NodeFactory.createTypedLiteralFromString(val, 'http://www.w3.org/2001/XMLSchema#string');		            
+		        }
+		        //console.log('d is ' + d);
+		        switch(d) {
+		        case '':
+		        case '@':
+		            var langTag = str.substr(l + 1)
+		            var result = ns.NodeFactory.createPlainLiteral(val, langTag);
+		            break;
+		        case '^':
+		            var type = str.substr(l + 2);
+		            var typeStr = ns.parseUri(type);
+		            var result = ns.NodeFactory.createTypedLiteralFromString(val, typeStr);
+		            break;
+		        default: 
+	                console.log('[ERROR] Excepted @ or ^^');
+                    throw 'Bailing out';
+		        }
+		        break;
+		    default:
+		        // Assume an uri in prefix notation
+		        throw "Not implemented";
+		    }
+		    
+		    return result;
+//		    if(c == '<') { //uri
+//		        
+//		    }
+//            else if(c == '"') {
+//                
+//            }
+//		    else if(c == '_') { // blank node
+//		        
+//		    }
+		    
+
 		}
 	};
 

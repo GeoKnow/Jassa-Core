@@ -39,6 +39,14 @@
 			return this.steps[index];
 		},
 		
+		isEmpty: function() {
+		    return this.steps.length == 0;
+		},
+		
+		size: function() {
+		    return this.steps.length;
+		},
+		
 		concat: function(that) {
 			var tmp = this.steps.concat(that.getSteps());
 			var result = new ns.AttrPath(tmp);
@@ -156,17 +164,28 @@
 			if(_(attrPath).isString()) {
 				attrPath = ns.AttrPath.parse(rawAttrPath);
 			} else {
-				attrPath = rawAttrPath();
+				attrPath = rawAttrPath;
 			}
 			
 			start = start ? start : 0;
 			
-			var result = this.$findPattern(attrPath, start);
+			var result;
+			// On empty paths return this.
+			var pathLength = attrPath.size();
+			if(start > pathLength) {
+			    console.log('[ERROR] Start in path ' + start + ' greater than path length ' + pathLength);
+			}
+			else if(start == pathLength) {
+			    result = this;
+			}
+			else {
+			    result = this.$findPattern(attrPath, start);
+			}
 			return result;
 		},
 		
-		$findPattern: function() {
-			console.log('[ERROR] "findPattern" is not supported on this kind of object');
+		$findPattern: function(attrPath, start) {
+			console.log('[ERROR] "findPattern" for path "' + attrPath + '" is not supported on this kind of object: ' + JSON.stringify(this));
 			throw 'Bailing out';
 		}
 	});
@@ -393,7 +412,12 @@
 			
 			var result;
 			if(pattern) {
-				result = pattern.findPattern(attrPath, start + 1); 
+//			    if(attrPath.size() > start + 1) {
+			        result = pattern.findPattern(attrPath, start + 1);
+//			    }
+//			    else {
+//			        result = pattern;
+//			    }
 			} else {
 				result = null;
 			}
@@ -461,7 +485,13 @@
 		
 		getSubPatterns: function() {
 			return [this.subPattern];
-		}
+		},
+		
+		$findPattern: function(attrPath, start) {
+		    var result = this.subPattern.findPattern(attrPath, start);
+		    return result;
+        }
+
 	});
 
 	

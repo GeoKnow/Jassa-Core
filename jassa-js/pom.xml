@@ -29,7 +29,7 @@
 				<executions>
 					<execution>
 						<id>default-minify</id>
-						<phase>process-resources</phase>
+						<phase>process-resources</phase>+
 
 						<configuration>
 						    <charset>UTF-8</charset>
@@ -80,6 +80,8 @@
 								<param>service/query-execution-utils.js</param>
 
 								<param>sparql/sparql-expr-eval.js</param>
+
+								<param>client/client-concept-path-finder.js</param>
 								
 								
 								<param>sponate/core/sponate-collections.js</param>
