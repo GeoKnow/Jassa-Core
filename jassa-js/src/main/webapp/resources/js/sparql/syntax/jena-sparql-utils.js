@@ -127,30 +127,55 @@
 	 * 
 	 */
 	ns.ElementFactoryJoin = Class.create(ns.ElementFactory, {
-	   initialize: function(elementFactoryA, elementFactoryB, joinVarsA, joinVarsB, joinType) {
-	       this.elementFactoryA = elementFactoryA;
-	       this.elementFactoryB = elementFactoryB;
-	       this.joinVarsA = joinVarsA;
-	       this.joinVarsB = joinVarsB;
-	       this.joinType = joinType;
-	   },
+	    initialize: function(elementFactoryA, elementFactoryB, joinVarsA, joinVarsB, joinType) {
+	        this.elementFactoryA = elementFactoryA;
+	        this.elementFactoryB = elementFactoryB;
+	        this.joinVarsA = joinVarsA;
+	        this.joinVarsB = joinVarsB;
+	        this.joinType = joinType ? ns.JoinType.INNER_JOIN : joinType;
+	    },
 	   
-	   createElement: function() {
+	    createElement: function() {
+	        var elementA = this.elementFactoryA.createElement();
+	        var elementB = this.elementFactoryB.createElement();
 	       
-	       var elementA = this.elementFactoryA.createElement();
-	       var elementB = this.elementFactoryB.createElement();
-	       
-	       var rootJoinNode = sponate.JoinBuilderElement.create(elementB);
-	       
-	       var joinNode = rootJoinNode.join(this.joinVarsA, elementA, this.joinVarsB, aliasGenerator.next());
+	        var rootJoinNode = ns.JoinBuilderElement.create(elementB);
+	        var joinNode = rootJoinNode.joinAny(this.joinType, this.joinVarsB, elementA, this.joinVarsA);
 
-	       var joinBuilder = joinNode.getJoinBuilder();
-	       var elements = joinBuilder.getElements();
-	       var result = new sparql.ElementGroup(elements);
-	       var aliasToVarMap = joinBuilder.getAliasToVarMap();
+	        var joinBuilder = joinNode.getJoinBuilder();
+	        var elements = joinBuilder.getElements();
+	        var result = new sparql.ElementGroup(elements);
+	        //var aliasToVarMap = joinBuilder.getAliasToVarMap();
 
-	       return result;
-	   }
+	        return result;
+	    }
+	});
+	
+	
+	ns.ElementFactoryJoinConcept = Class.create(ns.ElementFactory, {
+        initialize: function(conceptFactoryA, conceptFactoryB, joinType) {
+            this.conceptFactoryA = conceptFactoryA;
+            this.conceptFactoryB = conceptFactoryB;
+            this.joinType = joinType ? ns.JoinType.INNER_JOIN : joinType;
+        },
+	    
+        createElement: function() {
+            var conceptA = this.conceptFactoryA.createConcept();
+            var conceptB = this.conceptFactoryB.createConcept();
+            
+            var elementA = conceptA.getElement();
+            var elementB = conceptB.getElement();
+            
+            var joinVarsA = [conceptA.getVar()];
+            var joinVarsB = [conceptB.getVar()];
+            
+            var rootJoinNode = ns.JoinBuilderElement.create(elementB);
+            var joinNode = rootJoinNode.joinAny(this.joinType, joinVarsB, elementA, joinVarsA);
+
+            var joinBuilder = joinNode.getJoinBuilder();
+            var elements = joinBuilder.getElements();
+            var result = new sparql.ElementGroup(elements);
+        }
 	});
 	
 	

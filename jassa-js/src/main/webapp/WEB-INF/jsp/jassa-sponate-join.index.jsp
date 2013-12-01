@@ -142,34 +142,46 @@
 	var vs = rdf.Node.v('s');
 	var vl = rdf.Node.v('l');
 	
-	var vsv = rdf.Node.uri('<http://s>');
-	var vlv = rdf.NodeFactory.createPlainLiteral('test');
+// 	var vsv = rdf.Node.uri('<http://s>');
+// 	var vlv = rdf.NodeFactory.createPlainLiteral('test');
 
-	var binding = new sparql.Binding();
-	binding.put(vs, vsv);
-	binding.put(vs, vlv);
+// 	var binding = new sparql.Binding();
+// 	binding.put(vs, vsv);
+// 	binding.put(vs, vlv);
 	
-	var aliasGenerator = sparql.GenSym.create("a");
+// 	var aliasGenerator = sparql.GenSym.create("a");
 	
-	var joinNode = sponate.JoinBuilderElement.create(a, aliasGenerator.next());
-	var foo = joinNode.join([vs], b, [vs], aliasGenerator.next());
-	//var bar = foo.join([vl], b, [vs]);
-	joinNode.leftJoin([vs], a, [vl], aliasGenerator.next());
+// 	var joinNode = sparql.JoinBuilderElement.create(a, aliasGenerator.next());
+// 	var foo = joinNode.join([vs], b, [vs], aliasGenerator.next());
+// 	//var bar = foo.join([vl], b, [vs]);
+// 	joinNode.leftJoin([vs], a, [vl], aliasGenerator.next());
 
-	var joinBuilder = foo.getJoinBuilder();
-	var elements = joinBuilder.getElements();
-	var els = new sparql.ElementGroup(elements);
-	var aliasToVarMap = joinBuilder.getAliasToVarMap();
+// 	var joinBuilder = foo.getJoinBuilder();
+// 	var elements = joinBuilder.getElements();
+// 	var els = new sparql.ElementGroup(elements);
+// 	var aliasToVarMap = joinBuilder.getAliasToVarMap();
 	
 	
-	var rowMapper = new sponate.RowMapperAlias(aliasToVarMap);
-	var aliasToBinding = rowMapper.map(binding);
+// 	var rowMapper = new sponate.RowMapperAlias(aliasToVarMap);
+// 	var aliasToBinding = rowMapper.map(binding);
 	
 	
 	
-	console.log('Final Element: ' + els);
-	console.log('Var map:',  aliasToVarMap);
-	console.log('Alias to Binding: ', JSON.stringify(aliasToBinding));
+	var efA = new sparql.ElementFactoryConst(a);
+	var efB = new sparql.ElementFactoryConst(b);
+
+	debugger;
+	var efC = new sparql.ElementFactoryJoin(efA, efB, [vl], [vs], sparql.JoinType.LEFT_JOIN);
+	var x = efC.createElement();
+	console.log('Joined element is: ' + x);
+	
+	
+	
+	
+	
+// 	console.log('Final Element: ' + els);
+// 	console.log('Var map:',  aliasToVarMap);
+// 	console.log('Alias to Binding: ', JSON.stringify(aliasToBinding));
 	
 //	var varMap = sparql.ElementUtils.createJoinVarMap(a.getVarsMentioned(), b.getVarsMentioned(), [sparql.Node.v('s')], [sparql.Node.v('l')]);
 //	var c = sparql.ElementUtils.createRenamedElement(b, varMap);

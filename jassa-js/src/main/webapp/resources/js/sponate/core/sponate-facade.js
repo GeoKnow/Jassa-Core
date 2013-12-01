@@ -65,7 +65,9 @@
 
 			var jsonTemplate = spec.template;
 			var from = spec.from;
-		
+
+			
+			// TODO The support joining the from element
 			
 			var pattern = this.context.getPatternParser().parsePattern(jsonTemplate);			
 

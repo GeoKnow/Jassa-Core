@@ -1,5 +1,8 @@
 (function() {
 	
+    var sparql = Jassa.sparql;
+    
+    
 	var ns = Jassa.sponate;
 
 
@@ -18,7 +21,7 @@
 		    var tableNameToElement = context.getTableNameToElement();
 		    var element = tableNameToElement[tableName];
 		    		    
-		    var joinNode = ns.JoinBuilderElement.create(element);
+		    var joinNode = sparql.JoinBuilderElement.create(element);
 		    
 		    //var result = []; // list of elements
 		    

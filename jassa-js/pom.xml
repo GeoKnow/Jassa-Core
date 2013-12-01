@@ -70,6 +70,9 @@
 							    <param>sparql/syntax/jena-sparql-exprs.js</param>
 								<param>sparql/syntax/jena-sparql-elements.js</param>
 								<param>sparql/syntax/jena-sparql-utils.js</param>
+
+								<!--  Not sure where to best put the join builder -->
+								<param>sparql/sparql-join-builder.js</param>
 															    
 								<param>service/ResultSet.js</param>
 								<param>service/SparqlServiceHttp.js</param>
