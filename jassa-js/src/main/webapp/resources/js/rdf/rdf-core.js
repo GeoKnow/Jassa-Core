@@ -414,6 +414,117 @@
 	    return result;
 	};
 	
+	
+	
+	
+	ns.JenaParameters = {
+	    enableSilentAcceptanceOfUnknownDatatypes: true
+	};
+	
+	
+    ns.TypedValue = Class.create({
+        initialize: function(lexicalValue, datatypeUri) {
+            this.lexicxalValue = datatypeUri;
+        },
+        
+        getLexicalValue: function() {
+            return this.lexicalValue;
+        },
+        
+        getDatatypeUri: function() {
+            return this.datatypeUri;
+        }
+    });
+
+	
+	ns.BaseDatatype = Class.create(ns.RdfDatatype, {
+	   initialize: function(datatypeUri)  {
+	       this.datatypeUri = datatypeUri;
+	   },
+
+       getUri: function() {
+           return this.datatypeUri;
+       },
+       
+       unparse: function(value) {
+           var result;
+
+           if (value instanceof ns.TypedValue) {
+               result = value.getLexicalValue();
+           } else {
+               result = '' + value;
+           }
+           return result;
+       },
+       
+       /**
+        * Convert a value of this datatype out
+        * to lexical form.
+        */
+       parse: function(str) {
+           var result = new ns.TypedValue(str, this.datatypeUri);
+           return result;
+       },
+       
+       toString: function() {
+           return 'Datatype [' + this.datatypeUri + ']';
+       }
+
+	});
+	
+	/**
+	 * TypeMapper similar to that of Jena
+	 * 
+	 */
+	ns.TypeMapper = Class.create({
+	    initialize: function(uriToDt) {
+	        this.uriToDt = uriToDt;
+	    },
+
+	    getSafeTypeByName: function(uri) {
+	        var uriToDt = this.uriToDt;
+
+	        var dtype = uriToDt[uri];
+	        if (dtype == null) {
+	            if (uri == null) {
+	                // Plain literal
+	                return null;
+	            } else {
+	                // Uknown datatype
+	                if (ns.JenaParameters.enableSilentAcceptanceOfUnknownDatatypes) {
+	                    dtype = new ns.BaseDatatype(uri);
+	                    this.registerDatatype(dtype);
+	                } else {
+	                    console.log('Attempted to created typed literal using an unknown datatype - ' + uri);
+	                    throw 'Bailing out';
+	                }
+	            }
+	        }
+	        return dtype;
+	    },
+	    
+	    registerDatatype: function(datatype) {
+	        var typeUri = datatype.getUri();
+            this.uriToDt[typeUri] = datatype;
+	    }
+	});
+	
+
+	ns.TypeMapper.staticInstance = null;
+
+	ns.TypeMapper.getInstance = function() {
+	    var self = ns.TypeMapper;
+	    
+        if(self.staticInstance == null) {
+            self.staticInstance = new ns.TypeMapper(ns.RdfDatatypes);
+        }
+        
+        return self.staticInstance;
+    };
+
+	
+	
+	
 	ns.NodeFactory = {
 		createAnon: function(anonId) {
 			return new ns.Node_Blank(anonId);
@@ -441,8 +552,12 @@
 		createTypedLiteralFromValue: function(val, typeUri) {
 			var dtype = ns.RdfDatatypes[typeUri];
 			if(!dtype) {
-				console.log('[ERROR] No dtype for ' + typeUri);
-				throw 'Bailing out';
+			    
+			    var typeMapper = ns.TypeMapper.getInstance();
+			    dtype = typeMapper.getSafeTypeByName(typeUri);
+			    
+				//console.log('[ERROR] No dtype for ' + typeUri);
+				//throw 'Bailing out';
 			}
 
 			var lex = dtype.unparse(val);
@@ -463,8 +578,11 @@
 		createTypedLiteralFromString: function(str, typeUri) {
 			var dtype = ns.RdfDatatypes[typeUri];
 			if(!dtype) {
-				console.log('[ERROR] No dtype for ' + typeUri);
-				throw 'Bailing out';
+	             var typeMapper = ns.TypeMapper.getInstance();
+	             dtype = typeMapper.getSafeTypeByName(typeUri);
+
+//				console.log('[ERROR] No dtype for ' + typeUri);
+//				throw 'Bailing out';
 			}
 			
 			var val = dtype.parse(str);

@@ -105,9 +105,10 @@
 // 	alert(rdf.NodeFactory.parseRdfTerm('"baz"^^<http://www.w3.org/2001/XMLSchema#string>'));
 	//facete.test();
 	
-	var sparqlEndpointUrl = 'http://localhost/sparql';
-	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';
-	var qef = new service.QueryExecutionFactoryHttp(sparqlEndpointUrl, []);
+	//var sparqlEndpointUrl = 'http://localhost/sparql';
+	var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';
+	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
+	var qef = new service.QueryExecutionFactoryHttp(sparqlEndpointUrl, ['http://dbpedia.org']);
 	qef = new service.QueryExecutionFactoryCache(qef);
 	
 	/**
@@ -198,7 +199,7 @@
 		$scope.maxSize = 5;
 		
 		var updateItems = function() {
-			console.log("Update");
+			//console.log("Update");
 
 			var path = $scope.path;
 			if(path == null) {

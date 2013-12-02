@@ -136,10 +136,12 @@
 	
  	var a = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
  	var b = sparql.ElementString.create('?s a dbpedia-owl:Castle ; rdfs:label ?l . Filter(langMatches(lang(?l), "en"))');
- 	var c = sparql.ElementUtils.makeElementDistinct(a, b);
- 	console.log('distinct: ' + c.element, c.map);
+// 	var c = sparql.ElementUtils.makeElementDistinct(a, b);
+ 	//console.log('distinct: ' + c.element, c.map);
 	
- 	alert(JSON.stringify(eval('return {a: 1}')));
+ 	var foo;
+ 	eval('foo=' + '{a: 1}');
+ 	alert(JSON.stringify(foo));
  	
 	// Creating a join: 
 	
