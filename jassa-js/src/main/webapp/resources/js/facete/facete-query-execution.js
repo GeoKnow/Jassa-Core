@@ -9,10 +9,10 @@
 	
 	
 	ns.FacetTreeServiceImpl = Class.create({
-		initialize: function(facetService, expansionSet) { //facetStateProvider) {
+		initialize: function(facetService, expansionSet, facetStateProvider) { //facetStateProvider) {
 			this.facetService = facetService;
 			this.expansionSet = expansionSet;
-			//this.facetStateProvider = facetStateProvider;
+			this.facetStateProvider = facetStateProvider;
 		},
 		
 		fetchFacetTree: function() {
@@ -32,9 +32,27 @@
 			
 			var result = $.Deferred();
 			
-			var promise = this.facetService.fetchFacets(path);
-			promise.done(function(facetItems) {
+            var limit = null;
+            var offset = null;
 
+            var state = this.facetStateProvider.getFacetState(path);
+			
+            if(state) {
+                var resultRange = state.getResultRange();
+                
+                limit = resultRange.getLimit();
+                offset = resultRange.getOffset();
+            }
+			
+            var countPromise = this.facetService.fetchFacetCount(path, false);
+			
+			var childFacetsPromise = this.facetService.fetchFacets(path, false, limit, offset);
+//            promise.done(function(facetItems) {
+			
+			var promises = [countPromise, childFacetsPromise];
+			
+            $.when.apply(window, promises).done(function(childFacetCount, facetItems) {
+			
 				var data = [];
 				
 				var childPromises = [];
@@ -64,7 +82,10 @@
 						item: facetItem,
 						isExpanded: isExpanded,
 						//state: facetState,
-						children: null
+						children: null,
+						childFacetCount: childFacetCount,
+						limit: limit,
+						offset: offset
 					};
 					++i;
 
@@ -156,13 +177,39 @@
 			return concept;
 		},
 		
-		fetchFacets: function(path, isInverse) {
+	
+		fetchFacetCount: function(path, isInverse) {
+            var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
+            
+            //var groupVar = facetConcept.getFacetVar();
+            var outputVar = rdf.NodeFactory.createVar('_c_');
+//            var countVar = concept.getVar();
+//            var elements = concept.getElements();
+        
+            //var query = ns.QueryUtils.createQueryCount(elements, null, countVar, outputVar, null, true); 
+
+            var query = ns.ConceptUtils.createQueryCount(concept, outputVar);
+
+            var qe = this.qef.createQueryExecution(query);
+            
+            var promise = service.ServiceUtils.fetchInt(qe, outputVar);
+
+            return promise;
+		},
+		
+		
+		fetchFacets: function(path, isInverse, limit, offset) {
+		    
+//		    this.fetchFacetCount(path, isInverse).done(function(cnt) {
+//		        console.log('Number of facets at ' + path + ': ' + cnt); 
+//		    });
+		    
 			var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
 			
 			var query = ns.ConceptUtils.createQueryList(concept);
 			//alert("" + query);
-			// query.setLimit();
-			// query.setOffset();
+			query.setLimit(limit);
+			query.setOffset(offset);
 			
 			//var query = this.facetQueryGenerator.createQueryFacets();
 			
@@ -176,7 +223,7 @@
 			var deferred = $.Deferred();
 
 			promise.done(function(properties) {
-				var promise = self.fetchFacetCounts(path, isInverse, properties, false);
+				var promise = self.fetchFacetValueCounts(path, isInverse, properties, false);
 				
 				promise.done(function(r) {
 					deferred.resolve(r);
@@ -194,7 +241,11 @@
 		
 		
 		//elements, limit, variable, outputVar, groupVars, useDistinct, options
-		fetchFacetCounts: function(path, isInverse, properties, isNegated) {
+		/**
+		 * Returns the distinctValueCount for a set of properties at a given path
+		 * 
+		 */
+		fetchFacetValueCounts: function(path, isInverse, properties, isNegated) {
 			var facetConceptItems = this.facetConceptGenerator.createConceptFacetValues(path, isInverse, properties, isNegated);
 			
 			
@@ -215,22 +266,52 @@
 				
 				//qe.setTimeout()
 				
+				
 				var promise = qe.execSelect().pipe(function(rs) {
-					var r = [];
+
+				    debugger;
+				    // TODO Actually we don't need to store the property - we could map to
+				    // the distinct value count directly
+				    var nameToItem = {};
+				    
+				    // Initialize the result
+                    _(properties).each(function(property) {
+                        var propertyName = property.getUri();
+                        
+                        nameToItem[propertyName] = {
+                            property: property,
+                            distinctValueCount: 0
+                        }
+                    });
+				    
+				    // Overwrite entries based on the result set
 					while(rs.hasNext()) {
 						var binding = rs.nextBinding();
 						
-						var propertyNode = binding.get(groupVar);
-						var propertyName = propertyNode.getUri();
-						
-						var step = new ns.Step(propertyName, isInverse);
-						var childPath = path.copyAppendStep(step);
+						var property = binding.get(groupVar);
+						var propertyName = property.getUri();
 						
 						var distinctValueCount = binding.get(outputVar).getLiteralValue();
-						
-						var facetItem = new ns.FacetItem(childPath, propertyNode, distinctValueCount);
-						r.push(facetItem);
+											
+						nameToItem[propertyName] = {
+						    property: property,
+						    distinctValueCount: distinctValueCount
+						}
 					}
+
+					// Create the result					
+					var r = _(properties).map(function(property) {
+                        var propertyName = property.getUri();
+                        var item = nameToItem[propertyName];
+
+					    var distinctValueCount = item.distinctValueCount;
+					    
+                        var step = new ns.Step(propertyName, isInverse);
+                        var childPath = path.copyAppendStep(step);
+                        var tmp = new ns.FacetItem(childPath, property, distinctValueCount);
+                        return tmp
+					});
+					
 					return r;
 				});
 				

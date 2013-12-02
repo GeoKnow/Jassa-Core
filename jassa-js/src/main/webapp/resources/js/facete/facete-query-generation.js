@@ -167,7 +167,9 @@
 	
 	
 	ns.FacetStateProviderImpl = Class.create({
-		initialize: function() {
+		initialize: function(defaultLimit) {
+		    this.defaultLimit = defaultLimit;
+		    
 			this.pathToState = new util.HashMap();
 		},
 		
@@ -176,7 +178,14 @@
 		},
 		
 		getFacetState: function(path) {
-			return this.pathToState.get(path);
+		    var result = this.pathToState.get(path);
+		    
+		    if(!result) {
+		        result = new ns.FacetStateImpl(null, new ns.LimitAndOffset(this.defaultLimit, 0), null);
+		        this.pathToState.put(path, result);
+		    }
+		    
+			return result;
 		}
 	});
 	

@@ -127,18 +127,19 @@
 	var facetConceptGenerator = fcgf.createFacetConceptGenerator();
 
 
-	//  
-	//var facetStateProvider = new facete.FacetStateProviderImpl();		
+	// The FacetStateProvider keeps track of limit and offsets for the nodes of the facet tree
+	// By default, a limit of 10 is used
+	var facetStateProvider = new facete.FacetStateProviderImpl(10);
 
 	var expansionSet = new util.HashSet();
 	expansionSet.add(new facete.Path());
 	
 	//facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
 	
-	var fctService = new facete.FacetServiceImpl(qef, facetConceptGenerator); //, facetStateProvider);
+	var fctService = new facete.FacetServiceImpl(qef, facetConceptGenerator);
 
 	
-	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, expansionSet);
+	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, expansionSet, facetStateProvider);
 	/**
 	fctService.setExpanded(path);
 	fctService.
