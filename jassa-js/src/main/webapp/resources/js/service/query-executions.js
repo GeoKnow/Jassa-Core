@@ -146,7 +146,7 @@
              var result;
              
              if(promise) {
-                 console.log('[DEBUG] QueryCache: Reusing promise for cacheKey: ' + cacheKey);
+                 //console.log('[DEBUG] QueryCache: Reusing promise for cacheKey: ' + cacheKey);
                  result = promise;
              }
              else {
@@ -155,7 +155,7 @@
                  // Check if there is an entry in the result cache
                  var data = resultCache.getItem(cacheKey);
                  if(data) {                     
-                     console.log('[DEBUG] QueryCache: Reusing cache entry for cacheKey: ' + cacheKey);
+                     //console.log('[DEBUG] QueryCache: Reusing cache entry for cacheKey: ' + cacheKey);
                      deferred.resolve(data);
                  }
                  else {
@@ -172,7 +172,7 @@
                              arr.push(binding);
                          }
                          
-                         console.log('[DEBUG] QueryCache: Caching result for cacheKey: ' + cacheKey);
+                         //console.log('[DEBUG] QueryCache: Caching result for cacheKey: ' + cacheKey);
                          resultCache.setItem(cacheKey, arr);
                      
                          deferred.resolve(arr);

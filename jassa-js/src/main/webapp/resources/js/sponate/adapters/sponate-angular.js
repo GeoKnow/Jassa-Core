@@ -27,10 +27,10 @@
 			
 			var d = fn ? fn(data) : data;
 			ngDeferred.resolve(d);
-			
-			if(ngScope) {
-				ngScope.$apply();
-			}
+
+		    if (ngScope && ngScope.$root.$$phase != '$apply' && ngScope.$root.$$phase != '$digest') {
+		        ngScope.$apply();
+		    }
 			
 		}).fail(function(data) {
 			ngDeferred.reject(data);

@@ -228,7 +228,7 @@
 
 					
 					$scope.facetValues = items;
-					$scope.$apply();
+					//$scope.$apply();
 				});
 				
 			});
