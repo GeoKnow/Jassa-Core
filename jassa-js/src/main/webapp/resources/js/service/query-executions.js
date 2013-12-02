@@ -38,6 +38,9 @@
 			this.defaultGraphUris = defaultGraphUris;
 			
 			this.httpArgs = httpArgs;
+			
+            this.ajaxOptions = {};
+			//this.timeoutInMillis = null;
 		},
 		
 		/**
@@ -45,12 +48,12 @@
 		 * @returns {Promise<sparql.ResultSet>}
 		 */
 		execSelect: function() {
-			var result = this.execAny(this.queryString).pipe(ns.jsonToResultSet);
+			var result = this.execAny().pipe(ns.jsonToResultSet);
 			return result;
 		},
 	
-		execAsk: function(query, options) {
-			var result = this.execAny(query, options).pipe(function(json) {
+		execAsk: function() {
+			var result = this.execAny().pipe(function(json) {
 				return json['boolean'];
 			});
 			
@@ -66,9 +69,13 @@
 			return this.execAny(queryString);
 		},
 		
-//		setTimeOut: function(timeSpanInMs) {
-//			timeSpanInMs
-//		},
+		setTimeout: function(timeoutInMillis) {
+			this.ajaxOptions.timeout = timeoutInMillis;
+		},
+		
+		getTimeout: function() {
+		    return this.ajaxOptions.timeout;
+		},
 
 
 		/**
@@ -98,11 +105,7 @@
 //			return this.defaultGraphUris;
 //		},
 	
-		execAny: function(queryString, options) {
-		
-			if(!queryString) {
-				console.error("Empty queryString - should not happen");
-			}
+		execAny: function() {
 			
 //			if(this.proxyServiceUri) {
 //				httpOptions[this.proxyParamName] = serviceUri;
@@ -110,10 +113,85 @@
 //			}
 			
 		
-			var result = ns.execQuery(this.serviceUri, this.defaultGraphUris, queryString, this.httpArgs, options);
+			var result = ns.execQuery(this.serviceUri, this.defaultGraphUris, this.queryString, this.httpArgs, this.ajaxOptions);
 
 			return result;
 		}
 	});
 
-})();
+	
+
+    ns.QueryExecutionCache = Class.create(ns.QueryExecution, {
+         initialize: function(queryExecution, cacheKey, executionCache, resultCache) {
+             this.queryExecution = queryExecution;
+             
+             this.cacheKey = cacheKey;
+             
+             this.executionCache = executionCache;
+             this.resultCache = resultCache;
+         },
+         
+         execSelect: function() {
+             var cacheKey = this.cacheKey;
+             var resultCache = this.resultCache;
+             var executionCache = this.executionCache;
+             
+             
+             // Check the cache whether the same query is already running
+             // Re-use its promise if this is the case
+             
+             // TODO Reusing promises must take timeouts into account
+             
+             var promise = executionCache[cacheKey];
+             var result;
+             
+             if(promise) {
+                 console.log('[DEBUG] QueryCache: Reusing promise for cacheKey: ' + cacheKey);
+                 result = promise;
+             }
+             else {
+                 var deferred = $.Deferred();
+
+                 // Check if there is an entry in the result cache
+                 var data = resultCache.getItem(cacheKey);
+                 if(data) {                     
+                     console.log('[DEBUG] QueryCache: Reusing cache entry for cacheKey: ' + cacheKey);
+                     deferred.resolve(data);
+                 }
+                 else {
+                     var request = this.queryExecution.execSelect();
+                     
+                     executionCache[cacheKey] = request;
+                     
+                     request.pipe(function(rs) {
+                         delete executionCache[cacheKey]; 
+
+                         var arr = [];
+                         while(rs.hasNext()) {
+                             var binding = rs.nextBinding();
+                             arr.push(binding);
+                         }
+                         
+                         console.log('[DEBUG] QueryCache: Caching result for cacheKey: ' + cacheKey);
+                         resultCache.setItem(cacheKey, arr);
+                     
+                         deferred.resolve(arr);
+                     }).fail(function() {
+                         deferred.fail();
+                     });
+                                          
+                 }
+
+                 result = deferred.pipe(function(arr) {
+                     var itBinding = new util.IteratorArray(arr);
+                     var r = new ns.ResultSetArrayIteratorBinding(itBinding);
+                     return r;
+                 });
+             }
+             
+             return result;
+         } 
+     });
+
+	
+})(jQuery);

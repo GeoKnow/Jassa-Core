@@ -5,15 +5,18 @@
 	
 	ns.QueryExecutionFactory = Class.create({
 		getServiceId: function() {
-			throw "Not overridden";			
+		    console.log('[ERROR] Method not overridden');
+			throw '[ERROR] Method not overridden';
 		},
 
 		getStateHash: function() {
-			throw "Not overridden";
+            console.log('[ERROR] Method not overridden');
+            throw '[ERROR] Method not overridden';
 		},
 		
 		createQueryExecution: function(queryStrOrObj) {
-			throw "Not overridden";
+            console.log('[ERROR] Method not overridden');
+            throw '[ERROR] Method not overridden';
 		}
 	});
 
@@ -64,6 +67,7 @@
 		 * A service is not assumed to return the same result for
 		 * a query if this method returned different hashes.   
 		 * 
+		 * The state hash does not include the serviceId
 		 * 
 		 */
 		getStateHash: function() {
@@ -74,7 +78,7 @@
 //			
 //			var result = JSON.stringify(idState);
 
-			var result = JSON.strngify(this.defaultGraphUris);
+			var result = JSON.stringify(this.defaultGraphUris);
 			
 			return result;
 		},
@@ -107,5 +111,45 @@
 			return result;
 		}
 	});
+	
+
+    
+//    ns.CacheQuery = Class.create({
+//        
+//    });
+//
+	
+	/**
+	 * Result Cache stores result sets - this is an instance of a class
+	 * 
+	 * Execution Cache holds all running queries this is just an associative array - i.e. {}
+	 * 
+	 */
+	ns.QueryExecutionFactoryCache = Class.create(ns.QueryExecutionFactoryBaseString, {
+	    
+	    initialize: function(queryExecutionFactory, resultCache, executionCache) {
+	        this.qef = queryExecutionFactory;
+            this.executionCache = executionCache ? executionCache : {};
+	        this.resultCache = resultCache ? resultCache : new Cache();
+	    },
+	    
+	    createQueryExecutionStr: function(queryStr) {
+	        var serviceId = this.qef.getServiceId();
+	        var stateHash = this.qef.getStateHash();
+	        
+	        var cacheKey = serviceId + '-' + stateHash + queryStr;
+	        
+	        var qe = this.qef.createQueryExecution(queryStr);
+
+	        var result = new ns.QueryExecutionCache(qe, cacheKey, this.executionCache, this.resultCache);
+	        
+	        return result;
+	    }
+
+	});
+	
+
+    
+    
 	
 })(jQuery);

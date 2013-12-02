@@ -70,6 +70,7 @@
 	<script src="resources/libs/angular-ui/0.6.0/ui-bootstrap-tpls-0.6.0.js"></script>
 	<script src="resources/libs/ui-router/0.2.0/angular-ui-router.js"></script>
 
+	<script src="resources/libs/monsur-jscache/2013-12-02/cache.js"></script>
 
 	${jsIncludes}
 
@@ -104,8 +105,11 @@
 // 	alert(rdf.NodeFactory.parseRdfTerm('"baz"^^<http://www.w3.org/2001/XMLSchema#string>'));
 	//facete.test();
 	
-	var qef = new service.QueryExecutionFactoryHttp("http://localhost/sparql", []);
-
+	var sparqlEndpointUrl = 'http://localhost/sparql';
+	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';
+	var qef = new service.QueryExecutionFactoryHttp(sparqlEndpointUrl, []);
+	qef = new service.QueryExecutionFactoryCache(qef);
+	
 	/**
 	 * Facete
 	 */
@@ -299,7 +303,7 @@
 			<div class="facet-row" ng-class="{'highlite': facet.isExpanded}">
 				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
 				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
-				<a title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
+				<a data-rdf-term="{{facet.item.getNode().toString()}}" title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
 				<span style="float: right" class="badge">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>
 
