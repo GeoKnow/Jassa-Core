@@ -38,8 +38,6 @@
 	 * Sponate
 	 */
 	var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://fp7-pp.publicdata.eu/']);
-	//var qef = new service.QueryExecutionFactoryHttp('http://localhost:8801/sparql', ['http://fp7-pp.publicdata.eu/']);
-	//var qef = new service.QueryExecutionFactoryHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
 	var store = new sponate.StoreFacade(qef, prefixes);
 
 		store.addMap({
@@ -72,7 +70,6 @@
                 }
 
 				var promise = store.projects.find(criteria).skip(0).limit(10).asList();
-//				promise.done(function(foo) {alert(JSON.stringify(foo)); $rootScope.$apply(); });
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 				return result;
 	        }
