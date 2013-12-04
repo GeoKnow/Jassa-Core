@@ -3784,7 +3784,7 @@ module["exports"] = Jassa;
 				var a = open[i];
 				
 				if(hasSecond) {
-					b = open[i + 1];
+					var b = open[i + 1];
 					next.push(new ctor(a, b));
 				} else {
 					next.push(a);

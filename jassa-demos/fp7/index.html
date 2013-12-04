@@ -67,7 +67,11 @@
 			getProjects: function(filterText) {
 				var criteria = {};
 
-				var promise = store.projects.find(criteria).limit(10).asList();
+                if(filterText) {
+                	criteria = {$or: [ { name: {$regex: filterText } } , { partners: { $elemMatch: { name: { $regex: filterText } } } } ] };
+                }
+
+				var promise = store.projects.find(criteria).skip(0).limit(10).asList();
 //				promise.done(function(foo) {alert(JSON.stringify(foo)); $rootScope.$apply(); });
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 				return result;

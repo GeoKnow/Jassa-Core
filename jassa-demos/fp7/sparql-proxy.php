@@ -10,7 +10,7 @@ error_reporting(E_ALL);
 /*****************************************************************************/
 
 // Note: The defaultServiceUrl is not subject to proxy url validation.
-$defaultServiceUrl = "http://localhost:8801/sparql";
+$defaultServiceUrl = "http://fp7-pp.publicdata.eu/sparql";
 
 
 // For security reasons, only SPARQL query string parameters are forwarded.
