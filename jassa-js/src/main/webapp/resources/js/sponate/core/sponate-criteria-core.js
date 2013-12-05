@@ -230,7 +230,7 @@
 	});
 	
 	
-	ns.CriteriaFalse = Class.create(ns.Criteria, {
+	ns.CriteriaFalse = Class.create(ns.CriteriaBase, {
 		initialize: function($super) {
 			$super('$false');
 		},
@@ -240,7 +240,7 @@
 		}
 	});
 
-	ns.CriteriaTrue = Class.create(ns.Criteria, {
+	ns.CriteriaTrue = Class.create(ns.CriteriaBase, {
 		initialize: function($super) {
 			$super('$true');
 		},

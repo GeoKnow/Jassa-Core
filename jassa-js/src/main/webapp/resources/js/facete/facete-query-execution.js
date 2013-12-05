@@ -269,7 +269,6 @@
 				
 				var promise = qe.execSelect().pipe(function(rs) {
 
-				    debugger;
 				    // TODO Actually we don't need to store the property - we could map to
 				    // the distinct value count directly
 				    var nameToItem = {};

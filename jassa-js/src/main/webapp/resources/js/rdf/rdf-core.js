@@ -681,7 +681,6 @@
 		        var d = str.charAt(l);
 		        
 		        if(!d) {
-		            debugger;
                     var result = ns.NodeFactory.createTypedLiteralFromString(val, 'http://www.w3.org/2001/XMLSchema#string');		            
 		        }
 		        //console.log('d is ' + d);

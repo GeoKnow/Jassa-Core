@@ -29,7 +29,7 @@
 				<executions>
 					<execution>
 						<id>default-minify</id>
-						<phase>process-resources</phase>+
+						<phase>process-resources</phase>
 
 						<configuration>
 						    <charset>UTF-8</charset>

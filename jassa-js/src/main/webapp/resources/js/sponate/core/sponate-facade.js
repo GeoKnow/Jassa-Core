@@ -66,6 +66,31 @@
 			var jsonTemplate = spec.template;
 			var from = spec.from;
 
+			// Parse the 'from' attribute into an ElementFactory
+			// TODO Move to util class
+			var elementFactory;
+			if(_(from).isString()) {
+			    
+	            var prefixes = context.getPrefixMap().getJson();
+	            var vars = sparql.extractSparqlVars(elementStr);
+	            var str = sparql.expandPrefixes(prefixes, elementStr);
+	            
+	            var element = sparql.ElementString.create(str, vars);
+	            
+			    elementFactory = new sparql.ElementFactoryConst(element);
+			}
+			else if(from instanceof sparql.Element) {
+			    elementFactory = new sparql.ElementFactoryConst(from);
+			}
+			else if(from instanceof sparql.ElementFactory) {
+			    elementFactory = from;
+			}
+			else {
+			    console.log('[ERROR] Unknown from type', from);
+			    throw 'Bailing out';
+			}
+			
+            this.context.mapTableNameToElementFactory(name, elementFactory);
 			
 			// TODO The support joining the from element
 			
@@ -76,7 +101,7 @@
 			//console.log('Parsed pattern', JSON.stringify(pattern));
 
 			// The table name is the same as that of the mapping
-			ns.ContextUtils.createTable(this.context, name, from, patternRefs);
+			//ns.ContextUtils.createTable(this.context, name, from, patternRefs);
 	
 
 			var mapping = new ns.Mapping(name, pattern, name, patternRefs);

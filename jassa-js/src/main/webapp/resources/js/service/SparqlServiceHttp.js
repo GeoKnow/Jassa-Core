@@ -151,6 +151,7 @@
 			ajaxOptions = {};
 		}
 		
+		
 		options.format = ajaxOptions.format ? ajaxOptions.format : 'application/json'; 
 		
 		var params = _.map(defaultGraphUris, function(item) {

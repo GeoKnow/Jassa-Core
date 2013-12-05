@@ -32,14 +32,14 @@
 	
 	
 	ns.QueryExecutionHttp = Class.create(ns.QueryExecution, {
-		initialize: function(queryString, serviceUri, defaultGraphUris, httpArgs) {
+		initialize: function(queryString, serviceUri, defaultGraphUris, ajaxOptions, httpArgs) {
 			this.queryString = queryString;
 			this.serviceUri = serviceUri;
 			this.defaultGraphUris = defaultGraphUris;
 			
+            this.ajaxOptions = ajaxOptions ? ajaxOptions : {};
 			this.httpArgs = httpArgs;
 			
-            this.ajaxOptions = {};
 			//this.timeoutInMillis = null;
 		},
 		

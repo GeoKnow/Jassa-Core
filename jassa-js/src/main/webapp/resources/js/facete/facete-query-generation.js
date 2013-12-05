@@ -325,16 +325,21 @@
 
 			
 			var baseElements = baseConcept.getElements();
+            var pathElements = facetNode.getElements();
 
-			var facetElements; 
+            var facetElements = []; 
+            facetElements.push.apply(facetElements, pathElements);
+            facetElements.push.apply(constraintElements);
+
+            
 			if(baseConcept.isSubjectConcept()) {
-				facetElements = constraintElements.length > 0 ? constraintElements : baseConcept.getElements(); 
+				if(facetElements.length == 0) {
+				    facetElements = baseElements;
+				}  
 			} else {
-				facetElements = baseElements.concat(constraintElements); 
+				facetElements.push.apply(baseElements); 
 			}
 			
-			var pathElements = facetNode.getElements();
-			facetElements.push.apply(facetElements, pathElements);
 
 			// TODO Fix the API - it should only need one call
 			var finalElements = sparql.ElementUtils.flatten(facetElements);

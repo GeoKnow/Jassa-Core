@@ -1,7 +1,7 @@
 (function() {
     
     var util = Jassa.util;
-
+    
     var ns = Jassa.sparql;
         
     ns.JoinType = {
@@ -176,8 +176,8 @@
             this.usedVarNames = [];
             this.usedVars = [];
 
-            this.aliasGenerator = new sparql.GenSym('a');
-            this.varNameGenerator = new sparql.GeneratorBlacklist(new sparql.GenSym('v'), this.usedVarNames); 
+            this.aliasGenerator = new ns.GenSym('a');
+            this.varNameGenerator = new ns.GeneratorBlacklist(new ns.GenSym('v'), this.usedVarNames); 
             
 
             this.aliasToState = {};
@@ -248,9 +248,9 @@
             
             //var sourceVars = this.ge; // Based on renaming!
             var oldTargetVars = targetElement.getVarsMentioned();
-            var targetVarMap = sparql.ElementUtils.createJoinVarMap(this.usedVars, oldTargetVars, sjv, targetJoinVars, this.varGenerator);
+            var targetVarMap = ns.ElementUtils.createJoinVarMap(this.usedVars, oldTargetVars, sjv, targetJoinVars, this.varGenerator);
             
-            var newTargetElement = sparql.ElementUtils.createRenamedElement(targetElement, targetVarMap);
+            var newTargetElement = ns.ElementUtils.createRenamedElement(targetElement, targetVarMap);
             
             var newTargetVars = targetVarMap.getInverse().keyList();
             this.addVars(newTargetVars);
@@ -312,13 +312,13 @@
                 var childNode = child.getJoinNode();
                 var childElements = self.getElementsRec(childNode);
 
-                var childElement = new sparql.ElementGroup(childElements);
+                var childElement = new ns.ElementGroup(childElements);
 
 
                 var joinType = child.getJoinType();
                 switch(joinType) {
                 case ns.JoinType.LEFT_JOIN:
-                    childElement = new sparql.ElementOptional(childElement);
+                    childElement = new ns.ElementOptional(childElement);
                     break;
                 case ns.JoinType.INNER_JOIN:
                     break;

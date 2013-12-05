@@ -151,7 +151,7 @@
 			this.prefixMap = new ns.PrefixMap();
 			
 			// TODO We should not map to element directly, but to ElementProvider
-			this.tableNameToElement = {};
+			this.tableNameToElementFactory = {};
 			
 			// Note: the names of mappings and tables are in different namespaces
 			// In fact, in most cases tables are implicitely created - with the name of the mapping
@@ -174,16 +174,16 @@
 			return this.patternParser;
 		},
 		
-		getTableNameToElement: function() {
-			return this.tableNameToElement;
+		getTableNameToElementFactory: function() {
+			return this.tableNameToElementFactory;
 		},
 		
 		getNameToMapping: function() {
 			return this.nameToMapping;
 		},
 		
-		mapTableNameToElement: function(tableName, element) {
-			this.tableNameToElement[tableName] = element;
+		mapTableNameToElementFactory: function(tableName, elementFactory) {
+			this.tableNameToElementFactory[tableName] = elementFactory;
 		},
 		
 		addMapping: function(mapping) {
@@ -196,8 +196,8 @@
 			return result;
 		},
 		
-		getElement: function(tableName) {
-			var result = this.tableNameToElement[tableName];
+		getElementFactory: function(tableName) {
+			var result = this.tableNameToElementFactory[tableName];
 			return result;
 		},
 		

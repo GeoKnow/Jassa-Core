@@ -50,10 +50,11 @@
 	
 
 	ns.QueryExecutionFactoryHttp = Class.create(ns.QueryExecutionFactoryBaseString, {
-		initialize: function(serviceUri, defaultGraphUris, httpArgs) {
+		initialize: function(serviceUri, defaultGraphUris, ajaxOptions, httpArgs) {
 			this.serviceUri = serviceUri;
 			this.setDefaultGraphs(defaultGraphUris);
 			
+            this.ajaxOptions = ajaxOptions;
 			this.httpArgs = httpArgs;
 		},
 
@@ -92,7 +93,9 @@
 		},
 		
 		createQueryExecutionStr: function(queryStr) {
-			var result = new ns.QueryExecutionHttp(queryStr, this.serviceUri, this.defaultGraphUris, this.httpArgs)
+		    var ajaxOptions = _({}).extend(this.ajaxOptions);
+		    
+			var result = new ns.QueryExecutionHttp(queryStr, this.serviceUri, this.defaultGraphUris, ajaxOptions, this.httpArgs);
 			return result;
 		},
 		

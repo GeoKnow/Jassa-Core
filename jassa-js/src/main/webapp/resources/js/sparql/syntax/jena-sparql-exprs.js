@@ -246,7 +246,7 @@
 
 
 // TODO Change to ExprFunction1
-	ns.E_In = Class.create(ns.Expr, {
+	ns.E_OneOf = Class.create(ns.Expr, {
 		initialize: function(variable, nodes) {
 		
 			this.variable = variable;
@@ -259,7 +259,7 @@
 	
 		copySubstitute: function(fnNodeMap) {		
 			var newElements = _.map(this.nodes, function(x) { return rdf.getSubstitute(x, fnNodeMap); });
-			return new ns.E_In(this.variable.copySubstitute(fnNodeMap), newElements);
+			return new ns.E_OneOf(this.variable.copySubstitute(fnNodeMap), newElements);
 		},
 	
 		toString: function() {
@@ -272,7 +272,8 @@
 			}
 		}
 	});
-	
+
+	//ns.E_In = ns.E_OneOf
 	
 	ns.E_Str = Class.create(ns.ExprFunction1, {
 //		initialize: function($super) {
@@ -731,7 +732,7 @@
 	// TODO Not sure about the best way to design this class
 	// Jena does it by subclassing for each type e.g. NodeValueDecimal
 	
-	
+	// TODO Do we even need this class? There is NodeValueNode now!
 	ns.NodeValue = Class.create(ns.Expr, {
 		initialize: function(node) {
 			this.node = node;
@@ -769,14 +770,30 @@
 		},
 	
 		toString: function() {
-			if(this.node.datatype === xsd.xdouble.value) {
-				return parseFloat(this.node.value);
-			}
-			
+		    var node = this.node;
+
+//		    var tmp = node.toString();
+//		    if(tmp.indexOf('#string') > 0) {
+//		        debugger;
+//		    }
+		    
+		    var result;
+		    if(node.isLiteral()) {
+		        if(node.getLiteralDatatypeUri() === xsd.xstring.getUri()) {
+		            result = '"' + node.getLiteralLexicalForm() + '"'; 
+		        }
+		        else if(node.datatype === xsd.xdouble.value) {
+		            // TODO This is a hack - why is it here???
+		            return parseFloat(this.node.value);		            
+		        }
+		    }
+		    else {
+		        result = node.toString();
+		    }
 			// TODO Numeric values do not need the full rdf term representation
 			// e.g. "50"^^xsd:double - this method should output "natural/casual"
 			// representations
-			return this.node.toString();
+			return result;
 	
 			/*
 			var node = this.node;
@@ -859,8 +876,20 @@
 		},
 		
 		toString: function() {
-			return "" + this.node;
-			//return 'NodeValue[' + this.node + ']';
+		    var node = this.node;
+		    
+		    var result = null;
+            if(node.isLiteral()) {
+                if(node.getLiteralDatatypeUri() === xsd.xstring.getUri()) {
+                    result = '"' + node.getLiteralLexicalForm() + '"'; 
+                }
+            }
+            
+            if(result == null) {
+                result = node.toString();
+            }
+
+			return result;
 		}
 	});
 	

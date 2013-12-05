@@ -106,9 +106,18 @@
 	//facete.test();
 	
 	//var sparqlEndpointUrl = 'http://localhost/sparql';
-	var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';
-	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
-	var qef = new service.QueryExecutionFactoryHttp(sparqlEndpointUrl, ['http://dbpedia.org']);
+	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';	
+	
+	//var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
+	//var defaultGraphUris = ['http://dbpedia.org'];
+
+// 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
+// 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
+	
+ 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+ 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+
+	var qef = new service.QueryExecutionFactoryHttp(sparqlEndpointUrl, defaultGraphUris);
 	qef = new service.QueryExecutionFactoryCache(qef);
 	
 	/**

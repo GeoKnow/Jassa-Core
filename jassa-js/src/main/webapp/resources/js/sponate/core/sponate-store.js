@@ -213,7 +213,8 @@
 			//console.log('mapping:', mapping);
 			
 			// Retrieve the mapping's table and the associated element
-			var element = this.context.getElement(mapping.getTableName());			
+			var elementFactory = this.context.getElementFactory(mapping.getTableName());
+			var element = elementFactory.createElement();
 			
 			var pattern = mapping.getPattern();
 			//console.log('Pattern here ' + JSON.stringify(pattern));
@@ -263,8 +264,11 @@
 				element = new sparql.ElementGroup([
 				                                   new sparql.ElementSubQuery(subQuery),
 				                                   element]);
-				var orderBys = subQuery.getOrderBy();
-				orderBys.push.apply(orderBys, sortConditions);
+
+				// TODO Do we need a sort condition on the inner query?
+				// Note that the inner query already does a distinct
+				//var orderBys = subQuery.getOrderBy();
+				//orderBys.push.apply(orderBys, sortConditions);
 
 			}
 

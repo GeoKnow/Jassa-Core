@@ -12,6 +12,13 @@
 	
 	
 	ns.ExprEvaluator = Class.create({
+	   eval: function(expr, binding) {
+	       throw 'Not overridden';
+	   } 
+	});
+	
+
+	ns.ExprEvaluatorImpl = Class.create(ns.ExprEvaluator, {
 		
 		eval: function(expr, binding) {
 			

@@ -16,10 +16,11 @@
 		 * 
 		 */
 		compile: function(context, mapping, criteria) {
-		    
+
 		    var tableName = mapping.getTableName();
-		    var tableNameToElement = context.getTableNameToElement();
-		    var element = tableNameToElement[tableName];
+		    var tableNameToElementFactory = context.getTableNameToElementFactory();
+		    var elementFactory = tableNameToElementFactory[tableName];
+		    var element = elementFactory.createElement();
 		    		    
 		    var joinNode = sparql.JoinBuilderElement.create(element);
 		    
@@ -32,13 +33,19 @@
 		    // TODO The result format is still unclear ; most likely it is
 		    // something along the lines of a mapping from
 		    // join alias to exprs and elements
-		    result = [];
+		    var result = [];
 		    
             console.log("Compile request for criteria: " + criteria + '; ' + JSON.stringify(criteria));
 
             var pattern = mapping.getPattern();
 
-		    criteria.accept(this, pattern, context, joinNode, result);
+            // TODO Why the heck did I use the visitor pattern here???? Was I drunk???
+            // TODO: Just build the function name and call it!
+		    
+            
+            //criteria.accept(this, pattern, context, joinNode, result);
+            this.visitCriteria(criteria, pattern, context, joinNode, result);
+            
 		    
             return result;
             
@@ -77,6 +84,13 @@
 		    
 		},
 		
+		visitCriteria: function(criteria, pattern, context, joinNode, result) {
+		    var fnName = 'visitCriteria' + criteria.getOpName();
+		    //console.log('FnName: ' + fnName);
+		    var fn = this[fnName];
+		    var result = fn.call(this, criteria, pattern, context, joinNode, result);
+		    return result;
+		},
 		
 //		findPattern: function(pattern, attrPath) {
 //
@@ -97,7 +111,9 @@
             
             _(subCriterias).each(function(subCriteria) {
                 var andExprs = [];
-                subCriteria.accept(self, subPattern, context, joinNode, andExprs);
+                //subCriteria.accept(self, subPattern, context, joinNode, andExprs);
+                self.visitCriteria(subCriteria, subPattern, context, joinNode, andExprs);
+
                 
                 var andExpr = sparql.andify(andExprs);
                 orExprs.push(andExpr);
@@ -139,7 +155,8 @@
             var self = this;
 		    var subCriterias = criteria.getCriterias();
 		    _(subCriterias).each(function(subCriteria) {
-	            criteria.accept(self, subPattern, context, joinNode, result);
+	            //criteria.accept(self, subPattern, context, joinNode, result);
+                self.visitCriteria(subCriteria, subPattern, context, joinNode, result);
 		    });
 		},
 
@@ -154,7 +171,9 @@
             
             _(subCriterias).each(function(subCriteria) {
                 var andExprs = [];
-                subCriteria.accept(self, subPattern, context, joinNode, andExprs);
+                //subCriteria.accept(self, subPattern, context, joinNode, andExprs);
+                self.visitCriteria(subCriteria, subPattern, context, joinNode, andExprs);
+
                 
                 var andExpr = sparql.andify(andExprs);
                 orExprs.push(andExpr);
@@ -174,6 +193,10 @@
             result.push(e);
         },
 		
+        visitCriteria$true: function(criteria, pattern, context, joinNode, result) {
+            
+        },
+        
 		/**
 		 * 
 		 * 

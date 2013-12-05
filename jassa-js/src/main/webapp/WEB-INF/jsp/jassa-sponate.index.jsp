@@ -46,6 +46,8 @@
 	<script type="text/javascript">
 	_.mixin(_.str.exports());
 
+	(function() {
+	
 	var prefixes = {
 		'dbpedia-owl': 'http://dbpedia.org/ontology/',
 		'dbpedia': 'http://.org/resource/',
@@ -60,12 +62,229 @@
 	var service = Jassa.service;
 	var sponate = Jassa.sponate;
 
+	
+	
+	var prefLabelPropertyUris = [
+		'http://www.w3.org/2004/02/skos/core#prefLabel',
+	    'http://purl.org/dc/elements/1.1/title',
+	    'http://purl.org/dc/terms/title',
+	    'http://swrc.ontoware.org/ontology#title',
+	    'http://xmlns.com/foaf/0.1/name',
+	    'http://usefulinc.com/ns/doap#name',
+	    'http://rdfs.org/sioc/ns#name',
+	    'http://www.holygoat.co.uk/owl/redwood/0.1/tags/name',
+	    'http://linkedgeodata.org/vocabulary#name',
+	    'http://www.geonames.org/ontology#name',
+	    'http://www.geneontology.org/dtds/go.dtd#name',
+
+	    'http://www.w3.org/2000/01/rdf-schema#label',
+
+	    'http://xmlns.com/foaf/0.1/accountName',
+	    'http://xmlns.com/foaf/0.1/nick',
+	    'http://xmlns.com/foaf/0.1/surname',
+	    'http://www.w3.org/2004/02/skos/core#altLabel'
+	];
+	
+// 	prefLabelPropertyUris = [
+// 		'http://www.w3.org/2000/01/rdf-schema#label'
+// 	];
+
+
+	var prefLabelProperties = _(prefLabelPropertyUris).map(function(uri) {
+	   return rdf.NodeFactory.createUri(uri); 
+	});
+	
+	var prefLangs = ['de', 'en', ''];
+
+
+	// Create a map from prop-lang key to its priority based on
+	// cross joining the label urs with the langs
+	// TODO This doesn't seem to make anything easier - skip it
+// 	var labelPrios = {};
+// 	var i = 0;
+// 	_(prefLabelUris).each(function(labelUri) {
+// 	    _(prefLangs).each(function(lang) {
+// 	        var item = {
+// 	            prio: i;
+// 	        	uri: labelUri,
+// 	        	lang: lang;
+// 	        };
+	        
+// 	        var key = uri + ' ' + lang;
+// 	        labelPrios[key] = item;
+// 	    });
+// 	});
+
+	//{ label: {expr: '?l', prio: prioritize: fuc}}
+	// { label: '?l | prioritize(?s ?p ?o)' }
+
+	/**
+	 * Create a filter statement of structure
+	 * Filter()
+	 */
+	var createLabelFilterElement = function(labelVar, labelPrios, langPrios) {
+	    
+	};
+
+	
+// 	var compareArrayLessThan = function(as, bs) {
+// 	    if(as.length != bs.length) {
+// 	        console.log('Arrays must be of same length');
+// 	        throw 'Bailing out';
+// 	    }
+
+// 	    var n = as.length;
+// 	    for(var i = 0; i < n; ++i) {
+// 	        var a = as[i];
+// 	        var b = bs[i];
+	        
+// 	        var tmp = op(a, b);
+// 	    }
+// 	}
+
+	var compareArray = function(as, bs, op) {
+	   var result = _(as).zip(bs).every(function(a, b) {
+	       var r = op(a, b);
+	       return r;
+	   });
+	   
+	   return result;
+	};
+	
+	var cmpLessThan = function(a, b) {
+	    return a < b;
+	};
+	
+	var exprEvaluator = new sparql.ExprEvaluatorImpl();
+	
+	var s = rdf.NodeFactory.createVar('s');
+	var p = rdf.NodeFactory.createVar('p');
+	var o = rdf.NodeFactory.createVar('o');
+
+	var subjectExpr = new sparql.ExprVar(s);
+	var propertyExpr = new sparql.ExprVar(p);
+	var labelExpr = new sparql.ExprVar(o);
+
+	var langTmp = _(prefLangs).map(function(lang) {
+	   var r = new sparql.E_LangMatches(new sparql.E_Lang(labelExpr), sparql.NodeValue.makeString(lang));
+	   return r;
+	});
+	
+	// Combine multiple expressions into a single logicalOr expression.
+	var langConstraint = sparql.orify(langTmp);
+	
+	//var propFilter = new sparql.E_LogicalAnd(
+	var propFilter = new sparql.E_OneOf(propertyExpr, prefLabelProperties);
+	//);
+	
+	
+	var langElement = new sparql.ElementGroup([
+        new sparql.ElementTriplesBlock([ new rdf.Triple(s, p, o)] ),
+		new sparql.ElementFilter([propFilter, langConstraint])
+    ]);
+	
+	var langElementFactory = new sparql.ElementFactoryConst(langElement);
+	
+// 	var test = langElement.copySubstitute(function(x) { return x; });
+// 	alert('' + test);
+	
+	var ns = {};
+	ns.AggregatorLabel = Class.create({
+	    initialize: function(labelPrios, langPrios, labelExpr, subjectExpr, propertyExpr) {
+	        this.subjectExpr;
+	        this.propertyExpr;
+	        this.labelExpr;
+	        
+	        this.exprEvaluator = exprEvaluator;
+	        
+	        this.labelPrios = labelPrios;
+
+	        //this.defaultPropery = defaultProperty;
+	        
+	        this.bestMatchNode = null;
+	        this.bestMatchScore = null;
+	    },
+	    
+	    process: function(binding) {
+	        
+	        // Evaluate label, property and subject based on the binding
+	        var property = this.exprEvaluator.eval(this.propertyExpr, labelExpr);
+	        var label = this.exprEvaluator.eval(this.labelExpr, binding);
+	        var subject = this.exprEvaluator.eval(this.subjectExpr, binding);
+	       
+	        
+	        // Determine the score vector for the property and the language
+	        var propertyScore;
+	        var langScore;
+	        
+	        if(property.isUri()) {
+	            var propertyUri = property.getUri();
+	            propertyScore = this.labelPrios.indexOf(propertyUri);
+	        }
+	        
+			if(label.isConstant()) {
+			    
+			    var val = label.getLiteralLexicalValue();
+			    var lang = label.getLiteralLanguage();
+			    
+			    langScore = this.langPrios.indexOf(lang);
+			}
+			
+			var score = [propertyScore, langScore];
+			
+			// Check if the new score is better (less than) than the current best match
+			var cmp = compareArray(this.bestMatchScore, score, cmpLessThan);
+	        if(cmp < 0) {
+	            this.bestMatchScore = score;
+	            this.bestMatchNode = label;
+	        }
+	    },
+	    
+	    getNode: function() {
+	    	return this.bestMatchNode;  
+	    },
+	    
+	    getJson: function() {
+	        var result = null;
+	        if(this.bestMatchLabel) {
+	    		result = this.bestMatchLabel.getLiteralValue();
+	        }
+
+	    	return result;
+	    }
+	});
+	
+	var aggLabel = new ns.AggregatorLabel(prefLabelPropertyUris, prefLangs, labelExpr, subjectExpr, propertyExpr);
+
+	
 	/*
 	 * Sponate
 	 */
-	var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
-	var store = new sponate.StoreFacade(qef, prefixes);
+	var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://fp7-pp.publicdata.eu/'], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
+	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://live.dbpedia.org/sparql'});
+	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', [], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
+ 	//var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org'], {crossDomain: true});	
+ 	var store = new sponate.StoreFacade(qef, prefixes);
 
+
+	store.addMap({
+		name: 'labels',
+		template: [{
+			id: '?s',
+			//displayName: labelAggregator // Aggregator fields cannot be filtered server side. 
+			labels: [{id: '?o'}]
+		}],
+		from: langElementFactory
+	});
+
+
+	store.labels.find().limit(10).asList().done(function(items) {
+	   console.log(items); 
+	});
+	
+	
+	return;
+	
 	// Rule of thumb: If you use optional in the from attribute, you are probably doing it wrong
 
 	var mode = 1;
@@ -75,6 +294,7 @@
 			name: 'projects',
 			template: [{
 				id: '?s',
+				//displayName: labelAggregator // Aggregator fields cannot be filtered server side. 
 				name: '?l',
 				partners: [{
 					id: '?o',
@@ -143,6 +363,8 @@
  	eval('foo=' + '{a: 1}');
  	alert(JSON.stringify(foo));
  	
+ 	
+
 	// Creating a join: 
 	
 	//var promise = store.castles.find().asList();
@@ -205,6 +427,8 @@
 			});
 		};
 	});
+	
+	})();
 	
 	</script>
 </head>

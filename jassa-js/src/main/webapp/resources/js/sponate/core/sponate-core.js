@@ -1035,7 +1035,7 @@
 		
 		initialize: function(pattern) {			
 			this.context = {
-				exprEvaluator: new sparql.ExprEvaluator(),
+				exprEvaluator: new sparql.ExprEvaluatorImpl(),
 				aggregatorFactory: new ns.AggregatorFactory(),
 				refRegistry: new ns.RegistryRef()
 			};
