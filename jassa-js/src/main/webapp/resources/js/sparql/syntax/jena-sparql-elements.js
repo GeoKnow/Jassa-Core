@@ -78,8 +78,12 @@
 			this.varNameToEntry[v.getName()] = {v: v, node: node};
 		},
 		
-		get: function(v) {
-			var entry = this.varNameToEntry[v.getName()];
+		get: function(varName) {
+		    if(!_(varName).isString()) {
+		        throw 'varName must be a string';
+		    }
+		    
+			var entry = this.varNameToEntry[varName];
 			
 			var result = entry ? entry.node : null;
 			
@@ -120,22 +124,7 @@
 
 	
 
-	
-	ns.Element = function() {
-			
-	};
-	
-	
-	ns.Element.fromJson = function() {
 		
-	};
-	
-	ns.Element.toJson = function() {
-		
-	};
-	
-
-	
 	ns.orify = function(exprs) {
 		var result = ns.opify(exprs, ns.E_LogicalOr);
 		return result;
@@ -349,6 +338,12 @@
 		return "{ " + this.bgp + " }";
 	};
 	
+	
+    ns.Element = Class.create({
+	        
+    });
+	    
+
 	
 	ns.ElementNamedGraph = function(element, namedGraphNode) {
 		this.element = element;
@@ -680,14 +675,12 @@
 	};
 	
 
-	ns.ElementGroup = function(elements) {
-		this.elements = elements ? elements : [];
-	};
+	ns.ElementGroup = Class.create(ns.Element, {
+	    initialize: function(elements) {
+		    this.elements = elements ? elements : [];
+	    },
 
-	ns.ElementGroup.classLabel = 'ElementGroup';
-
-	ns.ElementGroup.prototype = {
-		getArgs: function() {
+	    getArgs: function() {
 			return this.elements;
 		},
 	
@@ -726,7 +719,10 @@
 				return new ns.ElementGroup(ns.ElementUtils.flattenElements(processed));
 			}
 		}
-	};
+	});
+	
+	ns.ElementGroup.classLabel = 'ElementGroup';
+
 	
 
 	

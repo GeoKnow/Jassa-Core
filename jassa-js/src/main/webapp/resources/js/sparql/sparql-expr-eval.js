@@ -48,7 +48,7 @@
 			//console.log('Expr' + JSON.stringify(expr));
 			var v = expr.asVar();
 			
-			var node = binding.get(v);
+			var node = binding.get(v.getName());
 			
 			var result;
 			if(node == null) {

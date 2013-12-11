@@ -55,7 +55,7 @@
 	}
 	</style>
 	
-	
+	<!--  TODO PrefixMapping Object von Jena portieren ~ 9 Dec 2013 -->
 	
 	<script src="resources/libs/jquery/1.9.1/jquery.js"></script>
 	<script src="resources/libs/twitter-bootstrap/3.0.1/js/bootstrap.js"></script>
@@ -127,6 +127,8 @@
 	
 	var baseVar = rdf.NodeFactory.createVar("s");
 	var baseConcept = facete.ConceptUtils.createSubjectConcept(baseVar);
+	//var sparqlStr = sparql.SparqlString.create("?s a ?t");
+	//var baseConcept = new facete.Concept(new sparql.ElementString(sparqlStr));
 	var rootFacetNode = facete.FacetNode.createRoot(baseVar);
 	
 	// Based on above objects, create a provider for the configuration

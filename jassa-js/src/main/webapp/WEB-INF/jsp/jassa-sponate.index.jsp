@@ -143,12 +143,36 @@
 // 	}
 
 	var compareArray = function(as, bs, op) {
-	   var result = _(as).zip(bs).every(function(a, b) {
-	       var r = op(a, b);
-	       return r;
-	   });
+        var zipped = _.zip(as, bs);
+        
+        var result = false;
+        for(var i = 0; i < zipped.length; ++i) {
+           var item = zipped[i];
+           var a = item[0];
+           var b = item[1];
+           
+           if(op(a, b)) {
+               if(op(b, a)) {
+                   continue;
+               }
+               
+               result = true;
+               break;
+           } else { //else if(op(b, a)) {
+               result = false;
+               break;
+           }
+        }
+//         _(zipped).each(function(item) {
+            
+//         });
+        
+// 	    var result = zipped.every(function(a) {
+// 	        var r = op(a[0], a[1]);
+// 	        return r;
+// 	    });
 	   
-	   return result;
+	    return result;
 	};
 	
 	var cmpLessThan = function(a, b) {
@@ -157,6 +181,7 @@
 	
 	var exprEvaluator = new sparql.ExprEvaluatorImpl();
 	
+	/*
 	var s = rdf.NodeFactory.createVar('s');
 	var p = rdf.NodeFactory.createVar('p');
 	var o = rdf.NodeFactory.createVar('o');
@@ -188,27 +213,61 @@
 // 	var test = langElement.copySubstitute(function(x) { return x; });
 // 	alert('' + test);
 	
+	
+// 	ns.AggregatorLabelConfig = Class.create({
+// 	    initialize: function
+// 	})
+*/	
 	var ns = {};
+	ns.AggregatorFactoryLabel = Class.create({
+	    initialize: function(labelPrios, prefLangs, labelExpr, subjectExpr, propertyExpr) {
+	        this.labelPrios = labelPrios;
+	        this.prefLangs = prefLangs;
+	        this.labelExpr = labelExpr;
+	        this.subjectExpr = subjectExpr;
+	        this.propertyExpr = propertyExpr;
+	    },
+	    
+	    createAggregator: function() {
+	        var result = new ns.AggregatorLabel(
+	            this.labelPrios, this.prefLangs, this. labelExpr, this.subjectExpr, this.propertyExpr
+			);
+	        return result;
+	    },
+	    
+	    getVarsMentioned: function() {
+	        var vm = (function(expr) {
+	            var result = expr ? expr.getVarsMentioned() : [];
+	            return result;
+	        });
+	        
+	        var result = _.union(vm(this.labelExpr), vm(this.subjectExpr), vm(this.propertyExpr));
+	        return result;
+	    }
+	});
+	
+	
 	ns.AggregatorLabel = Class.create({
-	    initialize: function(labelPrios, langPrios, labelExpr, subjectExpr, propertyExpr) {
-	        this.subjectExpr;
-	        this.propertyExpr;
-	        this.labelExpr;
+	    initialize: function(labelPrios, prefLangs, labelExpr, subjectExpr, propertyExpr) {
+	        this.subjectExpr = subjectExpr;
+	        this.propertyExpr = propertyExpr;
+	        this.labelExpr = labelExpr;
 	        
 	        this.exprEvaluator = exprEvaluator;
 	        
 	        this.labelPrios = labelPrios;
+	        this.prefLangs = prefLangs;
 
 	        //this.defaultPropery = defaultProperty;
 	        
 	        this.bestMatchNode = null;
-	        this.bestMatchScore = null;
+	        this.bestMatchScore = [1000, 1000];
 	    },
 	    
-	    process: function(binding) {
+	    processBinding: function(binding) {
 	        
 	        // Evaluate label, property and subject based on the binding
-	        var property = this.exprEvaluator.eval(this.propertyExpr, labelExpr);
+	        var property = this.exprEvaluator.eval(this.propertyExpr, binding);
 	        var label = this.exprEvaluator.eval(this.labelExpr, binding);
 	        var subject = this.exprEvaluator.eval(this.subjectExpr, binding);
 	       
@@ -217,27 +276,43 @@
 	        var propertyScore;
 	        var langScore;
 	        
-	        if(property.isUri()) {
-	            var propertyUri = property.getUri();
+	        var l;
+	        if(property && property.isConstant()) {
+	            var p = property.getConstant().asNode();
+	            var propertyUri = p.getUri();
 	            propertyScore = this.labelPrios.indexOf(propertyUri);
 	        }
 	        
-			if(label.isConstant()) {
+			if(label && label.isConstant()) {
+			    l = label.getConstant().asNode();
 			    
-			    var val = label.getLiteralLexicalValue();
-			    var lang = label.getLiteralLanguage();
+			    var lang = l.getLiteralLanguage();
+			    var val = l.getLiteralLexicalForm();
+
+			    if(val == 'Foobar' || val == 'Baz') {
+			        console.log('here');
+			    }
+
 			    
-			    langScore = this.langPrios.indexOf(lang);
+			    langScore = this.prefLangs.indexOf(lang);
 			}
+			
 			
 			var score = [propertyScore, langScore];
 			
-			// Check if the new score is better (less than) than the current best match
-			var cmp = compareArray(this.bestMatchScore, score, cmpLessThan);
-	        if(cmp < 0) {
-	            this.bestMatchScore = score;
-	            this.bestMatchNode = label;
-	        }
+			var allNonNegative = _(score).every(function(item) {
+			    return item >= 0;
+			});
+			
+			if(allNonNegative) {
+			
+				// Check if the new score is better (less than) than the current best match
+				var cmp = compareArray(score, this.bestMatchScore, cmpLessThan);
+		        if(cmp === true) {
+		            this.bestMatchScore = score;
+		            this.bestMatchNode = l;
+		        }
+			}
 	    },
 	    
 	    getNode: function() {
@@ -246,35 +321,107 @@
 	    
 	    getJson: function() {
 	        var result = null;
-	        if(this.bestMatchLabel) {
-	    		result = this.bestMatchLabel.getLiteralValue();
+	        if(this.bestMatchNode) {
+	    		result = this.bestMatchNode.getLiteralValue();
 	        }
 
 	    	return result;
 	    }
 	});
 	
-	var aggLabel = new ns.AggregatorLabel(prefLabelPropertyUris, prefLangs, labelExpr, subjectExpr, propertyExpr);
+	//var aggLabel = new ns.AggregatorLabel(prefLabelPropertyUris, prefLangs, labelExpr, subjectExpr, propertyExpr);
 
+
+	//var aggFactoryLabel = new ns.AggregatorFactoryLabel(prefLabelPropertyUris, prefLangs, labelExpr, subjectExpr, propertyExpr);
+
+	
+	ns.LabelUtil = Class.create({
+	    initialize: function(aggFactory, element) {
+	        this.aggFactory = aggFactory
+	        this.element = element;
+	    },
+	    
+	    getAggFactory: function() {
+	        return this.aggFactory;
+	    },
+	    
+	    getElement: function() {
+	        return this.element;
+	    }
+	});
+
+	ns.LabelUtilFactory = Class.create({
+	   initialize: function(prefLabelPropertyUris, prefLangs) {
+	       this.prefLabelPropertyUris = prefLabelPropertyUris;
+	       this.prefLangs = prefLangs;
+	   },
+	   
+	   createLabelUtil: function(labelVarName, subjectVarName, propertyVarName) {
+            var s = rdf.NodeFactory.createVar(subjectVarName);
+		    var p = rdf.NodeFactory.createVar(propertyVarName);
+		    var o = rdf.NodeFactory.createVar(labelVarName);
+
+		    var subjectExpr = new sparql.ExprVar(s);
+		    var propertyExpr = new sparql.ExprVar(p);
+		    var labelExpr = new sparql.ExprVar(o);
+
+		    // First, create the aggregator object
+		    var aggFactoryLabel = new ns.AggregatorFactoryLabel(this.prefLabelPropertyUris, this.prefLangs, labelExpr, subjectExpr, propertyExpr);
+	    
+		    
+		    // Second, create the element
+			var langTmp = _(this.prefLangs).map(function(lang) {
+				var r = new sparql.E_LangMatches(new sparql.E_Lang(labelExpr), sparql.NodeValue.makeString(lang));
+				return r;
+			});
+				
+			// Combine multiple expressions into a single logicalOr expression.
+			var langConstraint = sparql.orify(langTmp);
+			
+			//var propFilter = new sparql.E_LogicalAnd(
+			var propFilter = new sparql.E_OneOf(propertyExpr, prefLabelProperties);
+			//);
+			
+			
+			var langElement = new sparql.ElementGroup([
+		        new sparql.ElementTriplesBlock([ new rdf.Triple(s, p, o)] ),
+				new sparql.ElementFilter([propFilter, langConstraint])
+		    ]);
+			
+			var result = new ns.LabelUtil(aggFactoryLabel, langElement);
+			return result;
+	   }
+	});
+	
+	
+	//alert(aggFactoryLabel.getVarsMentioned());
 	
 	/*
 	 * Sponate
 	 */
-	var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://fp7-pp.publicdata.eu/'], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
+	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://fp7-pp.publicdata.eu/'], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
+	var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://example.org/labels'], {crossDomain: true}, {'service-uri': 'http://localhost:8802/sparql'});
+
 	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://live.dbpedia.org/sparql'});
 	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', [], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
  	//var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org'], {crossDomain: true});	
  	var store = new sponate.StoreFacade(qef, prefixes);
 
 
+ 	// The label util factory can be preconfigured with prefered properties and langs
+	var labelUtilFactory = new ns.LabelUtilFactory(prefLabelPropertyUris, prefLangs);
+	
+ 	// A label util can be created based on var names and holds an element and an aggregator factory.
+ 	var labelUtil = labelUtilFactory.createLabelUtil('o', 's', 'p');
+
 	store.addMap({
 		name: 'labels',
 		template: [{
 			id: '?s',
-			//displayName: labelAggregator // Aggregator fields cannot be filtered server side. 
-			labels: [{id: '?o'}]
+			displayLabel: labelUtil.getAggFactory(),
+			hiddenLabels: [{id: '?o'}]
 		}],
-		from: langElementFactory
+		from: labelUtil.getElement()
 	});
 
 

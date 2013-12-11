@@ -13,6 +13,59 @@
 	});
 	
 	
+	   ns.IteratorAbstract = Class.create(ns.Iterator, {
+	        initialize: function() {
+	            this.current = null;
+	            this.advance = true;
+	            this.finished = false;
+	        },
+	        
+	        finish: function() {
+	            this.finished = true;
+
+	            this.close();
+	            return null;
+	        },
+
+	        $prefetch: function() {
+//	          try {
+	            this.current = this.prefetch();
+//	          }
+//	          catch(Exception e) {
+//	              current = null;
+//	              logger.error("Error prefetching data", e);
+//	          }
+	        },
+
+	        hasNext: function() {
+	            if(this.advance) {
+	                this.$prefetch();
+	                this.advance = false;
+	            }
+
+	            return this.finished == false;
+	        },
+
+	        next: function() {
+	            if(this.finished) {
+	                throw 'No more elments';
+	            }
+
+	            if(this.advance) {
+	                this.$prefetch();
+	            }
+
+	            this.advance = true;
+	            return this.current;
+	        },
+
+	        
+	        prefetch: function() {
+	            throw 'Not overridden';
+	        }
+	    });
+	
+	
 	ns.Entry = Class.create({
 		initialize: function(key, value) {
 			this.key = key;

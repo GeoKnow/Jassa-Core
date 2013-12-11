@@ -79,7 +79,7 @@
 
 		var result = null;
 		if(nodes.length > 0) {
-			var expr = new sparql.E_In(new sparql.ExprVar(v), nodes);
+			var expr = new sparql.E_OneOf(new sparql.ExprVar(v), nodes);
 			
 			if(isNegated) {
 				expr = new sparql.E_LogicalNot(expr);

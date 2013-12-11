@@ -92,6 +92,7 @@
 	 * 
 	 */
 
+	// DON'T USE ANYMORE - visitor pattern in JavaScript turned out to be pretty useless
 	ns.callVisitor = function(name, self, args) {
 
 //		if(self !== this) {
@@ -129,9 +130,13 @@
 			return result;
 		},
 
-		accept: function() {
-			throw 'override me';
+		getClassName: function() {
+            throw 'override me';		    
 		},
+		
+//		accept: function() {
+//			throw 'override me';
+//		},
 
 		toString: function() {
 			return 'override me';
@@ -191,68 +196,18 @@
 	});
 	
 	
-	ns.Iterator = Class.create({
-		next: function() {
-			throw 'Not overridden';
-		},
-		
-		hasNext: function() {
-			throw 'Not overridden';
-		}
-	});
+//	ns.Iterator = Class.create({
+//		next: function() {
+//			throw 'Not overridden';
+//		},
+//		
+//		hasNext: function() {
+//			throw 'Not overridden';
+//		}
+//	});
 	
 
-	ns.IteratorAbstract = Class.create(ns.Iterator, {
-		initialize: function() {
-			this.current = null;
-			this.advance = true;
-			this.finished = false;
-		},
-		
-		finish: function() {
-			this.finished = true;
 
-			this.close();
-			return null;
-		},
-
-		$prefetch: function() {
-//			try {
-			this.current = this.prefetch();
-//			}
-//			catch(Exception e) {
-//				current = null;
-//				logger.error("Error prefetching data", e);
-//			}
-		},
-
-		hasNext: function() {
-			if(this.advance) {
-				this.$prefetch();
-				this.advance = false;
-			}
-
-			return this.finished == false;
-		},
-
-		next: function() {
-			if(this.finished) {
-				throw 'No more elments';
-			}
-
-			if(this.advance) {
-				this.$prefetch();
-			}
-
-			this.advance = true;
-			return this.current;
-		},
-
-		
-		prefetch: function() {
-			throw 'Not overridden';
-		}
-	});
 			
 	
 	
@@ -313,6 +268,29 @@
 			
 	};
 	
+	ns.PatternCustomAgg = Class.create(ns.Pattern, {
+	   initialize: function(customAggFactory) {
+	       this.customAggFactory = customAggFactory;
+	   },
+	
+	   getCustomAggFactory: function() {
+	       return this.customAggFactory;
+	   },
+	   
+	   getClassName: function() {
+	       return 'PatternCustomAgg';
+	   },
+	   
+       getVarsMentioned: function() {
+           var result = this.customAggFactory.getVarsMentioned();
+           return result;
+       },
+       
+       getSubPatterns: function() {
+           return [];
+       }
+	});
+	
 	/**
 	 * A pattern for a single valued field.
 	 * 
@@ -326,14 +304,18 @@
 			this.aggregatorName = aggregatorName;
 		},
 		
+        getClassName: function() {
+            return 'PatternLiteral';            
+        },
+		
 		getExpr: function() {
 			return this.expr;
 		},
 		
-		accept: function(visitor) {
-			var result = this.callVisitor('visitLiteral', this, arguments);
-			return result;
-		},
+//		accept: function(visitor) {
+//			var result = this.callVisitor('visitLiteral', this, arguments);
+//			return result;
+//		},
 		
 		toString: function() {
 			return '' + this.expr;
@@ -359,6 +341,10 @@
 			this.attrToPattern = attrToPattern;
 		},
 
+		getClassName: function() {
+            return "PatternObject";            
+        },
+
 		getMembers: function() {
 			return this.attrToPattern;
 		},
@@ -376,10 +362,10 @@
 			return this.attrToPattern[attr];
 		},
 		
-		accept: function(visitor) {
-			var result = this.callVisitor('visitObject', this, arguments);
-			return result;
-		},
+//		accept: function(visitor) {
+//			var result = this.callVisitor('visitObject', this, arguments);
+//			return result;
+//		},
 		
 		toString: function() {
 			var parts = [];
@@ -456,6 +442,10 @@
 			this._isArray = isArray;
 		},
 		
+        getClassName: function() {
+            return "PatternMap";            
+        },
+
 		getKeyExpr: function() {
 			return this.keyExpr;
 		},
@@ -473,10 +463,10 @@
 			return result;
 		},
 
-		accept: function(visitor) {
-			var result = this.callVisitor('visitMap', this, arguments);
-			return result;
-		},
+//		accept: function(visitor) {
+//			var result = this.callVisitor('visitMap', this, arguments);
+//			return result;
+//		},
 		
 		getVarsMentioned: function() {
 			var result = this.subPattern.getVarsMentioned();
@@ -508,6 +498,10 @@
 			this.stub = stub;
 			this.refSpec = null;
 		},
+
+		getClassName: function() {
+            return "PatternRef";            
+        },
 		
 		getStub: function() {
 			return this.stub;
@@ -525,10 +519,10 @@
 			return JSON.stringify(this);
 		},
 		
-		accept: function(visitor) {
-			var result = this.callVisitor('visitRef', this, arguments);
-			return result;
-		},
+//		accept: function(visitor) {
+//			var result = this.callVisitor('visitRef', this, arguments);
+//			return result;
+//		},
 
 		getVarsMentioned: function() {
 			var result = [];
@@ -717,6 +711,27 @@
 			throw 'override me';
 		}
 	});
+
+	
+	ns.AggregatorCustomAgg = Class.create(ns.Aggregator, {
+	   initialize: function(patternCustomAgg, customAgg) {
+	       this.customAgg = customAgg;
+	   },
+	   
+	   getPattern: function() {
+	       return this.pattenCustomAgg;
+	   },
+	   
+	   process: function(binding, context) {
+	       this.customAgg.processBinding(binding);
+	   },
+	   
+	   getJson: function() {
+	       var result = this.customAgg.getJson();
+	       return result;
+	   }
+	});
+	
 	
 	ns.AggregatorLiteral = Class.create(ns.Aggregator, {
 		initialize: function(patternLiteral) {
@@ -957,7 +972,19 @@
 	});
 
 	
+	
+//	ns.AggregatorFactory = Class.create({
+//	   createAggregator: function() {
+//	       throw 'Not overridden';
+//	   } 
+//	});
+	
+	
 	/**
+	 * TODO: This smells like a desig flaw:
+	 * Aggregators should be independent of the pattern -
+	 * aggregators should only have a reference to a childAggregatorFactory,
+	 * whereas this factory may be based on a pattern
 	 * 
 	 * AggregatorFactory
 	 * 
@@ -973,12 +1000,18 @@
 		},
 	
 		create: function(pattern) {
-			var result = pattern.accept(this);
+		    var fnName = "visit" + pattern.getClassName();
+		    var fn = this[fnName];
+		    if(!fn) {
+		        console.log('[ERROR] Function with name "' + fnName + '" not found.')
+		        throw 'Bailing out';
+		    }
+			var result = fn.call(this, pattern);
 			return result;
 		},
 		
 		
-		visitObject: function(patternObject) {
+		visitPatternObject: function(patternObject) {
 			var attrToAggr = {};
 			
 			var self = this;
@@ -994,20 +1027,25 @@
 			return result;
 		},
 
-		visitArray: function(pattern) {
+		visitPatternArray: function(pattern) {
 			return ns.AggregatorArray(pattern);
 		},
 		
-		visitMap: function(patternMap) {
+		visitPatternMap: function(patternMap) {
 			return new ns.AggregatorMap(patternMap);
 		},
 		
-		visitLiteral: function(patternLiteral) {
+		visitPatternLiteral: function(patternLiteral) {
 			return new ns.AggregatorLiteral(patternLiteral);
 		},
 		
-		visitRef: function(patternRef) {
+		visitPatternRef: function(patternRef) {
 			return new ns.AggregatorRef(patternRef);
+		},
+		
+		visitPatternCustomAgg: function(patternCustomAgg) {
+		    var customAgg = patternCustomAgg.getCustomAggFactory().createAggregator();
+		    return new ns.AggregatorCustomAgg(patternCustomAgg, customAgg);
 		}
 	});
 	
@@ -1090,7 +1128,7 @@
 		parseArray: function(val) {
 
 			if(val.length != 1) {
-				console.log('[ERROR] Arrays must have exactly one element that is either a string or an object');
+				console.log('[ERROR] Arrays must have exactly one element that is either a string or an object', val);
 				throw 'Bailing out';
 			}
 			
@@ -1214,7 +1252,16 @@
 				result = this.parseArray(val);
 			}
 			else if(_(val).isObject()) {
-				result = this.parseObject(val);
+			    
+			    var fnCustomAggFactory = val['createAggregator'];
+			    if(fnCustomAggFactory) {
+			        result = new ns.PatternCustomAgg(val); 
+			        //console.log('aggregator support not implemented');
+			        //throw 'Bailing out';
+			    }
+			    else {
+			        result = this.parseObject(val);
+			    }
 			}
 			else {
 				throw "Unkown item type";

@@ -3,9 +3,14 @@
 	var ns = Jassa.rdf;
 	
 
-	// Note: the shortcuts we used actually are quite ok for JavaScript
-	// i.e. doing ns.Node.v() rather than ns.NodeFactory.createNode()
-	
+	/**
+	 * The node base class similar to that of Apache Jena.
+	 * 
+	 * 
+	 * TODO Rename getUri to getURI
+	 * TODO Make this class a pure interface - move all impled methods to an abstract base class
+	 * TODO Clarify who is responsible for .equals() (just do it like in Jena - Is it the base class or its derivations?)
+	 */
 	ns.Node = Class.create({
 		getUri: function() {
 			throw "not a URI node";
@@ -21,6 +26,7 @@
 		
 		getBlankNodeLabel: function() {
 			//throw " is not a blank node";
+		    // Convenience override
 			return this.getBlankNodeId().getLabelString();
 		},
 		
@@ -539,6 +545,10 @@
 		},
 		
 		createPlainLiteral: function(value, lang) {
+		    if(lang == null) {
+		        lang = '';
+		    }
+		    
 			var label = new ns.LiteralLabel(value, value, lang);
 			var result = new ns.Node_Literal(label);
 			
@@ -590,7 +600,7 @@
 			var lex = str;
 			//var lex = dtype.unparse(val);
 			//var lex = s; //dtype.parse(str);
-			var lang = null;
+			var lang = ''; // TODO Use null instead of empty string???
 			
 			var literalLabel = new ns.LiteralLabel(val, lex, lang, dtype);
 			
@@ -614,7 +624,7 @@
 					result = ns.NodeFactory.createUri(talisJson.value);	
 					break;
 				case 'literal':
-					// Virtuoso showed a bug with
+					// Virtuoso at some version had a bug with langs - note: || is coalesce
 					var lang = talisJson.lang || talisJson['xml:lang'];
 					result = ns.NodeFactory.createPlainLiteral(talisJson.value, lang);
 					break;
