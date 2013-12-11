@@ -68,6 +68,7 @@
 		'http://www.w3.org/2004/02/skos/core#prefLabel',
 	    'http://purl.org/dc/elements/1.1/title',
 	    'http://purl.org/dc/terms/title',
+/*
 	    'http://swrc.ontoware.org/ontology#title',
 	    'http://xmlns.com/foaf/0.1/name',
 	    'http://usefulinc.com/ns/doap#name',
@@ -76,12 +77,13 @@
 	    'http://linkedgeodata.org/vocabulary#name',
 	    'http://www.geonames.org/ontology#name',
 	    'http://www.geneontology.org/dtds/go.dtd#name',
-
+*/
 	    'http://www.w3.org/2000/01/rdf-schema#label',
-
+/*
 	    'http://xmlns.com/foaf/0.1/accountName',
 	    'http://xmlns.com/foaf/0.1/nick',
 	    'http://xmlns.com/foaf/0.1/surname',
+*/	    
 	    'http://www.w3.org/2004/02/skos/core#altLabel'
 	];
 	
@@ -159,6 +161,10 @@
                result = true;
                break;
            } else { //else if(op(b, a)) {
+               if(!op(b, a)) {
+                   continue;
+               }
+
                result = false;
                break;
            }
@@ -287,11 +293,11 @@
 			    l = label.getConstant().asNode();
 			    
 			    var lang = l.getLiteralLanguage();
-			    var val = l.getLiteralLexicalForm();
+// 			    var val = l.getLiteralLexicalForm();
 
-			    if(val == 'Foobar' || val == 'Baz') {
-			        console.log('here');
-			    }
+// 			    if(val == 'Foobar' || val == 'Baz') {
+// 			        console.log('here');
+// 			    }
 
 			    
 			    langScore = this.prefLangs.indexOf(lang);
@@ -400,11 +406,14 @@
 	 * Sponate
 	 */
 	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://fp7-pp.publicdata.eu/'], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
-	var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://example.org/labels'], {crossDomain: true}, {'service-uri': 'http://localhost:8802/sparql'});
-
+	//var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://example.org/labels'], {crossDomain: true}, {'service-uri': 'http://localhost:8802/sparql'});
+	
 	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://live.dbpedia.org/sparql'});
 	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', [], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
- 	//var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org'], {crossDomain: true});	
+ 	//var qef = new service.QueryExecutionFactoryHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {crossDomain: true});
+	//var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://dbpedia.org/sparql'});
+	var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
+
  	var store = new sponate.StoreFacade(qef, prefixes);
 
 
@@ -421,7 +430,11 @@
 			displayLabel: labelUtil.getAggFactory(),
 			hiddenLabels: [{id: '?o'}]
 		}],
-		from: labelUtil.getElement()
+		from: new sparql.ElementGroup([
+//            new sparql.ElementString(sparql.SparqlString.create('?s a <http://dbpedia.org/ontology/Castle>')),
+            new sparql.ElementString(sparql.SparqlString.create('Filter(?s = <http://dbpedia.org/resource/Citadel_of_Damascus>)')),
+            labelUtil.getElement()
+        ])
 	});
 
 
