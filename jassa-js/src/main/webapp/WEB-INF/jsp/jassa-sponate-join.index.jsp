@@ -64,7 +64,7 @@
 	 * Sponate
 	 */
 	//var service = sponate.ServiceUtils.createSparqlHttp('http://localhost/sparql');
-	var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
+	var qef = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
 	var store = new sponate.StoreFacade(qef, prefixes);
 
 	// Rule of thumb: If you use optional in the from attribute, you are probably doing it wrong

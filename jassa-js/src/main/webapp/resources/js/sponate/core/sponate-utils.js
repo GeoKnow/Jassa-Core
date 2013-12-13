@@ -10,7 +10,7 @@
 	
 	/**
 	 * @Deprecated - Do not use - will be removed asap.
-	 * Superseded by service.QueryExecutionFactoryHttp
+	 * Superseded by service.SparqlServiceHttp
 	 * 
 	 */
 //	ns.ServiceSponateSparqlHttp = Class.create({
@@ -349,7 +349,7 @@
 	ns.NodeJoinElement = Class.create(ns.Node, {
 		initialize: function($super, graph, nodeId, element, alias) {
 			$super(graph, nodeId); 
-
+			http://localhost/jassa/?file=jassa-facete
 			this.element = element; // TODO ElementProvider?
 			this.alias = alias;
 		},
@@ -416,7 +416,7 @@
 				_(newVars).each(function(newVar) {
 					var oldVar = newToOld.get(newVar);
 					
-					var node = binding.get(newVar);
+					var node = binding.get(newVar.getName());
 					b.put(oldVar, node);
 				});
 				

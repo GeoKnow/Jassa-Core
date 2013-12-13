@@ -1,9 +1,9 @@
 (function($) {
 
 	var ns = Jassa.service;
+
 	
-	
-	ns.QueryExecutionFactory = Class.create({
+	ns.SparqlService = Class.create({
 		getServiceId: function() {
 		    console.log('[ERROR] Method not overridden');
 			throw '[ERROR] Method not overridden';
@@ -24,7 +24,7 @@
 	/**
 	 * Base class for processing query strings.
 	 */
-	ns.QueryExecutionFactoryBaseString = Class.create(ns.QueryExecutionFactory, {
+	ns.SparqlServiceBaseString = Class.create(ns.SparqlService, {
 		createQueryExecution: function(queryStrOrObj) {
 			var result;
 			if(_(queryStrOrObj).isString()) {
@@ -49,7 +49,7 @@
 	});
 	
 
-	ns.QueryExecutionFactoryHttp = Class.create(ns.QueryExecutionFactoryBaseString, {
+	ns.SparqlServiceHttp = Class.create(ns.SparqlServiceBaseString, {
 		initialize: function(serviceUri, defaultGraphUris, ajaxOptions, httpArgs) {
 			this.serviceUri = serviceUri;
 			this.setDefaultGraphs(defaultGraphUris);
@@ -125,10 +125,13 @@
 	/**
 	 * Result Cache stores result sets - this is an instance of a class
 	 * 
-	 * Execution Cache holds all running queries this is just an associative array - i.e. {}
+	 * Execution Cache holds all running queries' promises - this is just an associative array - i.e. {}
+	 * Once the promises are resolved, the corresponding entries are removed from the execution cache
+	 * 
+	 * TODO Its not really a cache but more a registry
 	 * 
 	 */
-	ns.QueryExecutionFactoryCache = Class.create(ns.QueryExecutionFactoryBaseString, {
+	ns.SparqlServiceCache = Class.create(ns.SparqlServiceBaseString, {
 	    
 	    initialize: function(queryExecutionFactory, resultCache, executionCache) {
 	        this.qef = queryExecutionFactory;

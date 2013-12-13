@@ -5,6 +5,8 @@
  */			
 (function($) {
 
+    var util = Jassa.util;
+    
 	var ns = Jassa.service;
 	
 	
@@ -48,7 +50,7 @@
 		 * @returns {Promise<sparql.ResultSet>}
 		 */
 		execSelect: function() {
-			var result = this.execAny().pipe(ns.jsonToResultSet);
+			var result = this.execAny().pipe(ns.ServiceUtils.jsonToResultSet);
 			return result;
 		},
 	
@@ -113,14 +115,21 @@
 //			}
 			
 		
-			var result = ns.execQuery(this.serviceUri, this.defaultGraphUris, this.queryString, this.httpArgs, this.ajaxOptions);
+			var result = ns.ServiceUtils.execQuery(this.serviceUri, this.defaultGraphUris, this.queryString, this.httpArgs, this.ajaxOptions);
 
 			return result;
 		}
 	});
 
+
 	
 
+
+	/**
+	 * A query execution that does simple caching based on the query strings.
+	 * 
+	 * 
+	 */
     ns.QueryExecutionCache = Class.create(ns.QueryExecution, {
          initialize: function(queryExecution, cacheKey, executionCache, resultCache) {
              this.queryExecution = queryExecution;
@@ -145,11 +154,7 @@
              var promise = executionCache[cacheKey];
              var result;
              
-             if(promise) {
-                 //console.log('[DEBUG] QueryCache: Reusing promise for cacheKey: ' + cacheKey);
-                 result = promise;
-             }
-             else {
+             if(!promise) {
                  var deferred = $.Deferred();
 
                  // Check if there is an entry in the result cache
@@ -182,12 +187,20 @@
                                           
                  }
 
-                 result = deferred.pipe(function(arr) {
+                 promise = deferred.pipe(function(arr) {
                      var itBinding = new util.IteratorArray(arr);
                      var r = new ns.ResultSetArrayIteratorBinding(itBinding);
                      return r;
                  });
              }
+             
+             // Attach to the promise (the same data may be shared between multiple consumers)
+             var result = promise.pipe(function(rs) {
+                 var arr = rs.getIterator().getArray();
+                 var itBinding = new util.IteratorArray(arr);
+                 var r = new ns.ResultSetArrayIteratorBinding(itBinding);
+                 return r;
+             }).promise();
              
              return result;
          } 

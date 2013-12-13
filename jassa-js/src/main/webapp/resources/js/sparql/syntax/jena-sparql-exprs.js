@@ -247,19 +247,23 @@
 
 // TODO Change to ExprFunction1
 	ns.E_OneOf = Class.create(ns.Expr, {
-		initialize: function(variable, nodes) {
+	    // TODO Jena uses an ExprList as the second argument
+		initialize: function(lhsExpr, nodes) {
 		
-			this.variable = variable;
+		    this.lhsExpr = lhsExpr;
+			//this.variable = variable;
 			this.nodes = nodes;
 		},
 	
 		getVarsMentioned: function() {
-			return [this.variable];
+			//return [this.variable];
+		    var result = this.lhsExpr.getVarsMentioned();
+		    return result;
 		},
 	
 		copySubstitute: function(fnNodeMap) {		
 			var newElements = _.map(this.nodes, function(x) { return rdf.getSubstitute(x, fnNodeMap); });
-			return new ns.E_OneOf(this.variable.copySubstitute(fnNodeMap), newElements);
+			return new ns.E_OneOf(this.lhsExpr.copySubstitute(fnNodeMap), newElements);
 		},
 	
 		toString: function() {
@@ -268,7 +272,7 @@
 				// 
 				return "FALSE";
 			} else {		
-				return "(" + this.variable + " In (" + this.nodes.join(", ") + "))";
+				return "(" + this.lhsExpr + " In (" + this.nodes.join(", ") + "))";
 			}
 		}
 	});

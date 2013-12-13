@@ -38,7 +38,6 @@
 	<script src="resources/libs/twitter-bootstrap/3.0.1/js/bootstrap.js"></script>
 	<script src="resources/libs/underscore/1.4.4/underscore.js"></script>
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
-	<script src="resources/libs/prototype/1.7.1/prototype.js"></script>
 	<script src="resources/libs/angularjs/1.0.8/angular.js"></script>
 	
 	${jsIncludes}
@@ -405,14 +404,14 @@
 	/*
 	 * Sponate
 	 */
-	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://fp7-pp.publicdata.eu/'], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
-	//var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://example.org/labels'], {crossDomain: true}, {'service-uri': 'http://localhost:8802/sparql'});
+	//var qef = new service.SparqlServiceHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://fp7-pp.publicdata.eu/'], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
+	//var qef = new service.SparqlServiceHttp('sparql-proxy.php', ['http://example.org/labels'], {crossDomain: true}, {'service-uri': 'http://localhost:8802/sparql'});
 	
-	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://live.dbpedia.org/sparql'});
-	//var qef = new service.QueryExecutionFactoryHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', [], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
- 	//var qef = new service.QueryExecutionFactoryHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {crossDomain: true});
-	//var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://dbpedia.org/sparql'});
-	var qef = new service.QueryExecutionFactoryHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
+	//var qef = new service.SparqlServiceHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://live.dbpedia.org/sparql'});
+	//var qef = new service.SparqlServiceHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', [], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
+ 	//var qef = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {crossDomain: true});
+	//var qef = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://dbpedia.org/sparql'});
+	var qef = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
 
  	var store = new sponate.StoreFacade(qef, prefixes);
 
@@ -432,13 +431,32 @@
 		}],
 		from: new sparql.ElementGroup([
 //            new sparql.ElementString(sparql.SparqlString.create('?s a <http://dbpedia.org/ontology/Castle>')),
-            new sparql.ElementString(sparql.SparqlString.create('Filter(?s = <http://dbpedia.org/resource/Citadel_of_Damascus>)')),
+            sparql.ElementString.create('Filter(?s = <http://dbpedia.org/resource/Citadel_of_Damascus>)'),
             labelUtil.getElement()
         ])
 	});
+	
+	
 
 
-	store.labels.find().limit(10).asList().done(function(items) {
+	// ISSUE How to use the labels map together with a prepared query?
+	// Even more severe, we need to represent simple query plans so that
+	// we can find out the best join strategy: For example, computing the facets
+	// at some node in the tree may be very expensive - extending the query to fetch
+	// the child facets could be even more expensive - hence, if there are only
+	// a few parent resources, we may use the explicit set of resources.
+	// TODO unprecise - rephrase to clarify what i mean
+	
+	
+	// ISSUE How to retrieve the names of properties in the facet tree?
+	// We already have the label map, but now we need to invoke it for a set of resources
+	// -> Content aware caching desired / use of the binding cache
+
+	
+	
+	
+	
+	store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).limit(10).asList().done(function(items) {
 	   console.log(items); 
 	});
 	

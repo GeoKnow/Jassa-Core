@@ -94,6 +94,10 @@
 			this.array = array;
 			this.offset = offset ? offset : 0;
 		},
+		
+		getArray: function() {
+		    return this.array;
+		},
 	
 		hasNext: function() {
 			var result = this.offset < this.array.length;

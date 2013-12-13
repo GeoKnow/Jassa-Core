@@ -15,7 +15,7 @@
 	 * 
 	 */
 	ns.test = function() {
-		var qef = new service.QueryExecutionFactoryHttp("http://localhost/sparql", []);
+		var qef = new service.SparqlServiceHttp("http://localhost/sparql", []);
 
 		var constraintManager = new facete.ConstraintManager();
 		
@@ -78,7 +78,7 @@
 
 
 	ns.testQueryApi = function() {
-		var qef = new service.QueryExecutionFactoryHttp("http://localhost/sparql", []);
+		var qef = new service.SparqlServiceHttp("http://localhost/sparql", []);
 		var qe = qef.createQueryExecution("Select * { ?s ?p ?o } Limit 10");
 		
 		//qe.setTimeOut(3000);

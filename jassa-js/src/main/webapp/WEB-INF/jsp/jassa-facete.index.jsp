@@ -117,8 +117,8 @@
  	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
  	var defaultGraphUris = ['http://fts.publicdata.eu/'];
 
-	var qef = new service.QueryExecutionFactoryHttp(sparqlEndpointUrl, defaultGraphUris);
-	qef = new service.QueryExecutionFactoryCache(qef);
+	var qef = new service.SparqlServiceHttp(sparqlEndpointUrl, defaultGraphUris);
+	qef = new service.SparqlServiceCache(qef);
 	
 	/**
 	 * Facete

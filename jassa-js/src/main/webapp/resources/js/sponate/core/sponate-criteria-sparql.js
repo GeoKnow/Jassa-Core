@@ -86,8 +86,13 @@
 		
 		visitCriteria: function(criteria, pattern, context, joinNode, result) {
 		    var fnName = 'visitCriteria' + criteria.getOpName();
-		    //console.log('FnName: ' + fnName);
 		    var fn = this[fnName];
+		    
+		    if(!fn) {
+	            console.log('Member not found: ' + fnName);
+	            throw 'Bailing out';
+		    }
+		    
 		    var result = fn.call(this, criteria, pattern, context, joinNode, result);
 		    return result;
 		},
@@ -101,7 +106,7 @@
 //		},
 //		
 		
-		visitElemMatch: function(criteria, pattern, context, joinNode, result) {
+		visitCriteria$elemMatch: function(criteria, pattern, context, joinNode, result) {
 //          debugger;
             var subPattern = pattern.findPattern(criteria.getAttrPath());
             

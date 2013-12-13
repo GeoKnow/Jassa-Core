@@ -980,7 +980,7 @@
 			this.distinct = false;
 			this.reduced = false;
 			
-			this.isResultStar = false;
+			this._isResultStar = false;
 			
 			this.projectVars = new ns.VarExprList();
 			//this.projectVars = []; // The list of variables to appear in the projection
@@ -1002,6 +1002,14 @@
 			this.offset = null;		
 		},
 	
+		isResultStar: function() {
+		    return this._isResultStar;
+		},
+		
+		setResultStar: function(_isResultStar) {
+		  this._isResultStar =  _isResultStar;
+		},
+		
 		getElements: function() {
 			return this.elements;
 		},
@@ -1059,7 +1067,7 @@
 			result.type = this.type;
 			result.distinct = this.distinct;
 			result.reduced = this.reduced;
-			result.isResultStar = this.isResultStar;
+			result._isResultStar = this._isResultStar;
 			result.limit = this.limit;
 			result.offset = this.offset;
 	 				
@@ -1153,7 +1161,7 @@
 
 			
 		toStringProjection: function() {
-			if(this.isResultStar) {
+			if(this._isResultStar) {
 				return "*";
 			}
 

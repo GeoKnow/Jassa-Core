@@ -49,6 +49,9 @@
 							<jsTargetDir>webapp/resources/js/</jsTargetDir>
 							<jsFinalFile>jassa.js</jsFinalFile>							
 							<jsSourceFiles>
+								<param>util/prototypejs-class.js</param>
+							
+							
 							    <param>modules.js</param>
 							  
 							  
@@ -75,11 +78,14 @@
 								<param>sparql/sparql-join-builder.js</param>
 															    
 								<param>service/ResultSet.js</param>
-								<param>service/SparqlServiceHttp.js</param>
+<!-- 								<param>service/SparqlServiceHttp.js</param> -->
+
+								<param>service/sparql-services.js</param>
+								<param>service/query-caches.js</param>
+
 								<param>service/SparqlServicePaginator.js</param>
 
 								<param>service/query-executions.js</param>
-								<param>service/query-execution-factories.js</param>
 								<param>service/query-execution-utils.js</param>
 
 								<param>sparql/sparql-expr-eval.js</param>

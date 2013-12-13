@@ -287,10 +287,10 @@
 					while(rs.hasNext()) {
 						var binding = rs.nextBinding();
 						
-						var property = binding.get(groupVar);
+						var property = binding.get(groupVar.getName());
 						var propertyName = property.getUri();
 						
-						var distinctValueCount = binding.get(outputVar).getLiteralValue();
+						var distinctValueCount = binding.get(outputVar.getName()).getLiteralValue();
 											
 						nameToItem[propertyName] = {
 						    property: property,

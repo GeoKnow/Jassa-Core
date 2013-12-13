@@ -33,8 +33,9 @@
 		},
 		
 		// Return the binding array
-		getBindings: function() {
-			return this.itBinding.getArray();
+		getIterator: function() {
+			//return this.itBinding.getArray();
+		    return this.itBinding;
 		}
 	});
 	
