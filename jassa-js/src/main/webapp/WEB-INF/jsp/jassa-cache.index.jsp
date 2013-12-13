@@ -74,7 +74,9 @@
 	query.getElements().push(sparql.ElementString.create('?s rdfs:label ?l'));
 
 	var cache = new service.QueryCacheBindingHashSingle(sparqlService, query, new sparql.ExprVar(rdf.NodeFactory.createVar('s')));	
-	var nodes = [rdf.NodeFactory.createUri('http://dbpedia.org/resource/Linux')];
+	var nodesA = [rdf.NodeFactory.createUri('http://dbpedia.org/resource/Linux')];
+	var nodesB = [rdf.NodeFactory.createUri('http://dbpedia.org/resource/Leipzig')];
+	var nodesC = nodesA.concat(nodesB);
 	
 	var showResult = function(rs) {
 	    while(rs.hasNext()) {
@@ -84,9 +86,14 @@
 	    console.log('Done');
 	};
 	
-	cache.fetchResultSet(nodes).done(showResult).fail(function() { alert('fail'); });
-	cache.fetchResultSet(nodes).done(showResult).fail(function() { alert('fail'); });
-	cache.fetchResultSet(nodes).done(showResult).fail(function() { alert('fail'); });
+	cache.fetchResultSet(nodesC).done(function(rs) {
+
+	    showResult(rs);
+	    
+	    cache.fetchResultSet(nodesA).done(showResult).fail(function() { alert('fail'); });
+		cache.fetchResultSet(nodesB).done(showResult).fail(function() { alert('fail'); });
+	    
+	}).fail(function() { alert('fail'); });
 	
 	/*
 	 * Angular JS
