@@ -204,10 +204,46 @@ the constraint spec can be an arbitrarily structured object.
 The only thing it must provide is the declared path(s) to which it is bound
 
 
+## Facet Tree Facade Configuration
+rootConcept: (?s ?p ?o, ?s) or (?s a rdfs:Property)
+
+facetFetchStrategy:
+- fetch properties and corresponding counts in a single query (global ordering possible)
+
+- fetch a subset of properties first, then count all properties in the subset at once (no global ordering possible)
+- onerror:
+    - do binary partition
+    - try to count each property separately
+- fetch a subset of properties first, then count properties individually
+
+
+## Facete + Sponate
+For each facet we want the most appropriate labels - how to get them efficiently?
+ -> Query Cache can cache the set of bindings under conditions, but no aggregation!
+ -> Sponate offers aggregation and label util
+ 
+Could we add some recursive support to Sponate???
+Possibly through introduction of parameterized templates - such as facetTree(?s)
+
+var recSponateTemplate = {
+	name: 'recTest',
+	template: [{
+	    id: '?s',
+	    children: [{$config: {
+	    	ref: 'recTest',
+	    	params: [?s],
+	    	// what's the stop condition for the recursion?
+	    }]
+	}],
+	from: function(parent, v) { /* magically build a path */; return facetTreeQueryGen.createFacetElement(path); }
+}
+
+...
 
 
 
 
+ 
  
  
  

@@ -102,6 +102,8 @@
 								<param>sponate/core/sponate-criteria-core.js</param>
 								<param>sponate/core/sponate-criteria-sparql.js</param>
 																
+								<param>sponate/core/sponate-labels.js</param>
+
 								<param>sponate/adapters/sponate-angular.js</param>
 								
 								

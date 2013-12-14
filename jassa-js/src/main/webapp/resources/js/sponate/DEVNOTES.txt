@@ -60,6 +60,22 @@ This means that the response of the server may be more general than what was req
 
 
 
+	// ISSUE How to use the labels map together with a prepared query?
+	// Even more severe, we need to represent simple query plans so that
+	// we can find out the best join strategy: For example, computing the facets
+	// at some node in the tree may be very expensive - extending the query to fetch
+	// the child facets could be even more expensive - hence, if there are only
+	// a few parent resources, we may use the explicit set of resources.
+	// TODO unprecise - rephrase to clarify what i mean
+	
+	
+	// ISSUE How to retrieve the names of properties in the facet tree?
+	// We already have the label map, but now we need to invoke it for a set of resources
+	// -> Content aware caching desired / use of the binding cache
+
+	
+	
+
 
 
 
