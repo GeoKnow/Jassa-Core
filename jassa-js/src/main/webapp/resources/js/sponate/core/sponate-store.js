@@ -178,6 +178,14 @@
 			return result;
 		},
 		
+		getByIds: function(nodes) {
+		    
+		},
+		
+		getByConcept: function(concept, doJoin) {
+		    
+		},
+		
 
 		execute: function(config) {
 			// TODO Compile the criteria to

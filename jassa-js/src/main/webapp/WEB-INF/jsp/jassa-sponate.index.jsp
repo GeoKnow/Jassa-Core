@@ -96,7 +96,9 @@
 	var service = Jassa.service;
 	var sponate = Jassa.sponate;
 	
+	
 
+	
 	/*
 	 * Sponate
 	 */
@@ -107,9 +109,18 @@
 	//var qef = new service.SparqlServiceHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', [], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
  	//var qef = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {crossDomain: true});
 	//var qef = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://dbpedia.org/sparql'});
-	var qef = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
+	var sparqlService = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
 
- 	var store = new sponate.StoreFacade(qef, prefixes);
+	var ssf = new service.SparqlServiceFactoryConst(sparqlService);
+
+	
+	var qcf = new service.QueryCacheFactory();
+	qcf.createCache(sparqlService);
+	
+	
+
+	// Sponate uses a service factory in order to allow easy exchange of the service
+ 	var store = new sponate.StoreFacade(ssf, prefixes);
 
 
  	// The label util factory can be preconfigured with prefered properties and langs
@@ -132,6 +143,13 @@
         ])
 	});
 	
+	// store.labels.fetchByIds(nodes)
+	// store.labels.fetchByJoin(element)
+	
+	// TODO Would it make sense to add a SPARQL-SQL layer below Sponate?
+	// So we would define the schema of a SPARQL result set by annotating the variables to which
+	// rdf term they correspond. This would be needed for rewriting criterias:
+	// - is 'http://foo.bar' a string or a URI?
 	
 	
 	store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).limit(10).asList().done(function(items) {
