@@ -120,7 +120,12 @@
 	
 
 	// Sponate uses a service factory in order to allow easy exchange of the service
- 	var store = new sponate.StoreFacade(ssf, prefixes);
+
+	// The cache factory re-uses caches if it figures out that the
+	// requested cache is uses the same settings as an existing one
+	//var cacheFactory = ns.QueryCacheNodeFactoryImpl();
+	
+ 	var store = new sponate.StoreFacade(sparqlService, prefixes);//, cacheFactory);
 
 
  	// The label util factory can be preconfigured with prefered properties and langs

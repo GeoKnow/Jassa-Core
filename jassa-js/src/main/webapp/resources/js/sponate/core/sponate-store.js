@@ -162,10 +162,11 @@
 		 * A sparql service (assumed to return talis json rdf)
 		 * 
 		 */
-		initialize: function(queryExecutionFactory, context, mappingName) {
-			this.queryExecutionFactory = queryExecutionFactory;
+		initialize: function(sparqlService, context, mappingName, cacheFactory) {
+			this.sparqlService = sparqlService;
 			this.context = context;
 			this.mappingName = mappingName;
+			this.cacheFactory = cacheFactory;
 		},
 		
 		find: function(crit) {
@@ -346,7 +347,7 @@
 			};
 
 			
-			var qe = this.queryExecutionFactory.createQueryExecution(query);
+			var qe = this.sparqlService.createQueryExecution(query);
 			var result = qe.execSelect().pipe(processResult);			
 			
 			return result;

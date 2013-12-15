@@ -40,6 +40,45 @@
 //	});
 //
 	
+	
+// TODO How to unify the simple cache and a fully fledged binding cache?
+//  I.e. how to unify lookups based on an array of nodes
+//   with those of an array of bindings?
+//    
+	
+// TODO How to keep track of pagination?
+// TODO How to deal with 'sub-caches'? I.e. There is an index on (?x) and another on (?x, ?y)
+	    // Well, this is more related to how to find the best index and that's a different topic
+	
+	ns.QueryCacheNodeFactory = Class.create({
+		createQueryCache: function(sparqlService, query, indexExpr) {
+			throw 'Not overridden';
+		}
+	});
+	
+	
+	ns.QueryCacheNodeFactoryImpl = Class.create(ns.QueryFacheNodeFactory, {
+		initialize: function() {
+			this.keyToCache = new Cache(); 
+		},
+		
+		createQueryCache: function(sparqlService, query, indexExpr) {
+			var key = 'cache:/'sparqlService.getServiceId() + '/' sparqlService.getServiceState() + '/' + query + '/' + indexExpr;
+			
+			console.log('cache requested with id: ' + key);
+			
+			var cache = this.keyToCache.getItem(key);
+			if(cache == null) {
+				cache = new ns.QueryCacheBindingHashSingle(sparqlService, query, indexExpr)
+				this.keyToCache.addItem(key, cache);
+			}
+			
+			return cache;
+		}
+	});
+	
+	
+	
 	ns.QueryCacheBindingHashSingle = Class.create({
 	    initialize: function(sparqlService, query, indexExpr) {
             this.sparqlService = sparqlService;
