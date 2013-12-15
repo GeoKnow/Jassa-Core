@@ -107,9 +107,13 @@
 	//var qef = new service.SparqlServiceHttp('http://cstadler.aksw.org/jassa/fp7/sparql-proxy.php', [], {crossDomain: true}, {'service-uri': 'http://fp7-pp.publicdata.eu/sparql'});
  	//var qef = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {crossDomain: true});
 	//var qef = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://dbpedia.org/sparql'});
-	var qef = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
+	var sparqlService = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
 
- 	var store = new sponate.StoreFacade(qef, prefixes);
+	// The cache factory re-uses caches if it figures out that the
+	// requested cache is uses the same settings as an existing one
+	//var cacheFactory = ns.QueryCacheNodeFactoryImpl();
+	
+ 	var store = new sponate.StoreFacade(sparqlService, prefixes);//, cacheFactory);
 
 
  	// The label util factory can be preconfigured with prefered properties and langs
