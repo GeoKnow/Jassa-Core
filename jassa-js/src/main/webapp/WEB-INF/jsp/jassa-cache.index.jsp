@@ -110,10 +110,10 @@
 	// Making it tricky: we need to join on ?s  = ?l
 	
 	
-	var joinNode = sparql.JoinBuilderElement.create(new sparql.ElementString.create('dummy', ['l']));
+	var joinNode = sparql.JoinBuilderElement.create(new sparql.ElementString.create('dummy', ['s', 'l']));
 	
 
-	var foo = joinNode.join(['l'], b, ['s'], 'myAlias');
+	var foo = joinNode.join([rdf.NodeFactory.createVar('l')], b, [rdf.NodeFactory.createVar('s')], 'myAlias');
 	var ele = foo.getElement();
 	
 	console.log('Ele: ' + ele);
