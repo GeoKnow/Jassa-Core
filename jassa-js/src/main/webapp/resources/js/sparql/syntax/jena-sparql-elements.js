@@ -119,6 +119,11 @@
 			});
 			
 			return result;
+		},
+		
+		getVarNames: function() {
+		    var result = this.getVars().map(function(v) { return v.getName(); });
+		    return result;
 		}
 	};
 
@@ -441,8 +446,8 @@
 	});
 
 
-	ns.ElementString.create = function(str, vars) {
-		var result = new ns.ElementString(ns.SparqlString.create(str, vars));
+	ns.ElementString.create = function(str, varNames) {
+		var result = new ns.ElementString(ns.SparqlString.create(str, varNames));
 		return result;
 	};
 	

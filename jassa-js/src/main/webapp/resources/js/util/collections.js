@@ -333,6 +333,11 @@
 		}
 	});
 
+	
+//	// Similar to a hash set, however items are 
+//	ns.SetList = Class.create({
+//	    
+//	})
 
 	ns.HashSet = Class.create({
 		initialize: function(fnEquals, fnHash) {

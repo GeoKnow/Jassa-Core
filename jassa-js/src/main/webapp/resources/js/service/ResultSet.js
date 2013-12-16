@@ -5,7 +5,9 @@
 	
 	
 	ns.ResultSet = Class.create(util.Iterator, {
-		
+		getVarNames: function() {
+		    throw 'Override me';
+		}
 	});
 	
 	/**
@@ -16,8 +18,9 @@
 	 * TODO This class already exists somewhere in Sponate...
 	 */
 	ns.ResultSetArrayIteratorBinding = Class.create(ns.ResultSet, {
-		initialize: function(itBinding) {
+		initialize: function(itBinding, varNames) {
 			this.itBinding = itBinding;
+			this.varNames = varNames;
 		},
 		
 		hasNext: function() {
@@ -30,6 +33,10 @@
 		
 		nextBinding: function() {
 			return this.itBinding.next();
+		},
+		
+		getVarNames: function() {
+		    return this.varNames;
 		},
 		
 		// Return the binding array

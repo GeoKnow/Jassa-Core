@@ -65,8 +65,16 @@
 	ns.SparqlString.classLabel = 'SparqlString';
 
 	
-	ns.SparqlString.create = function(str, vars) {
-		vars = vars ? vars : ns.extractSparqlVars(str);
+	ns.SparqlString.create = function(str, varNames) {
+	    var vars;
+	    if(varNames != null) {
+	        vars = varNames.map(function(varName) {
+	           return rdf.NodeFactory.createVar(varName); 
+	        });
+	    } else {
+	        vars = ns.extractSparqlVars(str); 
+	    }
+		//vars = vars ? vars : 
 		
 		var result = new ns.SparqlString(str, vars);
 		return result;
@@ -726,8 +734,8 @@
 		}				
 	});
 	
-	ns.ExprString.create = function(str, vars) {		
-		var result = new ns.ExprString(ns.SparqlString.create(str, vars));
+	ns.ExprString.create = function(str, varNames) {		
+		var result = new ns.ExprString(ns.SparqlString.create(str, varNames));
 		return result;
 	};
 	

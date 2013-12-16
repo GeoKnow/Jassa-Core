@@ -57,13 +57,13 @@
 	});
 	
 	
-	ns.QueryCacheNodeFactoryImpl = Class.create(ns.QueryFacheNodeFactory, {
+	ns.QueryCacheNodeFactoryImpl = Class.create(ns.QueryCacheNodeFactory, {
 		initialize: function() {
 			this.keyToCache = new Cache(); 
 		},
 		
 		createQueryCache: function(sparqlService, query, indexExpr) {
-			var key = 'cache:/'sparqlService.getServiceId() + '/' sparqlService.getServiceState() + '/' + query + '/' + indexExpr;
+			var key = 'cache:/' + sparqlService.getServiceId() + '/' + sparqlService.getServiceState() + '/' + query + '/' + indexExpr;
 			
 			console.log('cache requested with id: ' + key);
 			

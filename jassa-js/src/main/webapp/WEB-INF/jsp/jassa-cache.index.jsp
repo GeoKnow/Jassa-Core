@@ -67,7 +67,7 @@
 	var sparqlService = new service.SparqlServiceHttp('sparql-proxy.php', ['http://dbpedia.org'], {crossDomain: true}, {'service-uri': 'http://lod.openlinksw.com/sparql'});
 
 	// This cache ensures that duplicate queries are not executed multiple times 
-	sparqlService = new service.SparqlServiceCache(sparqlService);
+	//sparqlService = new service.SparqlServiceCache(sparqlService);
 	
 	var query = new sparql.Query();
 	query.setResultStar(true);
@@ -85,15 +85,74 @@
 	    }
 	    console.log('Done');
 	};
-	
-	cache.fetchResultSet(nodesC).done(function(rs) {
 
-	    showResult(rs);
+	var testCaches = false;
+	if(testCaches) {
+		cache.fetchResultSet(nodesC).done(function(rs) {
+	
+		    showResult(rs);
+		    
+		    cache.fetchResultSet(nodesA).done(showResult).fail(function() { alert('fail'); });
+			cache.fetchResultSet(nodesB).done(showResult).fail(function() { alert('fail'); });
+		    
+		}).fail(function() { alert('fail'); });
+	
+	}
+
+	
+	
+	var queryStr = 'Select Distinct ?l { ?l a <http://dbpedia.org/ontology/Castle> } Limit 10';
+	var qe = sparqlService.createQueryExecution(queryStr);
+
+	var b = sparql.ElementString.create('?s rdfs:label ?l');
+	var bindingLookup = new service.BindingLookup(sparqlService, b);
+
+	// Making it tricky: we need to join on ?s  = ?l
+	
+	
+	var joinNode = sparql.JoinBuilderElement.create(new sparql.ElementString.create('dummy', ['l']));
+	
+
+	var foo = joinNode.join(['l'], b, ['s'], 'myAlias');
+	var ele = foo.getElement();
+	
+	console.log('Ele: ' + ele);
+	//var bar = foo.join([vl], b, [vs]);
+	//joinNode.leftJoin([vs], a, [vl], aliasGenerator.next());
+
+	var joinBuilder = foo.getJoinBuilder();
+	var elements = joinBuilder.getElements();
+
+	
+	//qe.setTimeout(300);
+	qe.execSelect().done(function(rs) {
 	    
-	    cache.fetchResultSet(nodesA).done(showResult).fail(function() { alert('fail'); });
-		cache.fetchResultSet(nodesB).done(showResult).fail(function() { alert('fail'); });
+	    while(rs.hasNext()) {
+	       var binding = rs.nextBinding();
+	       
+	       
+	       console.log('test: ' + binding);
+	    }
+		//bindingLookup.lookupByIterator(rs)
 	    
-	}).fail(function() { alert('fail'); });
+	}).fail(function() {
+		console.log('fail');
+	});
+
+	// TODO We probably need to change the result set interface for all involved async action.
+	// idea 1
+	// what about rs = qe.execSelect(); rs.next()
+	
+	
+	// idea 2: For each binding, a callback method is invoked
+	// the ctrl argument allows one to cancel the execution or ask whether there are more bindings
+	// 	qe.execSelect(function(binding, ctrl) {
+	//     ctrl.getVarName(); // Where to place metadata?
+	//     ctrl.hasNext();
+	// 	   ctrl.cancel(); 
+	// 	});
+	
+	// idea3: instead of 1 callback, there are 4: onStart, onEnd, onBinding, onCancel. 
 	
 	/*
 	 * Angular JS

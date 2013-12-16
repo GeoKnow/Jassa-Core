@@ -186,6 +186,7 @@
            // TODO Maybe move to a conversion utils package.
         jsonToResultSet: function(json) {
         
+            var varNames = json.head.vars;
             var bindings = json.results.bindings;
         
             var tmp = bindings.map(function(b) {
@@ -195,7 +196,7 @@
             
             var itBinding = new util.IteratorArray(tmp);
             
-            var result = new ns.ResultSetArrayIteratorBinding(itBinding);
+            var result = new ns.ResultSetArrayIteratorBinding(itBinding, varNames);
             return result;
         }
 	};

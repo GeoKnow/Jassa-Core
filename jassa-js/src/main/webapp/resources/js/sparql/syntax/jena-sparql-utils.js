@@ -175,6 +175,8 @@
             var joinBuilder = joinNode.getJoinBuilder();
             var elements = joinBuilder.getElements();
             var result = new sparql.ElementGroup(elements);
+            
+            return result;
         }
 	});
 	
@@ -368,5 +370,59 @@
 //		}
 	};
 
+    ns.ExprUtils = {
+            
+        copySubstitute: function(expr, binding) {
+            var fn = (function(node) {
+                
+                var result = null;
+                
+                if(node.isVar()) {
+                    var varName = node.getName();
+                    var subst = binding.get(varName);
+                    
+                    if(subst != null) {
+                        result = subst;
+                    }
+                }
+                
+                if(result == null) {
+                    result = node;
+                }
+                
+                return result;
+            });
+            
+
+            var result = expr.copySubstitute(fn);
+            return result;
+        },
+        
+        /**
+         * 
+         * If varNames is omitted, all vars of the binding are used
+         */
+        bindingToExprs: function(binding, varNames) {
+            if(varNames == null) {
+                varNames = binding.getVarNames();
+            }
+
+            var result = _(varNames).each(function(varName) {
+                var exprVar = new sparql.ExprVar(rdf.NodeFactory.createVar(varName));
+                var node = binding.get(varName);
+                
+                // TODO What if node is NULL?
+                
+                var nodeValue = sparql.NodeValue.makeNode(node);
+                
+                var expr = new sparql.E_Equal(exprVar, nodeValue);
+                
+                return expr;
+            });
+            
+            return result;
+        }
+        
+    };
 	
 })();
