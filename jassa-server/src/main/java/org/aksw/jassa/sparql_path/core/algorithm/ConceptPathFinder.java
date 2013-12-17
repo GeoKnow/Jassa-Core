@@ -68,7 +68,7 @@ public class ConceptPathFinder {
 		
 		//UndirectedGraph<String, EdgeTransition> transitionGraph = new SimpleGraph<String, EdgeTransition>(EdgeTransition.class);
 
-		Model transitionModel = ModelFactory.createDefaultModel();
+		Model joinSummaryModel = ModelFactory.createDefaultModel();
 		
 		while(rs.hasNext()) {
 			QuerySolution qs = rs.next();
@@ -76,7 +76,7 @@ public class ConceptPathFinder {
 			Resource x = qs.getResource("x");
 			Resource y = qs.getResource("y");
 			
-			transitionModel.add(x, VocabPath.joinsWith, y);
+			joinSummaryModel.add(x, VocabPath.joinsWith, y);
 			
 			
 //			String x = qs.get("x").asNode().getURI();
@@ -87,7 +87,7 @@ public class ConceptPathFinder {
 			//System.out.println(x + "   " + y);
 			//transitionGraph.addVertex(arg0);
 		}
-		logger.debug("Transition model contains " + transitionModel.size() + " triples");
+		logger.debug("Join summary model contains " + joinSummaryModel.size() + " triples");
 		
 		
 		// Retrieve properties of the source concept
@@ -106,11 +106,13 @@ public class ConceptPathFinder {
 		for(Node node : nodes) {
 			Triple triple = new Triple(VocabPath.start.asNode(), VocabPath.joinsWith.asNode(), node);
 
-			Statement stmt = transitionModel.asStatement(triple);
-			transitionModel.add(stmt);
+			
+//			System.out.println("JoinSummaryTriple: " + triple);
+			Statement stmt = joinSummaryModel.asStatement(triple);
+			joinSummaryModel.add(stmt);
 		}
 		
-		QueryExecutionFactory qefMeta = new QueryExecutionFactoryModel(transitionModel);
+		QueryExecutionFactory qefMeta = new QueryExecutionFactoryModel(joinSummaryModel);
 		
 		// Now transform the target query so the find candidate nodes in the transition graph
 		
@@ -126,8 +128,9 @@ public class ConceptPathFinder {
 		Query targetCandidateQuery = targetCandidateConcept.asQuery();
 		
 		//Query query = QueryFactory.create(test);
-		List<Node> candidates = QueryExecutionUtils.executeList(qefMeta, targetCandidateQuery);
-		logger.debug("Candidates: " + candidates);
+        logger.debug("TargetCandidateQuery: " + targetCandidateQuery);
+        List<Node> candidates = QueryExecutionUtils.executeList(qefMeta, targetCandidateQuery);
+		logger.debug("Got " + candidates.size() + " candidates: " + candidates);
 
 		
 		// Now that we know the candidates, we can start with out breath first search
@@ -138,11 +141,11 @@ public class ConceptPathFinder {
 		PathCallbackList callback = new PathCallbackList();
 
 		for(Node candidate : candidates) {
-			Resource dest = transitionModel.asRDFNode(candidate).asResource();
+			Resource dest = joinSummaryModel.asRDFNode(candidate).asResource();
 			
 			
 			
-			NeighborProvider<Resource> np = new NeighborProviderModel(transitionModel);
+			NeighborProvider<Resource> np = new NeighborProviderModel(joinSummaryModel);
 
 			BreathFirstTask.run(np, VocabPath.start, dest, new ArrayList<Step>(), callback);
 			//BreathFirstTask.runFoo(np, VocabPath.start, dest, new ArrayList<Step>(), new ArrayList<Step>(), callback);

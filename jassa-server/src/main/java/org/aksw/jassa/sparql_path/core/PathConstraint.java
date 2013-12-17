@@ -5,11 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.aksw.jena_sparql_api.utils.QuadUtils;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
+import org.aksw.jassa.sparql_path.utils.ElementTreeAnalyser;
+import org.aksw.jena_sparql_api.utils.ExprUtils;
 import org.aksw.sparqlify.core.ReplaceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import sparql.CnfUtils;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
@@ -29,8 +32,10 @@ import com.hp.hpl.jena.sparql.core.BasicPattern;
 import com.hp.hpl.jena.sparql.core.Quad;
 import com.hp.hpl.jena.sparql.core.TriplePath;
 import com.hp.hpl.jena.sparql.core.Var;
+import com.hp.hpl.jena.sparql.expr.Expr;
 import com.hp.hpl.jena.sparql.expr.ExprList;
 import com.hp.hpl.jena.sparql.syntax.Element;
+import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementPathBlock;
 import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
@@ -158,36 +163,72 @@ public class PathConstraint {
 	}
 	
 	public static Quad createUriVars(Quad quad) {
-		List<Node> tmp = new ArrayList<Node>(4);
+
+	    Node g = quad.getGraph();
+	    Node s = quad.getSubject();
+        Node p = quad.getPredicate();
+	    Node o = quad.getObject();
+	    
+        if(g.isVariable()) { g = createVarUri((Var)g); }
+        if(s.isVariable()) { s = createVarUri((Var)s); }
+        // Leave predicate untouched
+	    if(o.isVariable()) { o = createVarUri((Var)o); }
+	    
 		
-		for(Node node : QuadUtils.quadToList(quad)) {
-			Node x = node;
-			if(node.isVariable()) {
-				x = createVarUri((Var)node); 				
-			}
-			
-			tmp.add(x);
-		}
-		
-		Quad result = QuadUtils.listToQuad(tmp);
+		Quad result = new Quad(g, s, p, o);
 		return result;
 	}
 
 	public static Concept getPathConstraintsSimple(Concept concept) {
 		Model model = ModelFactory.createDefaultModel();
 
+		
+		ElementTreeAnalyser analyser = new ElementTreeAnalyser(concept.getElement());
+		List<Quad> quads = analyser.getQuads();
+			
+		
+		Set<Var> predVars = new HashSet<Var>();
+		for(Quad quad : quads) {
+		    Node pred = quad.getPredicate();
+		    if(pred.isVariable()) {
+		        Var v = (Var)pred;
+		        
+		        predVars.add(v);
+		    }
+		}
+		
+        List<Expr> exprs = analyser.getFilterExprs();
+        Expr expr = ExprUtils.andifyBalanced(exprs);
+        
+        
+        Expr cnf = CnfUtils.eval(expr);
+        List<ExprList> clauses = CnfUtils.toClauses(cnf);
 
-		List<Quad> quads = collectQuads(concept.getElement());
+        
+        ExprList predExprOrs = new ExprList();
+        if(clauses != null) {
+            for(ExprList clause : clauses) {
+                Set<Var> clauseVars = clause.getVarsMentioned();
+                if(predVars.containsAll(clauseVars)) {
+                    Expr or = ExprUtils.orifyBalanced(clause);
+                    predExprOrs.add(or);
+                }
+            }
+        }        
+        Expr predExpr = ExprUtils.andifyBalanced(predExprOrs);
+		
+		
+		//List<Quad> quads = collectQuads(concept.getElement());
 		
 		for(Quad quad : quads) {
 			// Replace variables with fake uris
 			Quad q = createUriVars(quad);
 			
-			if(!q.getPredicate().isVariable()) {
+						//if(!q.getPredicate().isVariable()) {
 			
     			Statement stmt = model.asStatement(q.asTriple());
     			model.add(stmt);
-			}
+			//}
 		}
 		
 	
@@ -199,9 +240,27 @@ public class PathConstraint {
 		createQueryBackward(model, concept.getVar(), VocabPath.start, result);
 		
 		BasicPattern bgp = BasicPattern.wrap(new ArrayList<Triple>(result));
-		ElementTriplesBlock triplesBlock = new ElementTriplesBlock(bgp); 
+        ElementTriplesBlock triplesBlock = new ElementTriplesBlock(bgp);
+
+        Element element;
+
 		
-		Concept c = new Concept(triplesBlock, concept.getVar());
+		if(predExpr == null) {
+		    element = triplesBlock;
+		} else {
+		    Expr e = ExprUtils.andifyBalanced(predExpr);
+		    
+		    ElementFilter filter = new ElementFilter(e);
+		    ElementGroup group = new ElementGroup();
+		    group.addElement(triplesBlock);
+		    group.addElement(filter);
+		    
+		    element = group;
+		}
+		
+	
+		
+		Concept c = new Concept(element, concept.getVar());
 		
 		
 		logger.debug("Path query is: " + c);

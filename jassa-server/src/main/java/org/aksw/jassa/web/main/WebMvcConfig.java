@@ -19,9 +19,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class WebMvcConfig
 	extends WebMvcConfigurerAdapter
 {
-    @Bean
-    public CacheEx sparqlCache() 
-    {
+    public static CacheEx createSparqlCache() {
         long timeToLive = 360l * 24l * 60l * 60l * 1000l; 
         CacheCoreEx cacheBackend;
         try {
@@ -32,6 +30,13 @@ public class WebMvcConfig
         }
         CacheEx result = new CacheExImpl(cacheBackend);
 
+        return result;
+    }
+    
+    @Bean
+    public CacheEx sparqlCache() 
+    {
+        CacheEx result = createSparqlCache();
         return result;
     }
     
