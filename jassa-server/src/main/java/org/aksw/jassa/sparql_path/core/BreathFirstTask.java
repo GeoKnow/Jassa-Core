@@ -63,15 +63,19 @@ public class BreathFirstTask {
 		return result;
 	}
 	
+	public static int maxPaths = 100;
+	public static int maxDepth = 3;
+	
 	public static void run(NeighborProvider<Resource> np, Resource start, Resource dest, List<Step> steps, PathCallback callback) {
 		
+	    //System.out.println(steps);
 		if(start.equals(dest)) {
 			// emit empty path
 			callback.handle(new Path(steps));
 			return;
 		}
 
-		if(steps.size() > 6) {
+		if(steps.size() > maxDepth) {
 			return;
 		}
 
@@ -88,6 +92,10 @@ public class BreathFirstTask {
 			
 			Step s = new Step(succ.getURI(), false);
 			tmp.add(s);
+			
+			if(tmp.size() >= maxPaths) {
+			    break;
+			}
 			
 			run(np, succ, dest, tmp, callback);
 		}

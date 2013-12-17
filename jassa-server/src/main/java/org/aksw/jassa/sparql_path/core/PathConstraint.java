@@ -183,8 +183,11 @@ public class PathConstraint {
 			// Replace variables with fake uris
 			Quad q = createUriVars(quad);
 			
-			Statement stmt = model.asStatement(q.asTriple());
-			model.add(stmt);
+			if(!q.getPredicate().isVariable()) {
+			
+    			Statement stmt = model.asStatement(q.asTriple());
+    			model.add(stmt);
+			}
 		}
 		
 	
@@ -201,7 +204,7 @@ public class PathConstraint {
 		Concept c = new Concept(triplesBlock, concept.getVar());
 		
 		
-		System.out.println("Path query is: " + c);
+		logger.debug("Path query is: " + c);
 		
 		return c;
 	}

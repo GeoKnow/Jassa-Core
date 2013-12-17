@@ -64,7 +64,7 @@ public class ConceptPathFinder {
 		logger.debug("Distinguished target concept: " + targetConcept);
 		
 
-		PathConstraint.getPathConstraintsSimple(targetConcept);
+		//PathConstraint.getPathConstraintsSimple(targetConcept);
 		
 		//UndirectedGraph<String, EdgeTransition> transitionGraph = new SimpleGraph<String, EdgeTransition>(EdgeTransition.class);
 
