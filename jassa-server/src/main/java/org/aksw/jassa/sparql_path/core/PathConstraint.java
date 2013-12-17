@@ -230,7 +230,7 @@ public class PathConstraint {
 			Property p = stmt.getPredicate();
 			Resource o = oo.asResource();
 		
-			Triple t = new Triple(node, VocabPath.connectsTo.asNode(), p.asNode());
+			Triple t = new Triple(node, VocabPath.joinsWith.asNode(), p.asNode());
 			if(!result.contains(t)) {			
 				result.add(t);
 				createQueryForward(model, o.asNode(), p.asResource(), result);
@@ -253,7 +253,7 @@ public class PathConstraint {
 			Resource s = stmt.getSubject();
 			Property p = stmt.getPredicate();
 		
-			Triple t = new Triple(p.asNode(), VocabPath.connectsTo.asNode(), node);
+			Triple t = new Triple(p.asNode(), VocabPath.joinsWith.asNode(), node);
 			if(!result.contains(t)) {
 				result.add(t);
 				createQueryBackward(model, s.asNode(), p.asResource(), result);

@@ -1,18 +1,49 @@
 package org.aksw.jassa.web.main;
 
+import org.aksw.jena_sparql_api.cache.extra.CacheCoreEx;
+import org.aksw.jena_sparql_api.cache.extra.CacheCoreH2;
+import org.aksw.jena_sparql_api.cache.extra.CacheEx;
+import org.aksw.jena_sparql_api.cache.extra.CacheExImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 
+
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "org.aksw.sparqlify.admin.web")
+@ComponentScan(basePackages = "org.aksw.jassa.web.api")
 public class WebMvcConfig
 	extends WebMvcConfigurerAdapter
 {
+    @Bean
+    public CacheEx sparqlCache() 
+    {
+        long timeToLive = 360l * 24l * 60l * 60l * 1000l; 
+        CacheCoreEx cacheBackend;
+        try {
+            cacheBackend = CacheCoreH2.create(true, "/tmp/facete-server/cache/sparql", "sparql", timeToLive, true);
+        }
+        catch(Exception e) {
+            throw new RuntimeException(e);
+        }
+        CacheEx result = new CacheExImpl(cacheBackend);
+
+        return result;
+    }
+    
+    @Bean
+    @Autowired
+    public SparqlServiceFactory sparqlServiceFactory(CacheEx sparqlCache) {
+        SparqlServiceFactory result = new SparqlServiceFactoryImpl(sparqlCache);
+        return result;
+    }
 }
+
+
 
 //	@Autowired
 //    private ServletContext servletContext;

@@ -1,9 +1,30 @@
 // Move some utility functions from Elements here
 (function() {
 	
+    var rdf = Jassa.rdf;
 	var util = Jassa.util;
 
 	var ns = Jassa.sparql;
+	
+
+	ns.VarUtils = {
+	    varNamesToNodes: function(varNames) {
+	        var result = varNames.map(function(varName) {
+	            return rdf.NodeFactory.createVar(varName);
+	        });
+
+	        return result;
+	    },
+	    
+	    nodesToVarNames: function(vars) {
+	        var result = vars.map(function(v) {
+	            return v.getName();
+	        });
+	        
+	        return result;
+	    }
+	};
+	
 	
 	ns.Generator = Class.create({
 		next: function() {

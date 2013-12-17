@@ -64,8 +64,7 @@
 					newVarsMentioned.push(v);
 				}
 			});
-			
-			debugger;
+
 			str = str.replace(reAllPlaceholders, '?');
 			
 			return new ns.SparqlString(str, newVarsMentioned);

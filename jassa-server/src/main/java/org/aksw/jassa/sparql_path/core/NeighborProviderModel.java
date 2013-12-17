@@ -13,7 +13,7 @@ public class NeighborProviderModel
 
 	public static ExtendedIterator<Resource> createForwardIterator(Model model, Resource start) {
 		// For the current resource, get all possible outgoing paths
-		ExtendedIterator<Statement> itTmp = model.listStatements(start, VocabPath.connectsTo, (RDFNode)null);
+		ExtendedIterator<Statement> itTmp = model.listStatements(start, VocabPath.joinsWith, (RDFNode)null);
 		ExtendedIterator<Resource> result = itTmp.mapWith(new Map1StatementToObject());
 		
 		return result;
@@ -21,7 +21,7 @@ public class NeighborProviderModel
 	
 	public static ExtendedIterator<Resource> createBackwardIterator(Model model, Resource start) {
 		// For the current resource, get all possible outgoing paths
-		ExtendedIterator<Statement> itTmp = model.listStatements(null, VocabPath.connectsTo, start);
+		ExtendedIterator<Statement> itTmp = model.listStatements(null, VocabPath.joinsWith, start);
 		ExtendedIterator<Resource> result = itTmp.mapWith(new Map1StatementToObject());
 		
 		return result;

@@ -109,20 +109,27 @@
 
 	// Making it tricky: we need to join on ?s  = ?l
 	
+	        
 	
-	var joinNode = sparql.JoinBuilderElement.create(new sparql.ElementString.create('dummy', ['s', 'l']));
+	
+	var joinNode = sparql.JoinBuilderElement.createWithEmptyRoot(['l']);
 	
 
 	var foo = joinNode.join([rdf.NodeFactory.createVar('l')], b, [rdf.NodeFactory.createVar('s')], 'myAlias');
 	var ele = foo.getElement();
 	
-	console.log('Ele: ' + ele);
 	//var bar = foo.join([vl], b, [vs]);
 	//joinNode.leftJoin([vs], a, [vl], aliasGenerator.next());
 
 	var joinBuilder = foo.getJoinBuilder();
 	var elements = joinBuilder.getElements();
 
+	//var varMap = joinBuilder.getVarMap();
+	
+	// TODO Add method to get the varMap
+	//console.log('varMap: ', varMap);
+	
+	console.log('Elements: ' + new sparql.ElementGroup(elements));
 	
 	//qe.setTimeout(300);
 	qe.execSelect().done(function(rs) {

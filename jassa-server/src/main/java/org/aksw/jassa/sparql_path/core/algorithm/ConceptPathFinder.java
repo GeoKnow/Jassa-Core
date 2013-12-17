@@ -20,6 +20,8 @@ import org.aksw.jassa.sparql_path.utils.VarUtils;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.aksw.sparqlify.core.algorithms.GeneratorBlacklist;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
@@ -41,7 +43,10 @@ import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.PatternVars;
 
 public class ConceptPathFinder {
-
+ 
+    private static final Logger logger = LoggerFactory.getLogger(ConceptPathFinder.class);
+   
+    
 	public static ResultSet getPropertyAdjacency(QueryExecutionFactory qef) {
 		String queryStr = "Select Distinct ?x ?y { ?a ?x ?b . ?b ?y ?c }";
 		QueryExecution qe = qef.createQueryExecution(queryStr);
@@ -56,7 +61,7 @@ public class ConceptPathFinder {
 		
 		Concept targetConcept = tmpTargetConcept.makeDistinctFrom(sourceConcept);
 		
-		System.out.println("Distinguished target concept: " + targetConcept);
+		logger.debug("Distinguished target concept: " + targetConcept);
 		
 
 		PathConstraint.getPathConstraintsSimple(targetConcept);
@@ -71,7 +76,7 @@ public class ConceptPathFinder {
 			Resource x = qs.getResource("x");
 			Resource y = qs.getResource("y");
 			
-			transitionModel.add(x, VocabPath.connectsTo, y);
+			transitionModel.add(x, VocabPath.joinsWith, y);
 			
 			
 //			String x = qs.get("x").asNode().getURI();
@@ -82,7 +87,7 @@ public class ConceptPathFinder {
 			//System.out.println(x + "   " + y);
 			//transitionGraph.addVertex(arg0);
 		}
-		System.out.println("Transition model contains " + transitionModel.size() + " triples");
+		logger.debug("Transition model contains " + transitionModel.size() + " triples");
 		
 		
 		// Retrieve properties of the source concept
@@ -90,16 +95,16 @@ public class ConceptPathFinder {
 
 		Concept propertyConcept = QueryGenerationUtils.createPropertyQuery(sourceConcept);
 		Query propertyQuery = propertyConcept.asQuery();
-		System.out.println(propertyQuery);
+		logger.debug("Property query: " + propertyQuery);
 
 
 		List<Node> nodes = QueryExecutionUtils.executeList(qef, propertyQuery);
-		System.out.println(nodes);
+		logger.debug("Retrieved " + nodes.size() + " properties: " + nodes);
 
 		
 		// Add the start node to the transition model
 		for(Node node : nodes) {
-			Triple triple = new Triple(VocabPath.start.asNode(), VocabPath.connectsTo.asNode(), node);
+			Triple triple = new Triple(VocabPath.start.asNode(), VocabPath.joinsWith.asNode(), node);
 
 			Statement stmt = transitionModel.asStatement(triple);
 			transitionModel.add(stmt);
@@ -122,7 +127,7 @@ public class ConceptPathFinder {
 		
 		//Query query = QueryFactory.create(test);
 		List<Node> candidates = QueryExecutionUtils.executeList(qefMeta, targetCandidateQuery);
-		System.out.println("Candidates: " + candidates);
+		logger.debug("Candidates: " + candidates);
 
 		
 		// Now that we know the candidates, we can start with out breath first search
@@ -159,8 +164,14 @@ public class ConceptPathFinder {
 			List<Element> pathElements = Path.pathToElements(path, sourceConcept.getVar(), targetConcept.getVar(), generator);
 			
 			List<Element> tmp = new ArrayList<Element>();
-			tmp.addAll(sourceConcept.getElements());
-			tmp.addAll(targetConcept.getElements());
+			if(!sourceConcept.isSubjectConcept()) {
+			    tmp.addAll(sourceConcept.getElements());
+			}
+			
+			if(!targetConcept.isSubjectConcept()) {
+			    tmp.addAll(targetConcept.getElements());
+			}
+
 			tmp.addAll(pathElements);
 
 			if(pathElements.isEmpty()) {
@@ -178,11 +189,11 @@ public class ConceptPathFinder {
 			query.setQueryAskType();
 			query.setQueryPattern(group);
 			
-			System.out.println(query);
+			logger.debug("Verifying candidate with query: " + query);
 			
 			QueryExecution xqe = qef.createQueryExecution(query);
 			boolean isCandidate = xqe.execAsk();
-			System.out.println("Ask result [" + isCandidate + "] for " + query);
+			logger.debug("Verification result is [" + isCandidate + "] for " + query);
 			
 			if(isCandidate) {
 				result.add(path);

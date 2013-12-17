@@ -1,5 +1,6 @@
 package org.aksw.jassa.sparql_path.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -36,7 +37,12 @@ public class QueryGenerationUtils {
 		BasicPattern bp = new BasicPattern();
 		bp.add(triple);
 		
-		List<Element> elements = concept.getElements();
+		List<Element> elements;
+		if(concept.isSubjectConcept()) {
+		    elements = new ArrayList<Element>();
+		} else {
+		    elements = concept.getElements();		    
+		}
 		elements.add(new ElementTriplesBlock(bp));
 		
 		Concept result = new Concept(elements, p);

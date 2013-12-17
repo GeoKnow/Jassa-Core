@@ -1,9 +1,12 @@
 (function() {
     
     var util = Jassa.util;
-    
+    var sparql = Jassa.sparql;
+
+
     var ns = Jassa.sparql;
         
+    
     ns.JoinType = {
             INNER_JOIN: 'inner_join',
             LEFT_JOIN: 'left_join'
@@ -126,10 +129,11 @@
 
     
     ns.JoinTargetState = Class.create({
-        initialize: function(varMap, joinNode, element) {
+        initialize: function(varMap, joinNode, element, elementVars) {
             this.varMap = varMap;
             this.joinNode = joinNode;
             this.element = element;
+            this.elementVars = elementVars;
             this.joinInfos = [];
         },
         
@@ -143,6 +147,10 @@
         
         getElement: function() {
             return this.element;
+        },
+        
+        getElementVars: function() {
+            return this.elementVars;
         },
         
         getJoinInfos: function() {
@@ -165,12 +173,13 @@
      * 
      */
     ns.JoinBuilderElement = Class.create({
-        initialize: function(rootElement, rootAlias) {
+        initialize: function(rootElement, rootElementVars, rootAlias) {
 
-            if(rootElement == null) {
-                console.log('[Error] Root element must not be null');
-                throw 'Bailing out';
-            }
+// Null elements can be used for pseudo-joins that only allocated variables
+//            if(rootElement == null) {
+//                console.log('[Error] Root element must not be null');
+//                throw 'Bailing out';
+//            }
             
             
             this.usedVarNames = [];
@@ -181,10 +190,14 @@
             
 
             this.aliasToState = {};
+            
+            
             this.rootAlias = rootAlias ? rootAlias : this.aliasGenerator.next(); 
              
+            
+            //var rootElementVars = targetElement.getVarsMentioned();
 
-            var rootState = this.createTargetState(this.rootAlias, new util.HashBidiMap(), [], rootElement, []);
+            var rootState = this.createTargetState(this.rootAlias, new util.HashBidiMap(), [], rootElement, rootElementVars, []);
 
             this.aliasToState[this.rootAlias] = rootState;
             
@@ -214,6 +227,11 @@
             return result;
         },
         
+        
+//        getAliasVarMap: function() {
+//            var result = {};
+//        },
+        
 //      getElement: function(alias) {
 //          return this.aliasToElement[alias];
 //      },
@@ -240,17 +258,20 @@
             });
         },
         
-        createTargetState: function(targetAlias, sourceVarMap, sourceJoinVars, targetElement, targetJoinVars) {
+        createTargetState: function(targetAlias, sourceVarMap, sourceJoinVars, targetElement, oldTargetVars, targetJoinVars) {
             var sjv = sourceJoinVars.map(function(v) {
                 var rv = sourceVarMap.get(v);               
                 return rv;
             });
             
             //var sourceVars = this.ge; // Based on renaming!
-            var oldTargetVars = targetElement.getVarsMentioned();
+            //var oldTargetVars = targetElement.getVarsMentioned();
             var targetVarMap = ns.ElementUtils.createJoinVarMap(this.usedVars, oldTargetVars, sjv, targetJoinVars, this.varGenerator);
             
-            var newTargetElement = ns.ElementUtils.createRenamedElement(targetElement, targetVarMap);
+            var newTargetElement = null;
+            if(targetElement != null) {
+                newTargetElement = ns.ElementUtils.createRenamedElement(targetElement, targetVarMap);
+            }
             
             var newTargetVars = targetVarMap.getInverse().keyList();
             this.addVars(newTargetVars);
@@ -258,7 +279,7 @@
             
             var result = new ns.JoinNode(this, targetAlias);
 
-            var targetState = new ns.JoinTargetState(targetVarMap, result, newTargetElement); 
+            var targetState = new ns.JoinTargetState(targetVarMap, result, newTargetElement, newTargetVars); 
 //          
 //          var targetState = {
 //              varMap: targetVarMap,
@@ -280,7 +301,9 @@
                 targetAlias = this.aliasGenerator.next();
             }
 
-            var targetState = this.createTargetState(targetAlias, sourceVarMap, sourceJoinVars, targetElement, targetJoinVars);
+            var targetElementVars = targetElement.getVarsMentioned();
+            
+            var targetState = this.createTargetState(targetAlias, sourceVarMap, sourceJoinVars, targetElement, targetElementVars, targetJoinVars);
                         
             //var targetVarMap = targetState.varMap;            
             //var newTargetVars = targetVarMap.getInverse().keyList();
@@ -302,9 +325,11 @@
             var resultElements = [];
             
             var element = node.getElement();
-            resultElements.push(element);
+            if(element != null) {
 
-            
+                resultElements.push(element);
+            }
+                
             var children = node.getJoinNodeInfos();
             
             var self = this;
@@ -372,10 +397,29 @@
     }
 
     ns.JoinBuilderElement.create = function(rootElement, rootAlias) {
-        var joinBuilder = new ns.JoinBuilderElement(rootElement, rootAlias);
+        
+        var vars = rootElement.getVarsMentioned();
+        
+        var joinBuilder = new ns.JoinBuilderElement(rootElement, vars, rootAlias);
         var result = joinBuilder.getRootNode();
         
         return result;
+    };
+    
+    
+    /**
+     * Creates a join node with a 'null' element,
+     * however with a set of allocated variables.
+     * 
+     * 
+     */
+    ns.JoinBuilderElement.createWithEmptyRoot = function(varNames, rootAlias) {
+        var vars = sparql.VarUtils.varNamesToNodes(varNames);
+        
+        var joinBuilder = new ns.JoinBuilderElement(null, vars, rootAlias);
+        var result = joinBuilder.getRootNode();
+        
+        return result;        
     };
     
 })();

@@ -5,6 +5,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
 public class VocabPath {
-	public static final Resource start = ResourceFactory.createProperty("http://foo.bar/start");
-	public static final Property connectsTo = ResourceFactory.createProperty("http://foo.bar/connectsTo");
+	public static final Resource start = ResourceFactory.createProperty("http://jassa.aksw.org/resource/start");
+	public static final Property joinsWith = ResourceFactory.createProperty("http://jassa.aksw.org/ontology/joinsWith");
 }
