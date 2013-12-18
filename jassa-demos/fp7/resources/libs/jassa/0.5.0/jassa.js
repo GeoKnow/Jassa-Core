@@ -8219,11 +8219,13 @@ or simply: Angular + Magic Sparql = Angular Marql
 		 * 
 		 * 
 		 */
-		initialize: function(service, prefixes) {
+		initialize: function(service, prefixes, cacheFactory) {
 			this.service = service;
 
 			this.context = new ns.Context();
 			this.context.getPrefixMap().addJson(prefixes);
+			
+			this.cacheFactory = cacheFactory ? cacheFactory : new ns.QueryCacheNodeFactoryImpl();
 		},
 		
 		/**
@@ -8266,7 +8268,7 @@ or simply: Angular + Magic Sparql = Angular Marql
 				throw 'Bailing out';
 			}
 			
-			this[name] = new ns.Store(this.service, this.context, name);
+			this[name] = new ns.Store(this.service, this.context, name, this.cacheFactory);
 		},
 		
 		/*
