@@ -28,8 +28,9 @@ public class TestMain {
         
         //Concept targetConcept = Concept.create("?x ?s ?y . ?s <http://http://www.w3.org/2000/01/rdf-schema#label> ?l . Filter(regex(str(?l), 'super', 'i'))", "x");
 
-        Concept targetConcept = Concept.create("?g <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ; <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y", "g");
+        //Concept targetConcept = Concept.create("?g <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ; <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y", "g");
 
+        Concept targetConcept = Concept.create("?g ?y ?x . Filter(?y = <http://www.w3.org/2003/01/geo/wgs84_pos#lat> || ?y = <http://www.w3.org/2003/01/geo/wgs84_pos#long>)", "g");
         
         List<Path> paths = ConceptPathFinder.findPaths(qef, sourceConcept, targetConcept);
         

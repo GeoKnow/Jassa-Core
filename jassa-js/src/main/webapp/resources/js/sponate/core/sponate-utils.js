@@ -416,7 +416,7 @@
 				_(newVars).each(function(newVar) {
 					var oldVar = newToOld.get(newVar);
 					
-					var node = binding.get(newVar.getName());
+					var node = binding.get(newVar);
 					b.put(oldVar, node);
 				});
 				

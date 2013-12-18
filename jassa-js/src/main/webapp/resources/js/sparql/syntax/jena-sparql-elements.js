@@ -78,10 +78,11 @@
 			this.varNameToEntry[v.getName()] = {v: v, node: node};
 		},
 		
-		get: function(varName) {
-		    if(!_(varName).isString()) {
-		        throw 'varName must be a string';
+		get: function(v) {
+		    if(!(v instanceof rdf.Var)) {
+		        throw 'var not an instance of Var';
 		    }
+		    var varName = v.getName();
 		    
 			var entry = this.varNameToEntry[varName];
 			
@@ -119,12 +120,12 @@
 			});
 			
 			return result;
-		},
-		
-		getVarNames: function() {
-		    var result = this.getVars().map(function(v) { return v.getName(); });
-		    return result;
 		}
+		
+//		getVarNames: function() {
+//		    var result = this.getVars().map(function(v) { return v.getName(); });
+//		    return result;
+//		}
 	};
 
 	
@@ -882,6 +883,13 @@
 			if(expr) {
 				this.varToExpr[v.getName()] = expr;
 			}
+		},
+		
+		getExpr: function(v) {
+		    var varName = v.getName();
+		    var result = this.varToExpr[varName];
+		    
+		    return result;
 		},
 		
 		

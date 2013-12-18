@@ -112,16 +112,16 @@
 	        
 	
 	
-	var joinNode = sparql.JoinBuilderElement.createWithEmptyRoot(['l']);
-	
+	//var joinNode = sparql.JoinBuilderElement.createWithEmptyRoot(['l']);
+	var joinNode = sparql.JoinBuilderElement.create(b, null, [rdf.NodeFactory.createVar('s')]);
 
-	var foo = joinNode.join([rdf.NodeFactory.createVar('l')], b, [rdf.NodeFactory.createVar('s')], 'myAlias');
-	var ele = foo.getElement();
+	//var foo = joinNode.join([rdf.NodeFactory.createVar('l')], b, [rdf.NodeFactory.createVar('s')], 'myAlias');
+	//var ele = foo.getElement();
 	
 	//var bar = foo.join([vl], b, [vs]);
 	//joinNode.leftJoin([vs], a, [vl], aliasGenerator.next());
 
-	var joinBuilder = foo.getJoinBuilder();
+	var joinBuilder = joinNode.getJoinBuilder();
 	var elements = joinBuilder.getElements();
 
 	//var varMap = joinBuilder.getVarMap();

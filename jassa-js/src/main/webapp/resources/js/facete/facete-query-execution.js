@@ -198,7 +198,65 @@
 		},
 		
 		
+		/**
+		 * Fetches *ALL* facets and their corresponding counts with a single query.
+		 * 
+		 * TODO The result should be cached, and limit/offset should then work on the cache
+		 * 
+		 */
 		fetchFacets: function(path, isInverse, limit, offset) {
+            var facetConcept = this.facetConceptGenerator.createConceptFacetsCore(path, isInverse, false);
+
+            var elements = facetConcept.getElements();
+            var groupVar = facetConcept.getFacetVar();
+            var countVar = facetConcept.getFacetValueVar();
+            
+            var outputVar = rdf.NodeFactory.createVar('_c_');
+            
+            var query = ns.QueryUtils.createQueryCount(elements, null, countVar, outputVar, [groupVar], true);
+            
+            var countExpr = query.getProjectVars().getExpr(outputVar);
+            //console.log('sort cond: ' + countExpr);
+            query.getOrderBy().push(new sparql.SortCondition(countExpr, -1));
+            
+            //console.log('All facet query: ' + query);
+            
+            //query.getOrderBys().add(new sparql.SortCondition(countVar))
+            var promise = this.qef.createQueryExecution(query).execSelect();
+            
+            var result = promise.pipe(function(rs) {
+                var r = [];
+                while(rs.hasNext()) {
+                    var binding = rs.nextBinding();
+                    
+                    var property = binding.get(groupVar);
+                    var dvc = binding.get(outputVar);
+                    
+                    var propertyName = property.getUri();
+                    var distinctValueCount = dvc.getLiteralValue();
+                    
+                    var step = new ns.Step(propertyName, isInverse);
+                    var childPath = path.copyAppendStep(step);
+                    var item = new ns.FacetItem(childPath, property, distinctValueCount);
+
+
+                    r.push(item);
+                }
+
+                return r;
+            });
+
+            return result;
+		},
+		
+		
+		/**
+		 * This strategy first fetches a list of properties,
+		 * and only for the list members does to counting,
+		 * this way, ordering by count is supported
+		 * 
+		 */
+		fetchFacets2: function(path, isInverse, limit, offset) {
 		    
 //		    this.fetchFacetCount(path, isInverse).done(function(cnt) {
 //		        console.log('Number of facets at ' + path + ': ' + cnt); 
@@ -287,10 +345,10 @@
 					while(rs.hasNext()) {
 						var binding = rs.nextBinding();
 						
-						var property = binding.get(groupVar.getName());
+						var property = binding.get(groupVar);
 						var propertyName = property.getUri();
 						
-						var distinctValueCount = binding.get(outputVar.getName()).getLiteralValue();
+						var distinctValueCount = binding.get(outputVar).getLiteralValue();
 											
 						nameToItem[propertyName] = {
 						    property: property,

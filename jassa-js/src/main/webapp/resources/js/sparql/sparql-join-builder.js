@@ -17,13 +17,25 @@
      * 
      */
     ns.JoinNode = Class.create({
-        initialize: function(joinBuilder, alias) {
+        initialize: function(joinBuilder, alias, targetJoinVars) {
             this.joinBuilder = joinBuilder;
             this.alias = alias;
+            this.targetJoinVars;
         },
         
         getJoinBuilder: function() {
             return this.joinBuilder;
+        },
+        
+        /**
+         * Returns the variables on which this node is joined to the parent
+         * 
+         * For the root node, this is the set of default vars on which joins
+         * can be performed
+         * 
+         */
+        getJoinVars: function() {
+            return this.targetJoinVars;
         },
         
         getElement: function() {
@@ -74,6 +86,20 @@
         leftJoin: function(sourceJoinVars, targetElement, targetJoinVars, targetAlias) {
             var result = this.joinAny(ns.JoinType.LEFT_JOIN, sourceJoinVars, targetElement, targetJoinVars, targetAlias);
             return result;
+        },
+        
+        
+        
+        joinTree: function(joinNode) {
+            
+        },
+        
+        leftJoinTree: function(joinNode) {
+            
+        },
+        
+        joinTreeAny: function(joinNode) {
+            
         }
     });
     
@@ -134,7 +160,10 @@
             this.joinNode = joinNode;
             this.element = element;
             this.elementVars = elementVars;
-            this.joinInfos = [];
+            
+            this.targetJoinVars = targetJoinVars;
+            
+            this.joinInfos = [];            
         },
         
         getVarMap: function() {
@@ -173,13 +202,14 @@
      * 
      */
     ns.JoinBuilderElement = Class.create({
-        initialize: function(rootElement, rootElementVars, rootAlias) {
+        initialize: function(rootElement, rootElementVars, rootAlias, defaultRootJoinVars) {
 
-// Null elements can be used for pseudo-joins that only allocated variables
-//            if(rootElement == null) {
-//                console.log('[Error] Root element must not be null');
-//                throw 'Bailing out';
-//            }
+            // Null elements can be used for pseudo-joins that only allocated variables
+            // TODO Instead of null elements we now support default join variables for the root node
+            if(rootElement == null) {
+                console.log('[Error] Root element must not be null');
+                throw 'Bailing out';
+            }
             
             
             this.usedVarNames = [];
@@ -197,7 +227,11 @@
             
             //var rootElementVars = targetElement.getVarsMentioned();
 
-            var rootState = this.createTargetState(this.rootAlias, new util.HashBidiMap(), [], rootElement, rootElementVars, []);
+            if(defaultRootJoinVars == null) {
+                defaultRootJoinVars = [];
+            }
+            
+            var rootState = this.createTargetState(this.rootAlias, new util.HashBidiMap(), defaultRootJoinVars, rootElement, rootElementVars, defaultRootJoinVars);
 
             this.aliasToState[this.rootAlias] = rootState;
             
@@ -277,7 +311,7 @@
             this.addVars(newTargetVars);
 
             
-            var result = new ns.JoinNode(this, targetAlias);
+            var result = new ns.JoinNode(this, targetAlias, targetJoinVars);
 
             var targetState = new ns.JoinTargetState(targetVarMap, result, newTargetElement, newTargetVars); 
 //          
@@ -396,11 +430,11 @@
         }
     }
 
-    ns.JoinBuilderElement.create = function(rootElement, rootAlias) {
+    ns.JoinBuilderElement.create = function(rootElement, rootAlias, defaultJoinVars) {
         
         var vars = rootElement.getVarsMentioned();
         
-        var joinBuilder = new ns.JoinBuilderElement(rootElement, vars, rootAlias);
+        var joinBuilder = new ns.JoinBuilderElement(rootElement, vars, rootAlias, defaultJoinVars);
         var result = joinBuilder.getRootNode();
         
         return result;

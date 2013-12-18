@@ -44,7 +44,8 @@ public class Concept {
 			tmp = "{" + tmp + "}";
 		}
 		
-		Element element = ParserSPARQL10.parseElement(tmp); //ParserSPARQL11.parseElement(tmp);
+		Element element = ParserSPARQL10.parseElement(tmp);
+		//Element element = ParserSPARQL11.parseElement(tmp);
 		
 		// TODO Find a generic flatten routine
 		if(element instanceof ElementGroup) {

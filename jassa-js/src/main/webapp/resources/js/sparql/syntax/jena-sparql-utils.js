@@ -8,7 +8,7 @@
 	
 
 	ns.VarUtils = {
-	    varNamesToNodes: function(varNames) {
+	    createVars: function(varNames) {
 	        var result = varNames.map(function(varName) {
 	            return rdf.NodeFactory.createVar(varName);
 	        });
@@ -16,7 +16,7 @@
 	        return result;
 	    },
 	    
-	    nodesToVarNames: function(vars) {
+	    getVarNames: function(vars) {
 	        var result = vars.map(function(v) {
 	            return v.getName();
 	        });
@@ -399,8 +399,9 @@
                 var result = null;
                 
                 if(node.isVar()) {
-                    var varName = node.getName();
-                    var subst = binding.get(varName);
+                    //var varName = node.getName();
+                    //var subst = binding.get(varName);
+                    var subst = binding.get(node);
                     
                     if(subst != null) {
                         result = subst;
@@ -423,14 +424,14 @@
          * 
          * If varNames is omitted, all vars of the binding are used
          */
-        bindingToExprs: function(binding, varNames) {
-            if(varNames == null) {
-                varNames = binding.getVarNames();
+        bindingToExprs: function(binding, vars) {
+            if(vars == null) {
+                vars = binding.getVars();
             }
 
-            var result = _(varNames).each(function(varName) {
-                var exprVar = new sparql.ExprVar(rdf.NodeFactory.createVar(varName));
-                var node = binding.get(varName);
+            var result = _(vars).each(function(v) {
+                var exprVar = new sparql.ExprVar(v);
+                var node = binding.get(v);
                 
                 // TODO What if node is NULL?
                 

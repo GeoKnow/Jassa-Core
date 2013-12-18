@@ -27,7 +27,7 @@
 			while(rs.hasNext()) {
 				var binding = rs.nextBinding();
 
-				var node = binding.get(variable.getName());
+				var node = binding.get(variable);
 				result.push(node);
 			}
 			return result;
@@ -40,7 +40,7 @@
 			if(rs.hasNext()) {
 				var binding = rs.nextBinding();
 
-				var node = binding.get(variable.getName());
+				var node = binding.get(variable);
 				
 				// TODO Validate that the result actually is int.
 				result = node.getLiteralValue();
