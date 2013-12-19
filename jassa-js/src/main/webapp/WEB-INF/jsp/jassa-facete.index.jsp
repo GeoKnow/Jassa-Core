@@ -260,7 +260,7 @@
 				return;
 			}
 
-			var concept = fctService.createConceptFacetValues(path);
+			var concept = fctService.createConceptFacetValues(path, true);
 			var countVar = rdf.NodeFactory.createVar("_c_");
 			var queryCount = facete.ConceptUtils.createQueryCount(concept, countVar);
  			var qeCount = qef.createQueryExecution(queryCount);
@@ -418,14 +418,16 @@
 			</div>
 			<div ng-show="facet.isExpanded" style="width:100%"> 
 
-				<span>cfc: {{facet.childFacetCcount}} pageIndex: {{facet.pageIndex}}</span>
-    		    <pagination class="pagination-small" max-size="10" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)"></pagination>
+                <div ng-show="facet.pageCount != 1" style="width:100%; background-color: #fafafa;">
+    		         <pagination style="margin-top: 5px; margin-bottom: 5px; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" class="pagination-small" max-size="10" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)"></pagination>
+                </div>
 			    <span ng-show="facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>
 
  			    <div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></div>
            </div>
 		</div>
 	</script>
+<!-- 				<span>cfc: {{facet.childFacetCcount}} pageIndex: {{facet.pageIndex}}</span> -->
 <!-- 			<span>{{facet.item.getPath()}}</span> -->
 <!-- 			<span>{{console.log(JSON.stringify(facet))}}</span> -->
 <!-- 			<span ng-show="{{facet.isExpanded}}">Pages: {{facet.childFacetCount / facet.limit}}, Current page: {{facet.offset / facet.childFacetCount + 1}}</span> -->

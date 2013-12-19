@@ -161,7 +161,6 @@
 				var i = 0;
 				_(facetItems).each(function(facetItem) {
 					
-					//debugger;
 					var path = facetItem.getPath();
 
 										

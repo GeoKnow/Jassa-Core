@@ -337,7 +337,7 @@
 
             var facetElements = []; 
             facetElements.push.apply(facetElements, pathElements);
-            facetElements.push.apply(constraintElements);
+            facetElements.push.apply(facetElements, constraintElements);
 
             
 			if(baseConcept.isSubjectConcept()) {
