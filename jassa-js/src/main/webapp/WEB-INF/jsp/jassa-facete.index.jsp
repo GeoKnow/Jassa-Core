@@ -67,7 +67,7 @@
 <!-- 	<script src="resources/libs/angularjs/1.0.8/angular.js"></script> -->
 <!-- 	<script src="resources/libs/angularjs/1.2.0-rc.2/angular.js"></script>	 -->
 	<script src="resources/libs/angularjs/1.2.0-rc.3/angular.js"></script>	
-	<script src="resources/libs/angular-ui/0.6.0/ui-bootstrap-tpls-0.6.0.js"></script>
+	<script src="resources/libs/angular-ui/0.7.0/ui-bootstrap-tpls-0.7.0.js"></script>
 	<script src="resources/libs/ui-router/0.2.0/angular-ui-router.js"></script>
 
 	<script src="resources/libs/monsur-jscache/2013-12-02/cache.js"></script>
@@ -108,14 +108,14 @@
 	//var sparqlEndpointUrl = 'http://localhost/sparql';
 	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';	
 	
-	//var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
-	//var defaultGraphUris = ['http://dbpedia.org'];
+	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
+	var defaultGraphUris = ['http://dbpedia.org'];
 
 // 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
- 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
- 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+//  	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+//  	var defaultGraphUris = ['http://fts.publicdata.eu/'];
 
 	var qef = new service.SparqlServiceHttp(sparqlEndpointUrl, defaultGraphUris);
 	qef = new service.SparqlServiceCache(qef);
@@ -182,14 +182,18 @@
 		return {
 			fetchFacets: function() {
 				//var promise = fctService.fetchFacets(facete.Path.parse("")).pipe(function(items) {
-				var promise = fctTreeService.fetchFacetTree(facete.Path.parse("")).pipe(function(items) {
+				var promise = fctTreeService.fetchFacetTree(facete.Path.parse("")).pipe(function(item) {
+				    return item;
+					/*
 					var rootItem = new facete.FacetItem(new facete.Path(), rdf.NodeFactory.createUri("http://example.org/root"), null);
 					
 					return {
 						item: rootItem,
 						state: new facete.FacetStateImpl(true, null, null),
-						children: items
+						children: items,
+						isExpanded: expansionSet.contains(rootItem.getPath())
 					};
+					*/
 				});
 
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
@@ -271,9 +275,14 @@
 				
 				
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
-		$scope.refreshFacets = function() {
+
+	    $scope.Math = window.Math;
+	    
+	    $scope.refreshFacets = function() {
 			//$scope.facet = facetService.fetchFacets();
 			facetService.fetchFacets().then(function(data) {
+			    
+			    console.log('refreshed data: ', data);
 				$scope.facet = data;
 				//$scope.$apply();
 			});
@@ -292,6 +301,23 @@
 			$scope.refreshFacets();
 		};
 		
+		$scope.selectFacetPage = function(page, facet) {
+			//alert(page + " " + JSON.stringify(facet));
+			
+			//facet.childFacetCount
+			var path = facet.item.getPath();
+            var state = facetStateProvider.getFacetState(path);
+            var resultRange = state.getResultRange();
+            
+            console.log('Facet state for path ' + path + ': ' + state);
+			var limit = resultRange.getLimit() || 0;
+			
+			var newOffset = limit ? (page - 1) * limit : null;
+			
+			resultRange.setOffset(newOffset);
+			
+			$scope.refreshFacets();
+		};
 		
 		$scope.toggleSelected = function(path) {
 
@@ -318,11 +344,19 @@
 				<a data-rdf-term="{{facet.item.getNode().toString()}}" title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
 				<span style="float: right" class="badge">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>
+			<div ng-show="facet.isExpanded" style="width:100%"> 
 
-			<span ng-show="facet.isExpanded && facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>
- 			<div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></li>
+				<span>cfc: {{facet.childFacetCcount}} pageIndex: {{facet.pageIndex}}</span>
+    		    <pagination class="pagination-small" max-size="10" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)"></pagination>
+			    <span ng-show="facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>
+
+ 			    <div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></div>
+           </div>
 		</div>
 	</script>
+<!-- 			<span>{{facet.item.getPath()}}</span> -->
+<!-- 			<span>{{console.log(JSON.stringify(facet))}}</span> -->
+<!-- 			<span ng-show="{{facet.isExpanded}}">Pages: {{facet.childFacetCount / facet.limit}}, Current page: {{facet.offset / facet.childFacetCount + 1}}</span> -->
 
 	<script type="text/ng-template" id="result-set-browser.html">
 		<div class="frame">

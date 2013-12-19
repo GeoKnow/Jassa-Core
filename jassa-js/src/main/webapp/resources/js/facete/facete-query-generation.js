@@ -119,7 +119,15 @@
 
 		getLimit: function() {
 			return this.limit;
-		}		
+		},
+		
+		setOffset: function(offset) {
+		    this.offset = offset;
+		},
+		
+		setLimit: function(limit) {
+		    this.limit = limit;
+		}
 	});
 
 	

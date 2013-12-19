@@ -25,8 +25,110 @@
 			return result;
 		},
 		
-		fetchFacetTreeRec: function(path) {
+	    /**
+         * Given a path, this method fetches all child facets at its target location.
+         * 
+         * Note that there are 2 components involved:
+         * Fetching the child facets
+         * 
+         * @param facetItem Information about the path leading to this recursion,
+         *        such as: count of distinct facet values
+         *        null for the root node
+         */
+		fetchFacetTreeRec: function(path, parentFacetItem) {
+            console.log('fetchFacetTreeRec: ' + path);
+
+            var isExpanded = this.expansionSet.contains(path);
+            
+
+            if(parentFacetItem == null) {
+                parentFacetItem = new ns.FacetItem(path, rdf.NodeFactory.createUri('http://root'), null);
+            }
+
+            // This is the basic information returned for non-expanded facets
+            var baseData = {
+                item: parentFacetItem,
+                isExpanded: isExpanded,
+                //state: facetState,
+                children: null,                    
+            };
+
+            
+            var self = this;
+            
+            
+            var result = $.Deferred();
+            
+            
+            // If the facet is expanded,
+            // fetch the count of sub facets together with the facets in the range of limit and offset
+            if(isExpanded) {
+                
+                baseData.children = [];
+            
+                var limit = null;
+                var offset = null;
+    
+                var state = this.facetStateProvider.getFacetState(path);
+                
+                if(state) {
+                    var resultRange = state.getResultRange();
+                    
+                    limit = resultRange.getLimit();
+                    offset = resultRange.getOffset() || 0;
+                }
+    
+
+                baseData.limit = limit;
+                baseData.offset = offset;
+
+                var countPromise = this.facetService.fetchFacetCount(path, false);
+                var childFacetsPromise = this.facetService.fetchFacets(path, false, limit, offset);
+                var promises = [countPromise, childFacetsPromise];
+                
+                $.when.apply(window, promises).done(function(childFacetCount, facetItems) {
+
+                    baseData.childFacetCount = childFacetCount;
+                    
+                    var o = limit ? Math.floor((offset || 0) / limit) : 0; 
+                    
+                    baseData.pageIndex = 1 + o;
+                    baseData.pageCount = 1 + (limit ? Math.floor(childFacetCount / limit) : 0);
+                    
+                    var childPromises = _(facetItems).map(function(facetItem) {
+                        var path = facetItem.getPath();
+
+                        var childPromise = self.fetchFacetTreeRec(path, facetItem);
+                        //.pipe(function(childItem) {
+                        //});
+
+                        return childPromise;
+                    });
+
+                    
+                    $.when.apply(window, childPromises).done(function() {
+                        _(arguments).each(function(childItem) {
+                            baseData.children.push(childItem);
+                        });
+
+                        result.resolve(baseData);
+                    }).fail(function() {
+                        result.fail();
+                    });
+                    
+                });                
+            }
+            else {
+                result.resolve(baseData);
+            }
+		    
+            return result.promise();
+		},
+		
+		
+		fetchFacetTreeRecOldWrongChildFacetCounts: function(path) {
 			
+		    console.log('fetchFacetTreeRec: ' + path);
 			var self = this;
 			
 			
@@ -98,7 +200,7 @@
 //					if(!(facetState && facetState.isExpanded())) {
 //						return;
 //					}
-					console.log("Got a child facet for path " + path);
+					console.log("Got a child facet for path " + path + ' with ' + childFacetCount + ' children');
 					
 					var childPromise = self.fetchFacetTreeRec(path).pipe(function(childItems) {
 						dataItem.children = childItems;
@@ -204,7 +306,7 @@
 		 * TODO The result should be cached, and limit/offset should then work on the cache
 		 * 
 		 */
-		fetchFacets: function(path, isInverse, limit, offset) {
+		fetchFacets2: function(path, isInverse, limit, offset) {
             var facetConcept = this.facetConceptGenerator.createConceptFacetsCore(path, isInverse, false);
 
             var elements = facetConcept.getElements();
@@ -256,7 +358,7 @@
 		 * this way, ordering by count is supported
 		 * 
 		 */
-		fetchFacets2: function(path, isInverse, limit, offset) {
+		fetchFacets: function(path, isInverse, limit, offset) {
 		    
 //		    this.fetchFacetCount(path, isInverse).done(function(cnt) {
 //		        console.log('Number of facets at ' + path + ': ' + cnt); 
