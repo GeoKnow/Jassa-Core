@@ -108,14 +108,14 @@
 	//var sparqlEndpointUrl = 'http://localhost/sparql';
 	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';	
 	
-	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
-	var defaultGraphUris = ['http://dbpedia.org'];
+// 	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
+// 	var defaultGraphUris = ['http://dbpedia.org'];
 
 // 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
-//  	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
-//  	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+ 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+ 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
 
 	var qef = new service.SparqlServiceHttp(sparqlEndpointUrl, defaultGraphUris);
 	qef = new service.SparqlServiceCache(qef);
@@ -173,7 +173,49 @@
 	/**
 	 * Angular
 	 */
-	
+
+    var ns = {};
+	 
+    ns.ConstraintTaggerFactory = Class.create({
+        initialize: function(constraintManager) {
+			this.constraintManager = constraintManager;
+        },
+        
+        createConstraintTagger: function(path) {
+			var constraints = this.constraintManager.getConstraintsByPath(path);
+			
+			var equalConstraints = {};
+
+			_(constraints).each(function(constraint) {
+			    var constraintType = constraint.getName();
+			     
+			    if(constraintType == 'equal') {
+					var node = constraint.getValue();
+			        equalConstraints[node.toString()] = node;
+			    }
+			});
+			
+			var result = new ns.ConstraintTagger(equalConstraints);
+			return result;
+        }
+    });
+	 
+    ns.ConstraintTagger = Class.create({
+		initialize: function(equalConstraints) {
+			this.equalConstraints = equalConstraints;
+		},
+        
+        getTags: function(node) {
+			var result = {
+			    isConstrainedEqual: this.equalConstraints[node.toString] ? true : false
+			};
+			
+			return result;
+        }
+    }); 
+
+    var constraintTaggerFactory = new ns.ConstraintTaggerFactory(constraintManager);
+
 	
 	var myModule = angular.module('FaceteDBpediaExample', ['ui.bootstrap']);
 
@@ -181,37 +223,33 @@
 	myModule.factory('facetService', function($rootScope, $q) {
 		return {
 			fetchFacets: function() {
-				//var promise = fctService.fetchFacets(facete.Path.parse("")).pipe(function(items) {
-				var promise = fctTreeService.fetchFacetTree(facete.Path.parse("")).pipe(function(item) {
-				    return item;
-					/*
-					var rootItem = new facete.FacetItem(new facete.Path(), rdf.NodeFactory.createUri("http://example.org/root"), null);
-					
-					return {
-						item: rootItem,
-						state: new facete.FacetStateImpl(true, null, null),
-						children: items,
-						isExpanded: expansionSet.contains(rootItem.getPath())
-					};
-					*/
-				});
-
+				var promise = fctTreeService.fetchFacetTree(facete.Path.parse(""));
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
-				
-// 				result.then(function(foo) {
-// 					console.log("foo: ", foo);
-// 				});
-
 				return result;
 			}
 	   };
 	});
 
-	myModule.controller('MyCtrl2', function($scope) {
+	myModule.controller('MyCtrl2', function($scope, $q, $rootScope) {
 		
 		$scope.totalItems = 64;
 		$scope.currentPage = 1;
 		$scope.maxSize = 5;
+
+		$scope.toggleConstraint = function(item) {
+//			alert('toggle: ' + JSON.stringify(item));
+			var constraint = new facete.ConstraintSpecPathValue(
+					'equal',
+					item.path,
+					item.node);
+
+			var hack = constraintManager.removeConstraint(constraint);
+			if(!hack) {
+				constraintManager.addConstraint(constraint);
+			}
+
+			$rootScope.$broadcast('constraintsChanged');
+		};
 		
 		var updateItems = function() {
 			//console.log("Update");
@@ -225,33 +263,62 @@
 			var countVar = rdf.NodeFactory.createVar("_c_");
 			var queryCount = facete.ConceptUtils.createQueryCount(concept, countVar);
  			var qeCount = qef.createQueryExecution(queryCount);
-			var promise = service.ServiceUtils.fetchInt(qeCount, countVar);
-			promise.done(function(count) {
-				$scope.totalItems = count;
+			var countPromise = service.ServiceUtils.fetchInt(qeCount, countVar);
+			
+			var query = facete.ConceptUtils.createQueryList(concept);			
+			
+			var pageSize = 10;
+			
+			query.setLimit(pageSize);
+			query.setOffset(($scope.currentPage - 1)* pageSize)
+			
+ 			var qe = qef.createQueryExecution(query);
+			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
+			    //return nodes.map(function(x) { return x.toString(); });
 
-				var query = facete.ConceptUtils.createQueryList(concept);			
-				
-				var pageSize = 10;
-				
-				query.setLimit(pageSize);
-				query.setOffset(($scope.currentPage - 1)* pageSize)
-				
-	 			var qe = qef.createQueryExecution(query);
-				var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
-				
-				promise.done(function(items) {
-					//console.log("items: ", items);
+			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
+			    
+			    var r = _(nodes).map(function(node) {
+			        var tmp = {
+						path: path,
+						node: node,
+						tags: tagger.getTags(node)
+			        };
 
-					
-					$scope.facetValues = items;
-					//$scope.$apply();
-				});
-				
+			        return tmp;
+			    });
+			    
+			    //console.log('meh', r);
+			    return r;
+			});			
+
+			//var promises = [countPromise, dataPromise];
+
+			/*
+			$.when.apply(window, promises).done(function(count, items) {
+			    return {
+			        count: count,
+			        items: items
+			    };
+			});
+			*/
+
+			sponate.angular.bridgePromise(countPromise, $q.defer(), $rootScope).then(function(count) {
+			    $scope.totalItems = count; 
 			});
 			
+			sponate.angular.bridgePromise(dataPromise, $q.defer(), $rootScope).then(function(items) {
+			    $scope.facetValues = items;
+			});
 
 		};
 
+
+//		constraintManager.addConstraint(new facete.ConstraintSpecPathValue(
+//		'equal',
+//		facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+//		sparql.NodeValue.makeNode(rdf.NodeFactory.createUri('http://www.w3.org/2002/07/owl#Class'))
+//	));
 
 		$scope.$watch('currentPage', function() {			
 			console.log("Change");
@@ -277,6 +344,10 @@
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
 
 	    $scope.Math = window.Math;
+
+		$scope.$on('constraintsChanged', function() {
+		    $scope.refreshFacets();
+		});
 	    
 	    $scope.refreshFacets = function() {
 			//$scope.facet = facetService.fetchFacets();
@@ -364,9 +435,14 @@
 			    <input type="text" ng-model="filterText" />
 				<input class="btn-primary" type="submit" value="Filter" />
 			</form>
-			<ul>
-			    <li ng-repeat="item in facetValues">{{item.toString()}}</li>
-        	</ul>
+			<table>
+                <tr><th>Value</th><th>Count</th><th>Constrained</th></tr>
+			    <tr ng-repeat="item in facetValues">
+                    <td>{{item.node.toString()}}</td>
+                    <td>todo</td>
+                    <td><input type="checkbox" ng-model="item.tags.isConstrainedEqual" ng-change="toggleConstraint(item)"</td>
+                </tr>
+        	</table>
     		<pagination class="pagination-small" total-items="totalItems" page="$parent.currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
 		</div>
 	</script>

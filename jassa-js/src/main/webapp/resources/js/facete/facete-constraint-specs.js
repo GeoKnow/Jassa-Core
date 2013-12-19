@@ -10,11 +10,19 @@
 	 */
 	ns.ConstraintSpec = Class.create({
 		getName: function() {
-			throw "Override me";
+            throw 'Override me';
 		},
 		
 		getDeclaredPaths: function() {
-			throw "Override me";
+            throw 'Override me';
+		},
+		
+		equals: function() {
+            throw 'Override me';
+		},
+		
+		hashCode: function() {
+		    throw 'Override me';
 		}
 	});
 	
@@ -60,6 +68,19 @@
 
 		getValue: function() {
 			return this.value;
+		},
+		
+		equals: function(that) {
+		    if(!that instanceof ns.ConstraintSpecPathValue) {
+		        return false;
+		    }
+		    
+		    var a = this.name == that.name;
+		    var b = this.path.equals(that.path);
+		    var c = this.value.equals(that.value);
+		    
+		    var r = a && b &&c;
+		    return r;
 		}
 	});
 	

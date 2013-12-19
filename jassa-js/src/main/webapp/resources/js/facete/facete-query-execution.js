@@ -36,9 +36,8 @@
          *        null for the root node
          */
 		fetchFacetTreeRec: function(path, parentFacetItem) {
-            console.log('fetchFacetTreeRec: ' + path);
 
-            var isExpanded = this.expansionSet.contains(path);
+		    var isExpanded = this.expansionSet.contains(path);
             
 
             if(parentFacetItem == null) {

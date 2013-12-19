@@ -112,8 +112,26 @@
 			this.constraints.push(constraint);
 		},
 		
-		removeConstraint: function() {
-			// TODO implement
+		// Fcuking hack because of legacy code and the lack of a standard collection library...
+		// TODO Make the constraints a hash set (or a list set)
+		removeConstraint: function(constraint) {
+		    var result = false;
+
+		    var cs = this.constraints;
+		    
+		    var n = [];
+		    for(var i = 0; i < cs.length; ++i) {
+		        var c = cs[i];
+		        
+		        if(!c.equals(constraint)) {
+		            n.push(c);
+		        } else {
+		            result = true;
+		        }
+		    }
+		    
+		    this.constraints = n;
+		    return result;
 		},
 		
 //		createElement: function(facetNode, excludePath) {
