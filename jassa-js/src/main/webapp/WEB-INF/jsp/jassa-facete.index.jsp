@@ -194,7 +194,8 @@
 			        equalConstraints[node.toString()] = node;
 			    }
 			});
-			
+	
+			console.log('eqConstraints: ', equalConstraints);
 			var result = new ns.ConstraintTagger(equalConstraints);
 			return result;
         }
@@ -207,7 +208,7 @@
         
         getTags: function(node) {
 			var result = {
-			    isConstrainedEqual: this.equalConstraints[node.toString] ? true : false
+			    isConstrainedEqual: this.equalConstraints[node.toString()] ? true : false
 			};
 			
 			return result;
