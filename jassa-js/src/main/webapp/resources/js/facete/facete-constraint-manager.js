@@ -51,7 +51,7 @@
 			var constraints = this.constraints;
 			
 			for(var i = 0; i < constraints.length; ++i) {
-				var constraints = constraints[i];
+				var constraint = constraints[i];
 				
 				var paths = constraint.getDeclaredPaths();
 				

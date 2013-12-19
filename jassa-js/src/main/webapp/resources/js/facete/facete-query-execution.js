@@ -86,7 +86,7 @@
                 var promises = [countPromise, childFacetsPromise];
                 
                 $.when.apply(window, promises).done(function(childFacetCount, facetItems) {
-
+//console.log('facetItems:', facetItems);
                     baseData.childFacetCount = childFacetCount;
                     
                     var o = limit ? Math.floor((offset || 0) / limit) : 0; 
@@ -385,6 +385,7 @@
 				var promise = self.fetchFacetValueCounts(path, isInverse, properties, false);
 				
 				promise.done(function(r) {
+	                console.log('PropertyCounts', r);
 					deferred.resolve(r);
 				}).fail(function() {
 					deferred.fail();
@@ -410,6 +411,22 @@
 			
 			var outputVar = rdf.NodeFactory.createVar("_c_");
 			
+						
+            // Initialize the result
+            // TODO Actually we don't need to store the property - we could map to
+            // the distinct value count directly
+            var nameToItem = {};
+            
+            _(properties).each(function(property) {
+                var propertyName = property.getUri();
+                
+                nameToItem[propertyName] = {
+                    property: property,
+                    distinctValueCount: 0
+                }
+            });
+
+			
 			var self = this;
 			var promises = _(facetConceptItems).map(function(item) {
 			
@@ -427,20 +444,6 @@
 				
 				
 				var promise = qe.execSelect().pipe(function(rs) {
-
-				    // TODO Actually we don't need to store the property - we could map to
-				    // the distinct value count directly
-				    var nameToItem = {};
-				    
-				    // Initialize the result
-                    _(properties).each(function(property) {
-                        var propertyName = property.getUri();
-                        
-                        nameToItem[propertyName] = {
-                            property: property,
-                            distinctValueCount: 0
-                        }
-                    });
 				    
 				    // Overwrite entries based on the result set
 					while(rs.hasNext()) {
@@ -456,21 +459,6 @@
 						    distinctValueCount: distinctValueCount
 						}
 					}
-
-					// Create the result					
-					var r = _(properties).map(function(property) {
-                        var propertyName = property.getUri();
-                        var item = nameToItem[propertyName];
-
-					    var distinctValueCount = item.distinctValueCount;
-					    
-                        var step = new ns.Step(propertyName, isInverse);
-                        var childPath = path.copyAppendStep(step);
-                        var tmp = new ns.FacetItem(childPath, property, distinctValueCount);
-                        return tmp
-					});
-					
-					return r;
 				});
 				
 				//console.log("Test: " + query);
@@ -480,14 +468,31 @@
 	
 			var d = $.Deferred();
 			$.when.apply(window, promises).done(function() {
-				var r = [];
-				
-				for(var i = 0; i < arguments.length; ++i) {
-					var items = arguments[i];
-					//alert(items);
-					
-					r.push.apply(r, items);
-				}
+			    
+                // Create the result                    
+                var r = _(properties).map(function(property) {
+                    var propertyName = property.getUri();
+                    var item = nameToItem[propertyName];
+
+                    var distinctValueCount = item.distinctValueCount;
+                    
+                    var step = new ns.Step(propertyName, isInverse);
+                    var childPath = path.copyAppendStep(step);
+                    var tmp = new ns.FacetItem(childPath, property, distinctValueCount);
+                    return tmp
+                });
+                
+                //return r;
+
+			    
+//				var r = [];
+//				
+//				for(var i = 0; i < arguments.length; ++i) {
+//					var items = arguments[i];
+//					//alert(items);
+//					
+//					r.push.apply(r, items);
+//				}
 
 				d.resolve(r);
 			}).fail(function() {
