@@ -107,7 +107,11 @@
 			
 			return result;
 		},
-			
+		
+		getConstraints: function() {
+		    return this.constraints;  
+		},
+		
 		addConstraint: function(constraint) {
 			this.constraints.push(constraint);
 		},

@@ -231,6 +231,45 @@
 	   };
 	});
 
+	myModule.controller('ShowQueryCtrl', function($scope, facetService) {
+	    $scope.updateQuery = function() {
+		    var concept = fctService.createConceptFacetValues(new facete.Path());			
+			var query = facete.ConceptUtils.createQueryList(concept);			
+console.log('Query', query);
+			$scope.queryString = query.toString();	        
+	    };
+	    
+		$scope.$on("constraintsChanged", function() {
+			$scope.updateQuery();
+		});
+	});
+	
+	myModule.controller('ConstraintCtrl', function($scope, facetService, $rootScope) {
+	    $scope.refreshConstraints = function() {
+	        var constraints = constraintManager.getConstraints();
+	        
+	        var items =_(constraints).map(function(constraint) {
+				var r = {
+					constraint: constraint,
+					label: '' + constraint
+				};
+				
+				return r;
+	        });
+
+	        $scope.constraints = items;
+	    };
+	    
+	    $scope.removeConstraint = function(item) {
+	        constraintManager.removeConstraint(item.constraint);
+			$rootScope.$broadcast('constraintsChanged');
+	    };
+	    
+		$scope.$on("constraintsChanged", function() {
+			$scope.refreshConstraints();
+		});
+	});
+	
 	myModule.controller('MyCtrl2', function($scope, $q, $rootScope) {
 		
 		$scope.totalItems = 64;
@@ -338,7 +377,9 @@
 			updateItems();
 		});
 		
-		
+		$scope.$on('constraintsChanged', function() {
+		    updateItems(); 
+		});
 	});
 				
 				
@@ -462,6 +503,18 @@
 	<div ng-controller="MyCtrl2">
 		<div ng-include="'result-set-browser.html'"></div>	
 	</div>
+	
+	<div ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
+	    <span ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</span>
+		<ul>
+		    <li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
+		</ul>
+	</div>
+	
+	<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()">
+		<span>Query = {{queryString}}</span>	
+	</div>
+	
 </body>
 
 </html>
