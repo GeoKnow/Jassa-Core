@@ -452,6 +452,10 @@
 	       this.fnEquals = fnEquals ? fnEquals : ns.defaultEquals;
 	   },
 	   
+	   getArray: function() {
+	       return this.items;
+	   },
+	   
 	   get: function(index) {
 	       var result = this.items[index];
 	       return result;

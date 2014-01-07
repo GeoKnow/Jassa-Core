@@ -77,6 +77,20 @@
         background-color: #FFFFFF !important;
     }
     
+    .layout-table {
+		width: 100%;
+		min-height: 100%;
+		border:none;
+		border-collapse: collapse;
+	}
+
+	.layout-table > tbody > tr > td {
+		padding: 0px;
+		border-left: 5px solid #1c3048;
+		border-right: 5px solid #1c3048;
+		vertical-align: top;
+	}
+    
 	</style>
 	
 	<!--  TODO PrefixMapping Object von Jena portieren ~ 9 Dec 2013 -->
@@ -257,7 +271,7 @@
         },
 
         getPaths: function() {
-            return this.paths;
+            return this.paths.getArray();
         },
         
         togglePath: function(path) {
@@ -368,6 +382,12 @@
 	});
 
 	myModule.controller('FavFacetsCtrl', function($scope, $rootScope, $q, facetService) {
+	    
+		$scope.$on('facete:refresh', function() {
+		    $scope.refresh();
+		});
+
+	    
 		$scope.$on('facete:constraintsChanged', function() {
 		    $scope.refresh();
 		});
@@ -395,6 +415,14 @@
 	});
 	
 	myModule.controller('ConstraintCtrl', function($scope, facetService, $rootScope) {
+		$scope.$on('facete:refresh', function() {
+		    $scope.refresh();
+		});
+	    
+		$scope.refresh = function() {
+		    $scope.refreshConstraints();
+		};
+		
 	    $scope.refreshConstraints = function() {
 	        var constraints = constraintManager.getConstraints();
 	        
@@ -442,6 +470,7 @@
 			$rootScope.$broadcast('facete:constraintsChanged');
 		};
 		
+		
 		var updateItems = function() {
 
 			var path = $scope.path;
@@ -488,6 +517,14 @@
 			    $scope.facetValues = items;
 			});
 
+			$scope.$on('facete:refresh', function() {
+			    $scope.refresh();
+			});
+		    
+			$scope.refresh = function() {
+			    updateItems();
+			};
+
 		};
 
 		$scope.$watch('currentPage', function() {			
@@ -521,7 +558,28 @@
 	 *
 	 */
 	myModule.controller('FaceteContextCtrl', function($scope) {
+
+	    var broadcast = function(eventName, args) {
+	        var ev = args[0];
+	        var remainingArgs = Array.prototype.slice.call(args, 1);	        
+	        var newArgs = [eventName].concat(remainingArgs);	        
+
+	        if(ev.targetScope.$id != ev.currentScope.$id) {
+	            $scope.$broadcast.apply($scope, newArgs);
+	        }	        
+	    };
 	    
+	    var forward = function(eventName) {
+	        $scope.$on(eventName, function() {
+	            broadcast(eventName, arguments);
+	        });
+	    };
+	    
+	    var events = ['facete:facetSelected', 'facete:constraintsChanged', 'facete:refresh'];
+	    
+	    _(events).each(forward);
+	    
+	    /*
 	    $scope.$on('facete:facetSelected', function(ev, path) {
 	        if(ev.targetScope.$id != ev.currentScope.$id) {
 	            $scope.$broadcast('facete:facetSelected', path);
@@ -533,6 +591,7 @@
 	            $scope.$broadcast('facete:constraintsChanged', path);
 	        }	        
 	    });
+	    */
 	});
 				
 	 
@@ -558,15 +617,16 @@
 	};
 	    
     myModule.controller('CreateTableCtrl', function($scope, $modal, $log) {
-        $scope.columns = [{
-            isRemoveable: true,
-            isConfigureable: true,
-            isSortable: true,
+        $scope.columns = [];
+//         $scope.columns = [{
+//             isRemoveable: true,
+//             isConfigureable: true,
+//             isSortable: true,
             
-            displayName: 'test',
+//             displayName: 'test',
             
-            sortDirection: 0
-        }];
+//             sortDirection: 0
+//         }];
         
 	    // TODO For complex aggregation expressions we may need to add an
 	    // 'unknown' or 'retain' option to retain the current choice
@@ -626,6 +686,31 @@
         };
         
         
+        $scope.refresh = function() {
+            var paths = tableDef.getPaths();
+            
+            var columns = _(paths).map(function(path) {
+                var column = {
+	                isRemoveable: true,
+	                isConfigureable: true,
+	                isSortable: true,
+	                sortDirection: 0,
+                
+                	displayName: 'test'
+            	};
+
+                return column;
+            });
+            
+            $scope.columns = columns;
+            console.log('recolumns ', columns);
+        };
+        
+        
+		$scope.$on('facete:refresh', function() {
+		    $scope.refresh();
+		});
+
     });
 	 
     
@@ -693,9 +778,13 @@
 		};
 		
 		$scope.toggleTableLink = function(path) {
-
+			//$scope.emit('facete:toggleTableLink');
 		    tableDef.togglePath(path);
-		    alert('yay' + JSON.stringify(tableDef.getPaths()));
+		    
+		    //$scope.$emit('')
+		    //alert('yay' + JSON.stringify(tableDef.getPaths()));
+		    
+		    $scope.$emit('facete:refresh');
 		    
 // 		    var columnDefs = tableDef.getColumnDefs();
 // 		    _(columnDefs).each(function(columnDef) {
@@ -705,6 +794,10 @@
 // 		    tableDef.addColumnDef(null, new ns.ColumnDefPath(path));
 		    //alert('yay ' + path);
 		};
+		
+		$scope.$on('facete:refresh', function() {
+		    $scope.refresh();
+		});
 	});
 		
 	</script>
@@ -781,60 +874,67 @@
 
 <body ng-controller="FaceteContextCtrl">
 
-
-	<h3>FavFacets</h3>
-	<div portletheading>
-	    This is a test
-	</div>
+    <table class="layout-table">
+        <colgroup>
+            <col width="30%" />
+            <col width="70%" />
+        </colgroup>
+		<tr>
+		    <td>
 	
-	
-    <div ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
-        <span ng-show="favFacets.length == 0">No favourited facets</span> 
-        <ul ng-repeat="facet in favFacets">
-			<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
-		</ul>
-    </div>
-
-	<h3>FacetTree</h3>
-	<div ng-controller="MyCtrl" data-ng-init="refresh()">
-		<div style="width: 30%">
-			<div ng-include="'facet-tree-item.html'"></div>
-		</div>
-	</div>
-
-	<div ng-controller="MyCtrl2">
-		<div ng-include="'result-set-browser.html'"></div>	
-	</div>
-	
-	<div ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
-	    <span ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</span>
-		<ul>
-		    <li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
-		</ul>
-	</div>
-	
-	<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()">
-		<span>Query = {{queryString}}</span>	
-	</div>
-	
-	
-	<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
-	    <table>
-		    <tr><th ng-repeat="column in columns">
+				<h3>FavFacets</h3>
+				<div portletheading>
+				    This is a test
+				</div>
+				
+				
+			    <div ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
+			        <span ng-show="favFacets.length == 0">No favourited facets</span> 
+			        <ul ng-repeat="facet in favFacets">
+						<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
+					</ul>
+			    </div>
 			
-			    <a href="" ng-click="removeColumn($index)"><span ng-show="column.isRemoveable" class="glyphicon glyphicon-remove-circle"></span></a>
-			    {{column.displayName}}
-			    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
-
-				<a href="" ng-visible="column.isSortable && column.sortDirection >= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? 1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-up"></span></a>
-<!-- 				<a href="" ng-show="column.isSortable && column.sortDirection < 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, 0, shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-resize-vertical"></span></a> -->
-				<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
-<!-- 				<a href="" ng-show="column.isSortable && column.sortDirection > 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, 0, shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-resize-vertical"></span></a> -->
-
-		    </th></tr>		
-	    </table>
-	</div>
-
+				<h3>FacetTree</h3>
+				<div ng-controller="MyCtrl" data-ng-init="refresh()">
+					<div ng-include="'facet-tree-item.html'"></div>
+				</div>
+			
+				<div ng-controller="MyCtrl2">
+					<div ng-include="'result-set-browser.html'"></div>	
+				</div>
+				
+				<div ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
+				    <span ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</span>
+					<ul>
+					    <li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
+					</ul>
+				</div>
+				
+				<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()">
+					<span>Query = {{queryString}}</span>	
+				</div>
+	
+	        </td>
+	
+	        <td style="vertical-align: top">
+				<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
+				    <table>
+					    <tr><th ng-repeat="column in columns">
+						
+						    <a href="" ng-click="removeColumn($index)"><span ng-show="column.isRemoveable" class="glyphicon glyphicon-remove-circle"></span></a>
+						    {{column.displayName}}
+						    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
+			
+							<a href="" ng-visible="column.isSortable && column.sortDirection >= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? 1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-up"></span></a>
+							<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
+					    </th></tr>		
+				    </table>
+				</div>
+	        
+	        </td>        
+	    </tr>
+    </table>
 </body>
 
 </html>
