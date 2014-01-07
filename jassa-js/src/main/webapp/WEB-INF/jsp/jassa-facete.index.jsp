@@ -369,7 +369,7 @@
 
 	myModule.controller('FavFacetsCtrl', function($scope, $rootScope, $q, facetService) {
 		$scope.$on('facete:constraintsChanged', function() {
-		    $scope.refreshFacets();
+		    $scope.refresh();
 		});
 	    
 	    $scope.refresh = function() {
@@ -389,7 +389,7 @@
 			$scope.queryString = query.toString();	        
 	    };
 	    
-		$scope.$on("constraintsChanged", function() {
+		$scope.$on("facete:constraintsChanged", function() {
 			$scope.updateQuery();
 		});
 	});
@@ -415,7 +415,7 @@
 			$rootScope.$broadcast('facete:constraintsChanged');
 	    };
 	    
-		$scope.$on("constraintsChanged", function() {
+		$scope.$on("facete:constraintsChanged", function() {
 			$scope.refreshConstraints();
 		});
 	});
@@ -521,9 +521,16 @@
 	 *
 	 */
 	myModule.controller('FaceteContextCtrl', function($scope) {
+	    
 	    $scope.$on('facete:facetSelected', function(ev, path) {
 	        if(ev.targetScope.$id != ev.currentScope.$id) {
 	            $scope.$broadcast('facete:facetSelected', path);
+	        }	        
+	    });
+
+	    $scope.$on('facete:constraintsChanged', function(ev, path) {
+	        if(ev.targetScope.$id != ev.currentScope.$id) {
+	            $scope.$broadcast('facete:constraintsChanged', path);
 	        }	        
 	    });
 	});
@@ -552,10 +559,12 @@
 	    
     myModule.controller('CreateTableCtrl', function($scope, $modal, $log) {
         $scope.columns = [{
-            displayName: 'test',
             isRemoveable: true,
             isConfigureable: true,
             isSortable: true,
+            
+            displayName: 'test',
+            
             sortDirection: 0
         }];
         
@@ -603,11 +612,35 @@
             });            
         };
         
-        
+        $scope.sortColumn = function(index, sortDirection, isShiftPressed) {
+            var column = $scope.columns[index];
+            var currentSortDir = column.sortDirection;
+
+            if(currentSortDir == column.sortDirection) {
+                column.sortDirection = sortDirection;
+            } else {
+                column.sortDirection = sortDirection;
+            }
+                        
+            //= sortDirection
+        };
         
         
     });
 	 
+    
+    /**
+     * Custom directive for visibility
+     * Source: https://gist.github.com/c0bra/5859295
+     */
+    myModule.directive('ngVisible', function () {
+        return function (scope, element, attr) {
+            scope.$watch(attr.ngVisible, function (visible) {
+                element.css('visibility', visible ? 'visible' : 'hidden');
+            });
+        };
+    });
+    
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
 
 // 	    $rootScope.$on('facetSelected', function(path) {
@@ -615,10 +648,10 @@
 // 	    });
 
 		$scope.$on('facete:constraintsChanged', function() {
-		    $scope.refreshFacets();
+		    $scope.refresh();
 		});
 	    
-	    $scope.refreshFacets = function() {
+	    $scope.refresh = function() {
 	        var facet = $scope.facet;
 	        var startPath = facet ? facet.item.getPath() : new facete.Path();
 	        
@@ -629,14 +662,14 @@
 			});
 		};
 		
-		$scope.init = function() {
-			$scope.refreshFacets();
-		};
+// 		$scope.init = function() {
+// 			$scope.refreshFacets();
+// 		};
 		
 		$scope.toggleCollapsed = function(path) {
 			util.CollectionUtils.toggleItem(expansionSet, path);
 			
-			$scope.refreshFacets();
+			$scope.refresh();
 		};
 		
 		$scope.selectFacetPage = function(page, facet) {
@@ -651,7 +684,7 @@
 			
 			resultRange.setOffset(newOffset);
 			
-			$scope.refreshFacets();
+			$scope.refresh();
 		};
 		
 		$scope.toggleSelected = function(path) {
@@ -763,7 +796,7 @@
     </div>
 
 	<h3>FacetTree</h3>
-	<div ng-controller="MyCtrl" data-ng-init="init()">
+	<div ng-controller="MyCtrl" data-ng-init="refresh()">
 		<div style="width: 30%">
 			<div ng-include="'facet-tree-item.html'"></div>
 		</div>
@@ -793,8 +826,11 @@
 			    {{column.displayName}}
 			    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
 
-				<a href="" ng-click="sortColumn($index)"><span ng-show="column.isSortable" class="glyphicon glyphicon glyphicon-arrow-up"></span></a>
-				<a href="" ng-click="sortColumn($index)"><span ng-show="column.isSortable" class="glyphicon glyphicon glyphicon-arrow-down"></span></a>
+				<a href="" ng-visible="column.isSortable && column.sortDirection >= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? 1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-up"></span></a>
+<!-- 				<a href="" ng-show="column.isSortable && column.sortDirection < 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, 0, shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-resize-vertical"></span></a> -->
+				<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
+<!-- 				<a href="" ng-show="column.isSortable && column.sortDirection > 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, 0, shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-resize-vertical"></span></a> -->
+
 		    </th></tr>		
 	    </table>
 	</div>
