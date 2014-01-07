@@ -179,10 +179,83 @@
 		return result;
 	}
 	
+	
+	/**
+	 * A map that retains insert order 
+	 * 
+	 */
+	ns.ListMap = Class.create({
+	    initialize: function(fnEquals, fnHash) {
+	        this.map = new ns.HashMap(fnEquals, fnHash);
+	        this.keys = [];
+	    },
+	    
+	    put: function(key, value) {
+	        var v = map.get(key);
+	        if(v) {
+	            throw 'Key ' + v + ' already inserted';
+	        }
+	        
+	        this.keys.push(key);
+	        map.put(key, value);
+	    },
+	    
+	    get: function(key) {
+	        var result = this.map.get(key);
+	        return result;
+	    },
+	    
+	    getByIndex: function(index) {
+	        var key = this.keys[index];
+	        var result = this.map.get(key);
+	        return result;
+	    },
+	    
+	    entries: function() {
+	        var self = this;
+	        var result = this.keys.map(function(key) {
+	            var value = self.map.get(key);
+	            
+	            var r = {key: key, val: value};
+	            return r;
+	        });
+	        
+	        return result;
+	    },
+	    
+	    remove: function(key) {
+	        throw 'Implement me';
+	        /*
+	        var keys = this.keys;
+	        for(var i = 0; i < keys.length; ++i) {
+	            
+	        }
+	        
+	        this.map.remove(key);
+	        */
+	    },
+	    
+	    removeByIndex: function(index) {
+	        var key = this.keys[index];
+
+	        this.remove(key);
+	    },
+	    
+	    keyList: function() {
+	        return this.keys;
+	    },
+	    
+	    size: function() {
+	        return this.keys.length;
+	    }
+	});
+	
+	
+
 	ns.HashMap = Class.create({
 		initialize: function(fnEquals, fnHash) {
-			this.fnEquals = ns.defaultEquals;
-			this.fnHash = ns.defaultHashCode;
+			this.fnEquals = fnEquals ? fnEquals : ns.defaultEquals;
+			this.fnHash = fnHash ? fnHash : ns.defaultHashCode;
 			
 			this.hashToBucket = {};
 		},
@@ -371,6 +444,70 @@
 			var result = "{" + entries.join(", ") + "}";
 			return result;
 		}
+	});
+	
+	ns.ArrayList = Class.create({
+	   initialize: function(fnEquals) {
+	       this.items = [];
+	       this.fnEquals = fnEquals ? fnEquals : ns.defaultEquals;
+	   },
+	   
+	   get: function(index) {
+	       var result = this.items[index];
+	       return result;
+	   },
+	   
+	   add: function(item) {
+	       this.items.push(item);
+	   },
+	   
+	   indexesOf: function(item) {
+	       var items = this.items;
+	       var fnEquals = this.fnEquals;
+	       
+	       var result = [];
+
+	       _(items).each(function(it, index) {
+               var isEqual = fnEquals(item, it);
+               if(isEqual) {
+                   result.push(index);
+               }
+	       });
+	       
+	       return result;
+	   },
+	   
+	   contains: function(item) {
+	       var indexes = this.indexesOf(item);
+	       var result = indexes.length > 0;
+	       return result;
+	   },
+	   
+	   firstIndexOf: function(item) {
+	       var indexes = this.indexesOf(item);
+	       var result = (indexes.length > 0) ? indexes[0] : -1; 
+	       return result;
+	   },
+
+	   lastIndexOf: function(item) {
+           var indexes = this.indexesOf(item);
+           var result = (indexes.length > 0) ? indexes[indexes.length - 1] : -1; 
+           return result;
+       },
+
+       /**
+        * Removes the first occurrence of the item from the list
+        */
+       remove: function(item) {
+           var index = this.firstIndexOf(item);
+           if(index >= 0) {
+               this.removeByIndex(index);
+           }
+       },
+       
+	   removeByIndex: function(index) {
+	       this.items.splice(index, 1);
+	   }
 	});
 	
 	ns.CollectionUtils = {

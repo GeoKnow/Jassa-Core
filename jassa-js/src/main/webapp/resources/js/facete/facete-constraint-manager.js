@@ -137,6 +137,14 @@
 		    this.constraints = n;
 		    return result;
 		},
+
+		toggleConstraint: function(constraint) {
+		    var wasRemoved = constraintManager.removeConstraint(constraint);
+		    if(!wasRemoved) {
+		        constraintManager.addConstraint(constraint);
+		    }
+		},
+
 		
 //		createElement: function(facetNode, excludePath) {
 //			console.log("Should not be invoked");

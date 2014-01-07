@@ -122,6 +122,8 @@
 								<param>facete/facete-constraint-impls.js</param>
 								<param>facete/facete-constraint-utils.js</param>
 								<param>facete/facete-constraint-manager.js</param>
+								<param>facete/facete-constraint-tagger.js</param>
+								
 								<param>facete/facete-trees.js</param>
 
 								<param>facete/facete-utils-query.js</param>

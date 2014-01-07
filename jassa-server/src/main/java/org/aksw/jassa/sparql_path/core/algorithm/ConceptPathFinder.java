@@ -57,7 +57,6 @@ public class ConceptPathFinder {
 	
 	public static List<Path> findPaths(QueryExecutionFactory qef, Concept sourceConcept, Concept tmpTargetConcept) {
 
-		ResultSet rs = getPropertyAdjacency(qef);
 		
 		Concept targetConcept = tmpTargetConcept.makeDistinctFrom(sourceConcept);
 		
@@ -70,6 +69,7 @@ public class ConceptPathFinder {
 
 		Model joinSummaryModel = ModelFactory.createDefaultModel();
 		
+        ResultSet rs = getPropertyAdjacency(qef);
 		while(rs.hasNext()) {
 			QuerySolution qs = rs.next();
 			

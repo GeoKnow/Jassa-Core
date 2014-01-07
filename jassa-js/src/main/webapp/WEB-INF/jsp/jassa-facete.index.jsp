@@ -39,6 +39,10 @@
 /* 		background-color: #EEEEEE; */
 	}
 	
+	a {
+	    cursor: pointer
+	}
+	
 	.image-frame {
 		display: table;
 
@@ -53,6 +57,26 @@
 		border-color: #CCCCCC;
 		background-color: #EEEEEE;
 	}
+	
+	.navbar-inner {
+	    background-color: #CCCCFA;
+        background-image: linear-gradient(to bottom, #CCCCFF, #EEEEFF);
+    }
+    
+    .modal {
+    	display: block;
+    	height: 0;
+    	overflow: visible;
+    }
+    
+    .modal-header {
+        background-color: #FFFFFF !important;
+    }
+
+    .modal-body {
+        background-color: #FFFFFF !important;
+    }
+    
 	</style>
 	
 	<!--  TODO PrefixMapping Object von Jena portieren ~ 9 Dec 2013 -->
@@ -114,8 +138,18 @@
 // 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
- 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
- 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+
+ 	
+// 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
+// 	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
+
+//  	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/world/sparql';
+//  	var defaultGraphUris = ['http://freebase.com/2013-09-22/all'];
+
+//  	var sparqlEndpointUrl = 'http://linkedgeodata.org/sparql';
+//  	var defaultGraphUris = ['http://linkedgeodata.org'];
 
 	var qef = new service.SparqlServiceHttp(sparqlEndpointUrl, defaultGraphUris);
 	qef = new service.SparqlServiceCache(qef);
@@ -156,86 +190,202 @@
 
 	
 	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, expansionSet, facetStateProvider);
-	/**
-	fctService.setExpanded(path);
-	fctService.
-	**/
-	
-	
-// 	facetService.fetchFacets(facete.Path.parse("")).done(function(list) {
-		
-// 		//alert(JSON.stringify(list));
-		
-// 		_(list).each(function(item) {
-// 			console.log("FacetItem: " + JSON.stringify(item));
-// 		});
-	
-	/**
-	 * Angular
-	 */
 
+
+    var constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);
+
+    
+    var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
+    
     var ns = {};
-	 
-    ns.ConstraintTaggerFactory = Class.create({
-        initialize: function(constraintManager) {
-			this.constraintManager = constraintManager;
-        },
-        
-        createConstraintTagger: function(path) {
-			var constraints = this.constraintManager.getConstraintsByPath(path);
-			
-			var equalConstraints = {};
+    
 
-			_(constraints).each(function(constraint) {
-			    var constraintType = constraint.getName();
-			     
-			    if(constraintType == 'equal') {
-					var node = constraint.getValue();
-			        equalConstraints[node.toString()] = node;
-			    }
-			});
-	
-			console.log('eqConstraints: ', equalConstraints);
-			var result = new ns.ConstraintTagger(equalConstraints);
-			return result;
+
+    /**
+     * Converts a Table Definition to a SPARQL graph pattern
+     *
+     * TODO Sort out some base class
+     */
+    ns.TableToElement2 = Class.create({
+        initialize: function(baseFacetNode) {
+            this.baseFacetNode = baseFacetNode;
+            //this.filterManagerFactory = filterManagerFactory;
+        },
+
+        /**
+         * Transforms the tableDef into a SPARQL element
+         *
+         * Post process whether optional elements are actually mandatory
+         * Cross checks with the constraintManager of whether the
+         * (sub-)elements are optional or mandatory
+         *
+         *
+         */
+        transform: function(tableDef) {
+            var baseFacetNode = this.baseFacetNode;
+            var columnDefs = tableDef.getColumnDefs();
+            
+            //var filterManager = this.filterManagerFactory.createConstraintManager();
+            
+            
+            var elements = _(columnDefs).map(function(cd) {
+                var isCdp = cd instanceof ns.ColumnDefPath;
+                
+                if(!isCdp) {
+                    console.log('[ERROR] Unknown column definition type');
+                    throw 'Bailing out';
+                }
+                
+                var path = cd.getPath();
+                
+                var facetNode = baseFacetNode.forPath(path);
+                var r = facetNode.getElements();
+
+                //var r = transformCdp(cd);
+				return r;
+            });
+            
+            // For each column, collect the triple patterns that correspond to the paths
         }
     });
-	 
-    ns.ConstraintTagger = Class.create({
-		initialize: function(equalConstraints) {
-			this.equalConstraints = equalConstraints;
+    
+
+    ns.TableDef = Class.create({
+        initialize: function() {
+            this.paths = new util.ArrayList();
+            //this.colNameToIndex = {};
+        },
+
+        getPaths: function() {
+            return this.paths;
+        },
+        
+        togglePath: function(path) {
+            util.CollectionUtils.toggleItem(this.paths, path);
+        }
+    });
+    
+
+    /**
+     * 
+     *
+     */
+    ns.TableDef2 = Class.create({
+        initialize: function() {
+        	this.columnDefs = [];
 		},
         
-        getTags: function(node) {
-			var result = {
-			    isConstrainedEqual: this.equalConstraints[node.toString()] ? true : false
-			};
-			
-			return result;
+        getColumnDefs: function() {
+            return this.columnDefs;
+        },
+        
+        addColumnDef: function(columnDef) {
+            this.columnDefs.push(columnDef);
+        }        
+    });
+
+    
+    var tableDef = new ns.TableDef(); 
+    tableDef.togglePath(new facete.Path());
+    
+    /**
+     * A column definition at least has a name.
+     * Subclasses provide additional information about how the column is defined.
+     * 
+     * TODO The column name is rather an id instead of a name.
+     */
+    ns.ColumnDefBase = Class.create({
+        initialize: function(columnName) {
+            this.columnName = columnName;
+        },
+        
+        getColumnName: function() {
+            return this.columnName;
         }
-    }); 
+    });
+    
+    /**
+     * A column definition links the data that corresponds to a path to a single column
+     * and associates it with a name.
+     * 
+     */
+    ns.ColumnDefPath = Class.create(ns.ColumnDefBase, {
+		/*
+		 * @param columnName The name of the column
+     	 * @param path The path which to link to the column     
+     	 * @param useProperty false: Use the path's target's values. If true: refer to the paths child properties instead. 
+     	 */
+		initialize: function($super, columnName, path, useProperty) {
+            $super(columnName);
+            this.path = path;
+            this.useProperty = useProperty;
+        },
+        
+        getPath: function() {
+            return this.path;
+        },
+        
+        useProperty: function() {
+            return this.useProperty;
+        }
+    });
 
-    var constraintTaggerFactory = new ns.ConstraintTaggerFactory(constraintManager);
+    
+    
 
-	
+	/**
+	 * Angular
+	 */	
 	var myModule = angular.module('FaceteDBpediaExample', ['ui.bootstrap']);
-
+	
+	
+	myModule.directive('portletheading', function() {
+	    return {
+	        restrict: "EA",
+	        transclude: true,
+	        template: '<div class="navbar-inner" style="min-height:20px; height:20px; position:relative;">'
+				    + '    <a href="#" class="brand" style="font-size:14px; padding-top: 0px; padding-bottom: 0px;" />'
+//					+ '<a href="#" class="toggle-minimized" style="position: absolute; top: 4px; right: 20px;">'
+//					+ '<i class="icon-minus-sign" />'
+//					+ '</a>'
+                    + '    <div ng-transclude></div>'
+				    + '    <a href="#" class="toggle-context-help" style="position: absolute; top: 4px; right: 5px;" data-title="Popover" data-content="Content" data-trigger="click" data-placement="bottom" rel="popover">'
+				    + '        <i class="icon-info-sign" />'
+				    + '    </a>'
+				//+ this.nodeValue.text()
+                    + '</div>'
+	    };	    
+	});
 	
 	myModule.factory('facetService', function($rootScope, $q) {
 		return {
-			fetchFacets: function() {
-				var promise = fctTreeService.fetchFacetTree(facete.Path.parse(""));
+			fetchFacets: function(startPath) {
+				var promise = fctTreeService.fetchFacetTree(startPath);
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 				return result;
 			}
 	   };
 	});
 
+	myModule.controller('FavFacetsCtrl', function($scope, $rootScope, $q, facetService) {
+		$scope.$on('facete:constraintsChanged', function() {
+		    $scope.refreshFacets();
+		});
+	    
+	    $scope.refresh = function() {
+	        var promise = fctTreeService.fetchFavFacets(favFacets);
+	        sponate.angular.bridgePromise(promise, $q.defer(), $rootScope).then(function(items) {
+			    console.log('refreshed favFacets: ', items);
+				$scope.favFacets = items;
+			});
+		};
+	});
+	
 	myModule.controller('ShowQueryCtrl', function($scope, facetService) {
 	    $scope.updateQuery = function() {
 		    var concept = fctService.createConceptFacetValues(new facete.Path());			
 			var query = facete.ConceptUtils.createQueryList(concept);			
-console.log('Query', query);
+
 			$scope.queryString = query.toString();	        
 	    };
 	    
@@ -262,7 +412,7 @@ console.log('Query', query);
 	    
 	    $scope.removeConstraint = function(item) {
 	        constraintManager.removeConstraint(item.constraint);
-			$rootScope.$broadcast('constraintsChanged');
+			$rootScope.$broadcast('facete:constraintsChanged');
 	    };
 	    
 		$scope.$on("constraintsChanged", function() {
@@ -277,22 +427,22 @@ console.log('Query', query);
 		$scope.maxSize = 5;
 
 		$scope.toggleConstraint = function(item) {
-//			alert('toggle: ' + JSON.stringify(item));
 			var constraint = new facete.ConstraintSpecPathValue(
 					'equal',
 					item.path,
 					item.node);
 
-			var hack = constraintManager.removeConstraint(constraint);
-			if(!hack) {
-				constraintManager.addConstraint(constraint);
-			}
+			// TODO Integrate a toggle constraint method into the filterManager
+			constraintManager.toggleConstraint(constraint);
+// 			var hack = constraintManager.removeConstraint(constraint);
+// 			if(!hack) {
+// 				constraintManager.addConstraint(constraint);
+// 			}
 
-			$rootScope.$broadcast('constraintsChanged');
+			$rootScope.$broadcast('facete:constraintsChanged');
 		};
 		
 		var updateItems = function() {
-			//console.log("Update");
 
 			var path = $scope.path;
 			if(path == null) {
@@ -314,7 +464,6 @@ console.log('Query', query);
 			
  			var qe = qef.createQueryExecution(query);
 			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
-			    //return nodes.map(function(x) { return x.toString(); });
 
 			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
 			    
@@ -327,21 +476,9 @@ console.log('Query', query);
 
 			        return tmp;
 			    });
-			    
-			    //console.log('meh', r);
+
 			    return r;
-			});			
-
-			//var promises = [countPromise, dataPromise];
-
-			/*
-			$.when.apply(window, promises).done(function(count, items) {
-			    return {
-			        count: count,
-			        items: items
-			    };
 			});
-			*/
 
 			sponate.angular.bridgePromise(countPromise, $q.defer(), $rootScope).then(function(count) {
 			    $scope.totalItems = count; 
@@ -353,23 +490,12 @@ console.log('Query', query);
 
 		};
 
-
-//		constraintManager.addConstraint(new facete.ConstraintSpecPathValue(
-//		'equal',
-//		facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
-//		sparql.NodeValue.makeNode(rdf.NodeFactory.createUri('http://www.w3.org/2002/07/owl#Class'))
-//	));
-
 		$scope.$watch('currentPage', function() {			
 			console.log("Change");
 			updateItems();
 		});
-
-// 		$scope.$watchCollection('[currentPage, maxSize]', function() {
-// 			updateItems();
-// 		});
 		
-		$scope.$on("facetSelected", function(ev, path) {
+		$scope.$on('facete:facetSelected', function(ev, path) {
 
 			$scope.currentPage = 1;
 			$scope.path = path;
@@ -377,27 +503,129 @@ console.log('Query', query);
 			updateItems();
 		});
 		
-		$scope.$on('constraintsChanged', function() {
+		$scope.$on('facete:constraintsChanged', function() {
 		    updateItems(); 
 		});
 	});
 				
+	
+	myModule.controller('ResultSetTableCtrl', function($scope) {
+	    $scope.refresh = function() {
+	        //tableDef = 
+	    };
+	});
+	
+	/**
+	 * Broadcasts facete related events down again; essenntially
+	 * used so that sibling elements can react to the events.
+	 *
+	 */
+	myModule.controller('FaceteContextCtrl', function($scope) {
+	    $scope.$on('facete:facetSelected', function(ev, path) {
+	        if(ev.targetScope.$id != ev.currentScope.$id) {
+	            $scope.$broadcast('facete:facetSelected', path);
+	        }	        
+	    });
+	});
 				
+	 
+//      myModule.controller('ModalInstanceCtrl', function($scope) {
+        
+//      });
+	var ModalInstanceCtrl = function($scope, $modalInstance, aggs, selected) {	    
+	    $scope.aggs = aggs;
+	    
+// 	    $scope.selected = {
+//     		agg: $scope.aggs[0]
+//   		};
+
+		$scope.selected = selected;
+	    
+	    $scope.ok = function () {
+	        $modalInstance.close($scope.selected);
+	    };
+
+	    $scope.cancel = function () {
+	        $modalInstance.dismiss('cancel');
+	    };
+	};
+	    
+    myModule.controller('CreateTableCtrl', function($scope, $modal, $log) {
+        $scope.columns = [{
+            displayName: 'test',
+            isRemoveable: true,
+            isConfigureable: true,
+            isSortable: true,
+            sortDirection: 0
+        }];
+        
+	    // TODO For complex aggregation expressions we may need to add an
+	    // 'unknown' or 'retain' option to retain the current choice
+	    $scope.aggs = [{
+	    	label: 'None'
+	    }, {
+	        label: 'Count'
+	    }, {
+	        label: 'Average'
+	    }, {
+	        label: 'Min'
+	    }, {
+	        label: 'Max'
+	    }];
+
+        
+        $scope.configureColumn = function(index) {
+            var column = $scope.columns[index];
+            console.log($scope.columns);
+            
+            var modalInstance = $modal.open({
+                templateUrl: 'configureColumnContent.html',
+                controller: ModalInstanceCtrl,
+                resolve: {
+                    selected: function() {
+                        return {agg: column.agg };
+                    },
+
+                    aggs: function () {
+                        return $scope.aggs;
+                    }
+                }
+            });
+
+            modalInstance.result.then(function(data) {
+                
+                column.agg = data.agg;
+                
+                //alert(JSON.stringify(data));
+                //$scope.selected = selectedItem;
+            }, function () {
+                $log.info('Modal dismissed at: ' + new Date());
+            });            
+        };
+        
+        
+        
+        
+    });
+	 
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
 
-	    $scope.Math = window.Math;
+// 	    $rootScope.$on('facetSelected', function(path) {
+// 			$rootScope.$broadcast('facetSelected', path);
+// 	    });
 
-		$scope.$on('constraintsChanged', function() {
+		$scope.$on('facete:constraintsChanged', function() {
 		    $scope.refreshFacets();
 		});
 	    
 	    $scope.refreshFacets = function() {
-			//$scope.facet = facetService.fetchFacets();
-			facetService.fetchFacets().then(function(data) {
-			    
+	        var facet = $scope.facet;
+	        var startPath = facet ? facet.item.getPath() : new facete.Path();
+	        
+	        //console.log('scopefacets', $scope.facet);
+			facetService.fetchFacets(startPath).then(function(data) {
 			    console.log('refreshed data: ', data);
 				$scope.facet = data;
-				//$scope.$apply();
 			});
 		};
 		
@@ -408,16 +636,10 @@ console.log('Query', query);
 		$scope.toggleCollapsed = function(path) {
 			util.CollectionUtils.toggleItem(expansionSet, path);
 			
-			console.log("ExpansionSet: " + expansionSet);
-			
-			//facetStateProvider.getMap().put(path, new facete.FacetStateImpl(true, null, null));			
 			$scope.refreshFacets();
 		};
 		
 		$scope.selectFacetPage = function(page, facet) {
-			//alert(page + " " + JSON.stringify(facet));
-			
-			//facet.childFacetCount
 			var path = facet.item.getPath();
             var state = facetStateProvider.getFacetState(path);
             var resultRange = state.getResultRange();
@@ -433,17 +655,22 @@ console.log('Query', query);
 		};
 		
 		$scope.toggleSelected = function(path) {
+			//$rootScope.$broadcast("facetSelected", path);
+		    $scope.$emit('facete:facetSelected', path);
+		};
+		
+		$scope.toggleTableLink = function(path) {
 
-			$rootScope.$broadcast("facetSelected", path);
-						
-// 			qe.execSelect().done(function(rs) {
-// 				while(rs.hasNext()) {
-// 					var binding = rs.nextBinding();
-					
-// 				}
-// 			});
-			
-			//alert("test");
+		    tableDef.togglePath(path);
+		    alert('yay' + JSON.stringify(tableDef.getPaths()));
+		    
+// 		    var columnDefs = tableDef.getColumnDefs();
+// 		    _(columnDefs).each(function(columnDef) {
+		        
+// 		    });
+		    
+// 		    tableDef.addColumnDef(null, new ns.ColumnDefPath(path));
+		    //alert('yay ' + path);
 		};
 	});
 		
@@ -455,6 +682,15 @@ console.log('Query', query);
 				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
 				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
 				<a data-rdf-term="{{facet.item.getNode().toString()}}" title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
+
+
+				<a href="" ng-click="toggleTableLink(facet.item.getPath())"><span class="glyphicon glyphicon-list-alt"></span></a>
+
+<!--				<ul>
+                    <li ng-repeat="action in facet.actions"></li>
+                </ul>
+-->
+
 				<span style="float: right" class="badge">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>
 			<div ng-show="facet.isExpanded" style="width:100%"> 
@@ -468,10 +704,6 @@ console.log('Query', query);
            </div>
 		</div>
 	</script>
-<!-- 				<span>cfc: {{facet.childFacetCcount}} pageIndex: {{facet.pageIndex}}</span> -->
-<!-- 			<span>{{facet.item.getPath()}}</span> -->
-<!-- 			<span>{{console.log(JSON.stringify(facet))}}</span> -->
-<!-- 			<span ng-show="{{facet.isExpanded}}">Pages: {{facet.childFacetCount / facet.limit}}, Current page: {{facet.offset / facet.childFacetCount + 1}}</span> -->
 
 	<script type="text/ng-template" id="result-set-browser.html">
 		<div class="frame">
@@ -490,10 +722,47 @@ console.log('Query', query);
     		<pagination class="pagination-small" total-items="totalItems" page="$parent.currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
 		</div>
 	</script>
+	
+	
+	<script type="text/ng-template" id="configureColumnContent.html">
+        <div class="modal-header">
+            <h3>Column Configuration</h3>
+        </div>
+        <div class="modal-body">
+            <table>
+                <tr><td>Path</td><td>{{item}}</td></tr>
+            </table>
+            <hr />
+			Heading
+			<input type="text" ng-model="columnName" />
+            Aggregation {{selected.agg}}
+            <select ng-model="selected.agg" ng-options="agg.label for agg in aggs" />
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">OK</button>
+            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+	
 </head>
 
-<body>
+<body ng-controller="FaceteContextCtrl">
 
+
+	<h3>FavFacets</h3>
+	<div portletheading>
+	    This is a test
+	</div>
+	
+	
+    <div ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
+        <span ng-show="favFacets.length == 0">No favourited facets</span> 
+        <ul ng-repeat="facet in favFacets">
+			<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
+		</ul>
+    </div>
+
+	<h3>FacetTree</h3>
 	<div ng-controller="MyCtrl" data-ng-init="init()">
 		<div style="width: 30%">
 			<div ng-include="'facet-tree-item.html'"></div>
@@ -515,6 +784,21 @@ console.log('Query', query);
 		<span>Query = {{queryString}}</span>	
 	</div>
 	
+	
+	<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
+	    <table>
+		    <tr><th ng-repeat="column in columns">
+			
+			    <a href="" ng-click="removeColumn($index)"><span ng-show="column.isRemoveable" class="glyphicon glyphicon-remove-circle"></span></a>
+			    {{column.displayName}}
+			    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
+
+				<a href="" ng-click="sortColumn($index)"><span ng-show="column.isSortable" class="glyphicon glyphicon glyphicon-arrow-up"></span></a>
+				<a href="" ng-click="sortColumn($index)"><span ng-show="column.isSortable" class="glyphicon glyphicon glyphicon-arrow-down"></span></a>
+		    </th></tr>		
+	    </table>
+	</div>
+
 </body>
 
 </html>

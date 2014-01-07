@@ -15,15 +15,48 @@
 			this.facetStateProvider = facetStateProvider;
 		},
 		
-		fetchFacetTree: function() {
-			var path = new ns.Path.parse();
-			
-			var result = this.fetchFacetTreeRec(path);
+		fetchFacetTree: function(path) {
+			//var path = new ns.Path.parse();
+
+		    var parentFacetItem;
+
+            if(path.isEmpty()) {
+                parentFacetItem = new ns.FacetItem(path, rdf.NodeFactory.createUri('http://root'), null);
+            } else {
+                parentFacetItem = new ns.FacetItem(path, rdf.NodeFactory.createUri(path.getLastStep().getPropertyName()), null);                
+            }
+
+		    
+			var result = this.fetchFacetTreeRec(path, parentFacetItem);
 			
 			result.done(function(facetTree) { console.log("FacetTree: ", facetTree); });
 			
 			return result;
 		},
+		
+		fetchFavFacets: function(paths) {
+		    var self = this;
+		    var promises = _(paths).map(function(path) {
+		       var parentFacetItem = new ns.FacetItem(path, rdf.NodeFactory.createUri(path.getLastStep().getPropertyName()), null);
+		       var r =  self.fetchFacetTreeRec(path, parentFacetItem);
+		       return r;
+		    });
+		    
+		    
+		    var result = $.Deferred();
+		    $.when.apply(window, promises).done(function() {
+                var r = _(arguments).map(function(item) {
+                    return item;
+                });
+                
+		        result.resolve(r);
+		    }).fail(result.fail);
+		    
+		    
+		    return result.promise();
+		},
+		
+		
 		
 	    /**
          * Given a path, this method fetches all child facets at its target location.
@@ -39,10 +72,6 @@
 
 		    var isExpanded = this.expansionSet.contains(path);
             
-
-            if(parentFacetItem == null) {
-                parentFacetItem = new ns.FacetItem(path, rdf.NodeFactory.createUri('http://root'), null);
-            }
 
             // This is the basic information returned for non-expanded facets
             var baseData = {

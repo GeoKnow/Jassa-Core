@@ -269,6 +269,11 @@
 		},
 				
 		
+		/**
+		 * Returns an array having at most one element.
+		 * 
+		 * 
+		 */
 		getElements: function() {
 			var result = [];
 			
