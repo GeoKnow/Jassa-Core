@@ -554,7 +554,12 @@
 	    $scope.refresh = function() {
 	        var promise = fctTreeService.fetchFavFacets(favFacets);
 	        sponate.angular.bridgePromise(promise, $q.defer(), $rootScope).then(function(items) {
-			    console.log('refreshed favFacets: ', items);
+	            
+	            _(items).each(function(item) {
+				    facetTreeTagger.applyTags(item); 
+	            });
+	            
+// 			    console.log('refreshed favFacets: ', items);
 				$scope.favFacets = items;
 			});
 		};
@@ -728,7 +733,7 @@
 	        }	        
 	    };
 	    
-	    var forward = function(eventName) {
+	    var forwardEvent = function(eventName) {
 	        $scope.$on(eventName, function() {
 	            broadcast(eventName, arguments);
 	        });
@@ -736,7 +741,7 @@
 	    
 	    var events = ['facete:facetSelected', 'facete:constraintsChanged', 'facete:refresh'];
 	    
-	    _(events).each(forward);
+	    _(events).each(forwardEvent);
 	    
 	    /*
 	    $scope.$on('facete:facetSelected', function(ev, path) {
@@ -831,17 +836,24 @@
             });            
         };
         
+        $scope.removeColumn = function(index) {
+            var column = $scope.columns[index];
+            var path = column.path;
+            
+		    tableDef.togglePath(path);
+		    $scope.$emit('facete:refresh');  
+        };
+        
         $scope.sortColumn = function(index, sortDirection, isShiftPressed) {
             var column = $scope.columns[index];
             var currentSortDir = column.sortDirection;
 
-            if(currentSortDir == column.sortDirection) {
-                column.sortDirection = sortDirection;
-            } else {
-                column.sortDirection = sortDirection;
-            }
-                        
-            //= sortDirection
+            column.sortDirection = sortDirection;
+//             if(currentSortDir == column.sortDirection) {
+//                 column.sortDirection = sortDirection;
+//             } else {
+//                 column.sortDirection = sortDirection;
+//             }
         };
         
         
@@ -855,7 +867,9 @@
 	                isSortable: true,
 	                sortDirection: 0,
                 
-                	displayName: 'test'
+                	displayName: 'test',
+
+                	path: path
             	};
 
                 return column;
@@ -900,11 +914,8 @@
 	        var startPath = facet ? facet.item.getPath() : new facete.Path();
 	        
 	        //console.log('scopefacets', $scope.facet);
-			facetService.fetchFacets(startPath).then(function(data) {
-			    
+			facetService.fetchFacets(startPath).then(function(data) {			    
 			    facetTreeTagger.applyTags(data);
-			    
-			    console.log('refreshed data: ', data);
 				$scope.facet = data;
 			});
 		};

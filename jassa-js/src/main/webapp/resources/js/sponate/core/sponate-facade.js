@@ -66,16 +66,20 @@
 			var jsonTemplate = spec.template;
 			var from = spec.from;
 
+			var context = this.context;
+			
 			// Parse the 'from' attribute into an ElementFactory
 			// TODO Move to util class
 			var elementFactory;
 			if(_(from).isString()) {
 			    
+			    var elementStr = from;
+			    
 	            var prefixes = context.getPrefixMap().getJson();
-	            var vars = sparql.extractSparqlVars(elementStr);
+	            //var vars = sparql.extractSparqlVars(elementStr);
 	            var str = sparql.expandPrefixes(prefixes, elementStr);
 	            
-	            var element = sparql.ElementString.create(str, vars);
+	            var element = sparql.ElementString.create(str);//, vars);
 	            
 			    elementFactory = new sparql.ElementFactoryConst(element);
 			}

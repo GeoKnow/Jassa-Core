@@ -161,7 +161,7 @@
             this.element = element;
             this.elementVars = elementVars;
             
-            this.targetJoinVars = targetJoinVars;
+            //this.targetJoinVars = targetJoinVars;
             
             this.joinInfos = [];            
         },

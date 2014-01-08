@@ -114,8 +114,8 @@
 	var ssf = new service.SparqlServiceFactoryConst(sparqlService);
 
 	
-	var qcf = new service.QueryCacheFactory();
-	qcf.createCache(sparqlService);
+// 	var qcf = new service.QueryCacheFactory();
+// 	qcf.createCache(sparqlService);
 	
 	
 
