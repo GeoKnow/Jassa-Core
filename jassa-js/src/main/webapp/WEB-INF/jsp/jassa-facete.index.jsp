@@ -90,6 +90,14 @@
 		border-right: 5px solid #1c3048;
 		vertical-align: top;
 	}
+	
+	.visible-on-hover {
+	    visibility: hidden;
+	}
+	
+	.visible-on-hover:hover {
+	    visibility: visible;
+	}
     
 	</style>
 	
@@ -214,6 +222,25 @@
     var ns = {};
     
 
+    ns.flattenTree = function(node, childPropertyName, result) {
+        if(result == null) {
+            result = [];
+        }
+        
+        if(node) {
+            result.push(node);
+        }
+        
+        var children = node[childPropertyName];
+        if(children) {
+            _(children).each(function(childNode) {
+                ns.flattenTree(childNode, childPropertyName, result);
+            });
+        }
+        
+        return result;
+    };
+
 
     /**
      * Converts a Table Definition to a SPARQL graph pattern
@@ -271,7 +298,8 @@
         },
 
         getPaths: function() {
-            return this.paths.getArray();
+            return this.paths;
+            //return this.paths.getArray();
         },
         
         togglePath: function(path) {
@@ -344,8 +372,139 @@
         }
     });
 
+    /**
+     * Interface for retrieval of tags for a given object
+     *
+     */
+    ns.ItemTagger = Class.create({
+        createTags: function(item) {
+            throw 'Not overidden';
+        } 
+    });
+    
+    ns.ItemTaggerTablePath = Class.create(ns.ItemTagger, {
+        initialize: function(tableDef) {
+            this.tableDef = tableDef;
+        },
+        
+        createTags: function(path) {
+            var paths = this.tableDef.getPaths();
+            var isContained = paths.contains(path);
+            
+            var result = { isContained: isContained };
+            //console.log('table: ' + path, isContained);
+            return result;
+        }
+    });
+    
+
+    ns.ItemTaggerManager = Class.create(ns.ItemTagger, {
+       initialize: function() {
+           this.taggerMap = {}
+       },
+       
+       getTaggerMap: function() {
+           return this.taggerMap;
+       },
+       
+       /**
+        * @param item The object for which to create the tags
+        */
+       createTags: function(item) {
+           var result = {};
+           _(this.taggerMap).each(function(tagger, key) {
+               var tags = tagger.createTags(item);
+               
+               result[key] = tags;
+           });
+           
+           return result;
+       }
+    });
+
+    
+    var pathTagger = new ns.ItemTaggerManager();
+    pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableDef);
+
+    
+    ns.FacetTreeTagger = Class.create({
+        initialize: function(itemTagger) {
+            this.itemTagger = itemTagger;
+        },
+        
+        applyTags: function(facetNode) {
+            var itemTagger = this.itemTagger;
+            
+            var facetNodes = ns.flattenTree(facetNode, 'children');
+            
+            _(facetNodes).each(function(node) {
+                var path = node.item.getPath();
+                var tags = itemTagger.createTags(path);
+                _(node).extend(tags);
+                
+                //console.log('tagging: ' + path, tags, node);
+            });
+        }
+    });
     
     
+    var facetTreeTagger = new ns.FacetTreeTagger(pathTagger);
+    
+    
+	ns.FacetValueService = Class.create({
+	    initialize: function(facetService, constraintTaggerFactory) {
+	        this.facetService = facetService; 
+	        this.constraintTaggerFactory = constraintTaggerFactory;
+	    },
+	   
+	    fetchFacetValues: function(path) {
+            var facetService = this.facetService;
+            var constraintTaggerFactory = this.constraintTaggerFactory;
+
+
+			var concept = facetService.createConceptFacetValues(path, true);
+			var countVar = rdf.NodeFactory.createVar("_c_");
+			var queryCount = facete.ConceptUtils.createQueryCount(concept, countVar);
+			var qeCount = qef.createQueryExecution(queryCount);
+			var countPromise = service.ServiceUtils.fetchInt(qeCount, countVar);
+			
+			var query = facete.ConceptUtils.createQueryList(concept);			
+			
+			var pageSize = 10;
+			
+			query.setLimit(pageSize);
+			query.setOffset(($scope.currentPage - 1) * pageSize);
+			
+				var qe = qef.createQueryExecution(query);
+			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
+
+			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
+			    
+			    var r = _(nodes).map(function(node) {
+			        var tmp = {
+						path: path,
+						node: node,
+						tags: tagger.getTags(node)
+			        };
+
+			        return tmp;
+			    });
+
+			    return r;
+			});
+			
+			var result = {
+			    countPromise: countPromise,
+			    dataPromise: dataPromise
+			};
+			
+			return result;
+	    }
+	});
+
+	
+	
+
 
 	/**
 	 * Angular
@@ -489,7 +648,7 @@
 			var pageSize = 10;
 			
 			query.setLimit(pageSize);
-			query.setOffset(($scope.currentPage - 1)* pageSize)
+			query.setOffset(($scope.currentPage - 1) * pageSize);
 			
  			var qe = qef.createQueryExecution(query);
 			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
@@ -517,14 +676,14 @@
 			    $scope.facetValues = items;
 			});
 
-			$scope.$on('facete:refresh', function() {
-			    $scope.refresh();
-			});
-		    
-			$scope.refresh = function() {
-			    updateItems();
-			};
+		};
 
+		$scope.$on('facete:refresh', function() {
+		    $scope.refresh();
+		});
+	    
+		$scope.refresh = function() {
+		    updateItems();
 		};
 
 		$scope.$watch('currentPage', function() {			
@@ -687,7 +846,7 @@
         
         
         $scope.refresh = function() {
-            var paths = tableDef.getPaths();
+            var paths = tableDef.getPaths().getArray();
             
             var columns = _(paths).map(function(path) {
                 var column = {
@@ -742,6 +901,9 @@
 	        
 	        //console.log('scopefacets', $scope.facet);
 			facetService.fetchFacets(startPath).then(function(data) {
+			    
+			    facetTreeTagger.applyTags(data);
+			    
 			    console.log('refreshed data: ', data);
 				$scope.facet = data;
 			});
@@ -804,13 +966,13 @@
 
 	<script type="text/ng-template" id="facet-tree-item.html">
 		<div ng-class="{'frame': facet.isExpanded}">
-			<div class="facet-row" ng-class="{'highlite': facet.isExpanded}">
+			<div class="facet-row" ng-class="{'highlite': facet.isExpanded}" ng-mouseover="facet.isHovered=true" ng-mouseleave="facet.isHovered=false">
 				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
 				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
 				<a data-rdf-term="{{facet.item.getNode().toString()}}" title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
 
 
-				<a href="" ng-click="toggleTableLink(facet.item.getPath())"><span class="glyphicon glyphicon-list-alt"></span></a>
+				<a ng-visible="facet.isHovered || facet.table.isContained" href="" ng-click="toggleTableLink(facet.item.getPath())"><span class="glyphicon glyphicon-list-alt"></span></a>
 
 <!--				<ul>
                     <li ng-repeat="action in facet.actions"></li>
