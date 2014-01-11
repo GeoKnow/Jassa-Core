@@ -6,12 +6,18 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
 	<title>Facete Example: DBpedia</title>
+	<link rel="stylesheet" href="resources/css/bootstrap-2.3.2-pagination.css" />
+<!-- 	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" /> -->
 	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/3.0.1/css/bootstrap.min.css" />
-	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" />
 	
 	${cssIncludes}
 	
 	<style media="screen" type="text/css">
+	.pagination {
+	    margin-top: 5px;
+	    margin-bottom: 5px;
+	}
+	
 	.image {
  	    max-width: 144px;
  	    max-height: 144px;
@@ -25,6 +31,10 @@
 	.highlite {
 	    background-color: #ddeeff;
 	}
+	
+	input[type=text] .btn-xs, input[type=password] .btn-xs {
+        height: 14px !important;
+    }
 	
 	.frame {
 		border: 1px;
@@ -126,6 +136,33 @@
 	<script type="text/javascript">
 	_.mixin(_.str.exports());
 
+	
+	var prefLabelPropertyUris = [
+   		'http://www.w3.org/2004/02/skos/core#prefLabel',
+   	    'http://purl.org/dc/elements/1.1/title',
+   	    'http://purl.org/dc/terms/title',
+
+   	    'http://swrc.ontoware.org/ontology#title',
+   	    'http://xmlns.com/foaf/0.1/name',
+   	    'http://usefulinc.com/ns/doap#name',
+   	    'http://rdfs.org/sioc/ns#name',
+   	    'http://www.holygoat.co.uk/owl/redwood/0.1/tags/name',
+   	    'http://linkedgeodata.org/vocabulary#name',
+   	    'http://www.geonames.org/ontology#name',
+   	    'http://www.geneontology.org/dtds/go.dtd#name',
+
+   	    'http://www.w3.org/2000/01/rdf-schema#label',
+
+   	    'http://xmlns.com/foaf/0.1/accountName',
+   	    'http://xmlns.com/foaf/0.1/nick',
+   	    'http://xmlns.com/foaf/0.1/surname',
+   	    
+   	    'http://www.w3.org/2004/02/skos/core#altLabel'
+	];
+
+	var prefLangs = ['de', 'en', ''];
+
+	
 	var prefixes = {
 		'dbpedia-owl': 'http://dbpedia.org/ontology/',
 		'dbpedia': 'http://.org/resource/',
@@ -141,6 +178,7 @@
 	var sponate = Jassa.sponate;
 	var serv = Jassa.service;
 	var util = Jassa.util;
+	var client = Jassa.client;
 	
 	var facete = Jassa.facete;
 	
@@ -175,6 +213,36 @@
 
 	var qef = new service.SparqlServiceHttp(sparqlEndpointUrl, defaultGraphUris);
 	qef = new service.SparqlServiceCache(qef);
+	
+	/**
+	 * Sponate (labels)
+	 */
+	var store = new sponate.StoreFacade(qef, prefixes);//, cacheFactory);
+
+	var labelUtilFactory = new sponate.LabelUtilFactory(prefLabelPropertyUris, prefLangs);
+		
+ 	// A label util can be created based on var names and holds an element and an aggregator factory.
+ 	var labelUtil = labelUtilFactory.createLabelUtil('o', 's', 'p');
+
+	store.addMap({
+		name: 'labels',
+		template: [{
+			id: '?s',
+			displayLabel: labelUtil.getAggFactory(),
+			hiddenLabels: [{id: '?o'}]
+		}],
+		from: labelUtil.getElement()
+//		new sparql.ElementGroup([
+//          new sparql.ElementString(sparql.SparqlString.create('?s a <http://dbpedia.org/ontology/Castle>')),
+//            sparql.ElementString.create('Filter(?s = <http://dbpedia.org/resource/Citadel_of_Damascus>)'),
+//            labelUtil.getElement()
+//        ])
+	});
+
+// 	store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).limit(10).asList().done(function(items) {
+	    
+// 	});
+	
 	
 	/**
 	 * Facete
@@ -241,136 +309,27 @@
         return result;
     };
 
-
-    /**
-     * Converts a Table Definition to a SPARQL graph pattern
-     *
-     * TODO Sort out some base class
-     */
-    ns.TableToElement2 = Class.create({
-        initialize: function(baseFacetNode) {
-            this.baseFacetNode = baseFacetNode;
-            //this.filterManagerFactory = filterManagerFactory;
+    
+    ns.ConceptFactoryFacetService = Class.create(facete.ConceptFactory, {
+        initialize: function(facetService) {
+            this.facetService = facetService;
         },
-
-        /**
-         * Transforms the tableDef into a SPARQL element
-         *
-         * Post process whether optional elements are actually mandatory
-         * Cross checks with the constraintManager of whether the
-         * (sub-)elements are optional or mandatory
-         *
-         *
-         */
-        transform: function(tableDef) {
-            var baseFacetNode = this.baseFacetNode;
-            var columnDefs = tableDef.getColumnDefs();
-            
-            //var filterManager = this.filterManagerFactory.createConstraintManager();
-            
-            
-            var elements = _(columnDefs).map(function(cd) {
-                var isCdp = cd instanceof ns.ColumnDefPath;
-                
-                if(!isCdp) {
-                    console.log('[ERROR] Unknown column definition type');
-                    throw 'Bailing out';
-                }
-                
-                var path = cd.getPath();
-                
-                var facetNode = baseFacetNode.forPath(path);
-                var r = facetNode.getElements();
-
-                //var r = transformCdp(cd);
-				return r;
-            });
-            
-            // For each column, collect the triple patterns that correspond to the paths
+        
+        createConcept: function() {
+            var result = facetService.createConceptFacetValues(new facete.Path());
+            return result;
         }
     });
     
-
-    ns.TableDef = Class.create({
-        initialize: function() {
-            this.paths = new util.ArrayList();
-            //this.colNameToIndex = {};
-        },
-
-        getPaths: function() {
-            return this.paths;
-            //return this.paths.getArray();
-        },
-        
-        togglePath: function(path) {
-            util.CollectionUtils.toggleItem(this.paths, path);
-        }
-    });
+    
     
 
-    /**
-     * 
-     *
-     */
-    ns.TableDef2 = Class.create({
-        initialize: function() {
-        	this.columnDefs = [];
-		},
-        
-        getColumnDefs: function() {
-            return this.columnDefs;
-        },
-        
-        addColumnDef: function(columnDef) {
-            this.columnDefs.push(columnDef);
-        }        
-    });
 
+ 
     
-    var tableDef = new ns.TableDef(); 
-    tableDef.togglePath(new facete.Path());
+    var tableMod = new facete.FaceteTableMod(); 
+    tableMod.togglePath(new facete.Path());
     
-    /**
-     * A column definition at least has a name.
-     * Subclasses provide additional information about how the column is defined.
-     * 
-     * TODO The column name is rather an id instead of a name.
-     */
-    ns.ColumnDefBase = Class.create({
-        initialize: function(columnName) {
-            this.columnName = columnName;
-        },
-        
-        getColumnName: function() {
-            return this.columnName;
-        }
-    });
-    
-    /**
-     * A column definition links the data that corresponds to a path to a single column
-     * and associates it with a name.
-     * 
-     */
-    ns.ColumnDefPath = Class.create(ns.ColumnDefBase, {
-		/*
-		 * @param columnName The name of the column
-     	 * @param path The path which to link to the column     
-     	 * @param useProperty false: Use the path's target's values. If true: refer to the paths child properties instead. 
-     	 */
-		initialize: function($super, columnName, path, useProperty) {
-            $super(columnName);
-            this.path = path;
-            this.useProperty = useProperty;
-        },
-        
-        getPath: function() {
-            return this.path;
-        },
-        
-        useProperty: function() {
-            return this.useProperty;
-        }
-    });
 
     /**
      * Interface for retrieval of tags for a given object
@@ -383,12 +342,12 @@
     });
     
     ns.ItemTaggerTablePath = Class.create(ns.ItemTagger, {
-        initialize: function(tableDef) {
-            this.tableDef = tableDef;
+        initialize: function(tableMod) {
+            this.tableMod = tableMod;
         },
         
         createTags: function(path) {
-            var paths = this.tableDef.getPaths();
+            var paths = this.tableMod.getPaths();
             var isContained = paths.contains(path);
             
             var result = { isContained: isContained };
@@ -424,7 +383,7 @@
 
     
     var pathTagger = new ns.ItemTaggerManager();
-    pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableDef);
+    pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableMod);
 
     
     ns.FacetTreeTagger = Class.create({
@@ -712,7 +671,7 @@
 	
 	myModule.controller('ResultSetTableCtrl', function($scope) {
 	    $scope.refresh = function() {
-	        //tableDef = 
+	        //tableMod = 
 	    };
 	});
 	
@@ -782,6 +741,8 @@
 	    
     myModule.controller('CreateTableCtrl', function($scope, $modal, $log) {
         $scope.columns = [];
+        //$scope.sortDirections = [];
+
 //         $scope.columns = [{
 //             isRemoveable: true,
 //             isConfigureable: true,
@@ -840,7 +801,7 @@
             var column = $scope.columns[index];
             var path = column.path;
             
-		    tableDef.togglePath(path);
+		    tableMod.togglePath(path);
 		    $scope.$emit('facete:refresh');  
         };
         
@@ -849,6 +810,10 @@
             var currentSortDir = column.sortDirection;
 
             column.sortDirection = sortDirection;
+
+            
+            
+            //sortDirections.push(sortDirection);
 //             if(currentSortDir == column.sortDirection) {
 //                 column.sortDirection = sortDirection;
 //             } else {
@@ -856,9 +821,10 @@
 //             }
         };
         
+
         
         $scope.refresh = function() {
-            var paths = tableDef.getPaths().getArray();
+            var paths = tableMod.getPaths().getArray();
             
             var columns = _(paths).map(function(path) {
                 var column = {
@@ -898,6 +864,43 @@
             });
         };
     });
+    
+    
+    myModule.controller('FacetTreeSearchCtrl', function($rootScope, $scope, $q, facetService) {
+        $scope.items = [{name: 'foo'}];
+        
+		$scope.$watch('searchText', function(newValue) {
+		    console.log('searchText: ', newValue);
+		    if(!newValue || newValue == '') {
+		        return;
+		    }
+		    
+		    var conceptPathFinder = new client.ConceptPathFinderApi('http://localhost:7532/api/path-finding', sparqlEndpointUrl, defaultGraphUris);
+		    
+		    var sourceConcept = fctService.createConceptFacetValues(new facete.Path());			
+
+			var targetVar = rdf.NodeFactory.createVar('s');
+			var targetConcept = new facete.Concept(sparql.ElementString.create('?s ?p ?o . Filter(regex(str(?p), "' + newValue + '", "i"))'), targetVar);
+		    			
+		    var promise = conceptPathFinder.findPaths(sourceConcept, targetConcept);
+			var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
+
+			result.then(function(paths) {
+			    console.log('Paths', paths);
+			    var tmp = _(paths).map(function(path) {
+			        return {name: path.toString()};
+			    });
+			   
+			    $scope.items = tmp;
+			}, function(err) {
+			    alert(err.responseText);
+			});
+
+			console.log('SearchText', newValue);
+		});
+
+    });
+    
     
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
 
@@ -952,19 +955,19 @@
 		
 		$scope.toggleTableLink = function(path) {
 			//$scope.emit('facete:toggleTableLink');
-		    tableDef.togglePath(path);
+		    tableMod.togglePath(path);
 		    
 		    //$scope.$emit('')
-		    //alert('yay' + JSON.stringify(tableDef.getPaths()));
+		    //alert('yay' + JSON.stringify(tableMod.getPaths()));
 		    
 		    $scope.$emit('facete:refresh');
 		    
-// 		    var columnDefs = tableDef.getColumnDefs();
+// 		    var columnDefs = tableMod.getColumnDefs();
 // 		    _(columnDefs).each(function(columnDef) {
 		        
 // 		    });
 		    
-// 		    tableDef.addColumnDef(null, new ns.ColumnDefPath(path));
+// 		    tableMod.addColumnDef(null, new ns.ColumnDefPath(path));
 		    //alert('yay ' + path);
 		};
 		
@@ -994,9 +997,21 @@
 			</div>
 			<div ng-show="facet.isExpanded" style="width:100%"> 
 
-                <div ng-show="facet.pageCount != 1" style="width:100%; background-color: #fafafa;">
-    		         <pagination style="margin-top: 5px; margin-bottom: 5px; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" class="pagination-small" max-size="10" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)"></pagination>
+                <div ng-show="facet.pageCount > 1 || facet.children.length > 5" style="width:100%; background-color: #eeeeff;">
+				    <div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">
+						<div class="input-group">
+                            <input type="text" class="form-control" placeholder="Filter" ng-model="filterText" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default">Filter</button>
+                            </span>
+						</div>			    	    
+				    </div>
                 </div>
+
+                <div ng-show="facet.pageCount != 1" style="width:100%; background-color: #eeeeff">
+    		         <pagination style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" class="pagination-small" max-size="10" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)"></pagination>
+                </div>
+
 			    <span ng-show="facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>
 
  			    <div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></div>
@@ -1091,6 +1106,13 @@
 	        </td>
 	
 	        <td style="vertical-align: top">
+	        	<div ng-controller="FacetTreeSearchCtrl">
+	        		<input type="search" ng-model="searchText" /><button>Search</button>
+	        		<ul>
+	        			<li ng-repeat="item in items">{{item.name}}</li>
+	        		</ul>
+	        	</div>
+	        
 				<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
 				    <table>
 					    <tr><th ng-repeat="column in columns">
@@ -1104,6 +1126,7 @@
 					    </th></tr>		
 				    </table>
 				</div>
+	        	        
 	        
 	        </td>        
 	    </tr>

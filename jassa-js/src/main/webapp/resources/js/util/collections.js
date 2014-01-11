@@ -2,6 +2,27 @@
 	
 	var ns = Jassa.util;
 	
+	ns.ArrayUtils = {
+	
+	        clear: function(arr) {
+	            while(arr.length > 0) {
+	                arr.pop();
+	            }
+	        },
+	
+	        replace: function(target, source) {
+	            this.clear(target);
+	            target.push.apply(target, source);
+	        },
+	
+	
+	        filter: function(arr, fn) {
+	            var newArr = _(arr).filter(fn);            
+	            this.replace(arr, newArr);
+	            return arr;
+	        }
+	};
+	
 	ns.Iterator = Class.create({
 		next: function() {
 			throw "Not overridden";
@@ -450,6 +471,10 @@
 	   initialize: function(fnEquals) {
 	       this.items = [];
 	       this.fnEquals = fnEquals ? fnEquals : ns.defaultEquals;
+	   },
+	   
+	   setItems: function(items) {
+	       this.items = items;
 	   },
 	   
 	   getArray: function() {

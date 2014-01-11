@@ -1,5 +1,6 @@
 package org.aksw.jassa.web.main;
 
+import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
@@ -8,7 +9,6 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
 
 import com.sun.jersey.spi.spring.container.servlet.SpringServlet;
 
@@ -27,7 +27,12 @@ public class WebAppInitializer
 		// Manage the lifecycle of the root application context
 		servletContext.addListener(new ContextLoaderListener(rootContext));
 		servletContext.addListener(new RequestContextListener());
-				
+
+	    FilterRegistration.Dynamic fr = servletContext.addFilter("CorsFilter", new CorsFilter());
+	    //fr.setInitParameter("dispatcher", "REQUEST");
+	    fr.addMappingForUrlPatterns(null, true, "/*");
+
+		
 		// Create the dispatcher servlet's Spring application context
 		AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
 		dispatcherContext.register(WebMvcConfig.class);

@@ -15,6 +15,41 @@
         },
     
         findPaths: function(sourceConcept, targetConcept) {
+            var ajaxSpec = {
+                url: this.apiUrl,
+                dataType: 'json',
+                crossDomain: true,
+                data: {
+                    'service-uri': this.sparqlServiceIri,
+                    'default-graph-uri': this.defaultGraphIris,
+                    'source-element': sourceConcept.getElement().toString(),
+                    'source-var':  sourceConcept.getVar().getName(),
+                    'target-element': targetConcept.getElement().toString(),
+                    'target-var': targetConcept.getVar().getName()
+                }
+            };
+
+            //console.log('[DEBUG] Path finding ajax spec', ajaxSpec);
+            
+            var result = $.ajax(ajaxSpec).pipe(function(pathStrs) {
+                var result = [];
+                
+                for(var i = 0; i < pathStrs.length; ++i) {
+                    var pathStr = pathStrs[i];
+                    
+                    //console.log("pathStr is", pathStr);
+                    
+                    var path = facete.Path.parse(pathStr);
+                    result.push(path);
+                }
+                
+                return result;
+            });
+            
+            return result;
+        },
+        
+        findPathsOldApi: function(sourceConcept, targetConcept) {
             
             var querySpec = {
                     service: {
@@ -49,7 +84,7 @@
                     
                     //console.log("pathStr is", pathStr);
                     
-                    var path = facets.Path.fromString(pathStr);
+                    var path = facete.Path.parse(pathStr);
                     result.push(path);
                 }
                 

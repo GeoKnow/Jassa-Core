@@ -135,6 +135,7 @@
 <!-- 								<param>facete/facete-query-generator.js</param> -->
 								
 								<param>facete/facete-playground.js</param>
+								<param>facete/facete-tables.js</param>
 							</jsSourceFiles>
 							
 

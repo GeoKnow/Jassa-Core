@@ -90,7 +90,7 @@
 			    elementFactory = from;
 			}
 			else {
-			    console.log('[ERROR] Unknown from type', from);
+			    console.log('[ERROR] Unknown argument type for "from" attribute', from);
 			    throw 'Bailing out';
 			}
 			
