@@ -322,12 +322,38 @@
 //            debugger;
             if(requireSubQuery) {
 
-			    
 
-
-	             if(concept && !concept.isSubjectConcept()) {
-	                 var conceptElement = concept.getElement();
+	            if(concept && !concept.isSubjectConcept()) {
+	                var conceptElement = concept.getElement();
+                    var conceptVar = concept.getVar();
 	                 
+	                var elementA = conceptElement;
+	                var elementB = innerElement;
+	                 
+	                var varsA = elementA.getVarsMentioned();
+	                var varsB = elementB.getVarsMentioned();
+	                 
+	                var joinVarsA = [conceptVar];
+	                var joinVarsB = [idVar];
+	                 
+	                var varMap = sparql.ElementUtils.createJoinVarMap(varsB, varsA, joinVarsB, joinVarsA); //, varNameGenerator);
+	                var elementA = sparql.ElementUtils.createRenamedElement(elementA, varMap);
+	                 
+	                 
+	                 //var conceptElement = concept.getElement();
+	                concept = new facete.Concept(elementA, idVar);
+	                 
+                    var q = facete.ConceptUtils.createQueryList(concept);
+	                elementA = new sparql.ElementSubQuery(q);
+	                 
+	               
+	                if(isLeftJoin) {
+	                   elementB = new sparql.ElementOptional(elementB);
+	                }
+	               
+	                var innerElement = new sparql.ElementGroup([elementA, elementB]);
+	               
+	               /*
 	                 var efa = new sparql.ElementFactoryConst(conceptElement);
 	                 var efb = new sparql.ElementFactoryConst(innerElement);
 	                 
@@ -336,6 +362,7 @@
 	                 
 	                 var efj = new sparql.ElementFactoryJoin(efa, efb, [concept.getVar()], [idVar], joinType);
 	                 innerElement = efj.createElement();
+	                 */
 	             }
 
 			    
@@ -401,7 +428,6 @@
 		},
 		
 		executeCount: function(config) {
-		    debugger;
             var spec = this.createQueries(config);
 
             var element = spec.innerElement;

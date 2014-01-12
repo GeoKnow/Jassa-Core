@@ -711,6 +711,7 @@
 		        }
 		        break;
 		    default:
+		        console.log('Could not parse ' + str);
 		        // Assume an uri in prefix notation
 		        throw "Not implemented";
 		    }

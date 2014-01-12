@@ -52,11 +52,16 @@
 			//var basePath = context.basePath;
 			
 			var self = this;
-			var criterias = _(critObject).map(function(val, key) {
+			
+
+            var options = critObject['$options'];
+
+			var criterias = _.chain(critObject).omit('$options').map(function(val, key) {
 				
 				var criteria;
 
 				if(_(key).startsWith('$')) {
+				    
 					// Call some special function
 					var fnName = 'parse_' + key;
 					var fn = self[fnName];
@@ -66,7 +71,7 @@
 						throw 'Bailing out';
 					}
 					
-					criteria = fn.call(self, basePath, val);
+					criteria = fn.call(self, basePath, val, options);
 					
 				} else {				
 					var tmpPath = ns.AttrPath.parse(key);				
@@ -81,7 +86,7 @@
 				}
 				
 				return criteria;
-			});
+			}).value();
 			
 			var result;
 			if(criterias.length == 1) {
@@ -120,13 +125,15 @@
 			return new ns.CriteriaNe(attrPath, val);
 		},
 
-		parse_$regex: function(attrPath, val) {
+		parse_$regex: function(attrPath, val, flags) {
 			var regex;
 
+			
 			if(_(val).isString()) {
-				regex = new RegExp(val);
+				regex = new RegExp(val, flags);
 			} else if (val instanceof RegExp) {
-				regex = val
+			    // TODO Handle the case when val already is a regex and flags are provided
+				regex = val;
 			} else {
 				console.log('[ERROR] Not a regex: ' + val);
 				throw 'Bailing out';
@@ -383,11 +390,21 @@
 		initialize: function($super, attrPath, regex) {
 			$super('$regex', attrPath);
 			this.regex = regex;
+//			this.pattern = pattern;
+//			this.flags = flags;
 		},
 		
 		getRegex: function() {
 		    return this.regex;
 		},
+		
+//		getPattern: function() {
+//		    return this.pattern;
+//		},
+//		
+//		getFlags: function() {
+//		    return this.flags
+//		},
 		
 		$match: function(doc, val) {
 			var result = this.regex.test(val);

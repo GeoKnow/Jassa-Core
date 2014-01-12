@@ -576,6 +576,7 @@
 	
 	myModule.controller('MyCtrl2', function($scope, $q, $rootScope) {
 		
+	    $scope.filterText = '';
 		$scope.totalItems = 64;
 		$scope.currentPage = 1;
 		$scope.maxSize = 5;
@@ -597,6 +598,7 @@
 		};
 		
 		
+		
 		var updateItems = function() {
 
 			var path = $scope.path;
@@ -605,33 +607,26 @@
 			}
 
 			var concept = fctService.createConceptFacetValues(path, true);
-			/*
-			var countVar = rdf.NodeFactory.createVar("_c_");
-			var queryCount = facete.ConceptUtils.createQueryCount(concept, countVar);
- 			var qeCount = qef.createQueryExecution(queryCount);
-			var countPromise = service.ServiceUtils.fetchInt(qeCount, countVar);
-			
-			var query = facete.ConceptUtils.createQueryList(concept);			
-			*/
 			
 			var text = $scope.filterText;
+			console.log('FilterText: ' + text);
 			var criteria = {};
 			if(text) {
-			    criteria = {hiddenLabels: {$elemMatch: {id: {$regex: text}}}};
+			    criteria = {$or: [
+			        {hiddenLabels: {$elemMatch: {id: {$regex: text, $options: 'i'}}}},
+			        {id: {$regex: text, $options: 'i'}}
+			    ]};
 			}
-			var tmp = store.labels.find(criteria).concept(concept, true);
+			var baseFlow = store.labels.find(criteria).concept(concept, true);
 			    
-// 	 		tmp.count().done(function(count) {
-// 	 		   console.log('filter count', count); 
-// 	 		});
 
-			var countPromise = tmp.count();
+			var countPromise = baseFlow.count();
 			
 			var pageSize = 10;
 	 		
-			var dp = tmp.skip(($scope.currentPage - 1) * pageSize).limit(pageSize);
+			var dataFlow = baseFlow.skip(($scope.currentPage - 1) * pageSize).limit(pageSize);
 
-			var dataPromise = dp.asList().pipe(function(docs) {
+			var dataPromise = dataFlow.asList().pipe(function(docs) {
 
 			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
 			    
@@ -651,43 +646,10 @@
 			        return tmp;
 			        
 			    });
-			    
-// 			    var nodes = _(docs).pluck('id');
-			    
-// 			    var r = _(nodes).map(function(node) {
-// 			        var tmp = {
-// 						path: path,
-// 						node: node,
-// 						tags: tagger.getTags(node)
-// 			        };
-
-// 			        return tmp;
-// 			    });
 
 			    return r;
 			});
-
-	 		
-			//query.setLimit(pageSize);
-			//query.setOffset(($scope.currentPage - 1) * pageSize);
 			
-//  			var qe = qef.createQueryExecution(query);
-// 			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
-
-// 			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
-			    
-// 			    var r = _(nodes).map(function(node) {
-// 			        var tmp = {
-// 						path: path,
-// 						node: node,
-// 						tags: tagger.getTags(node)
-// 			        };
-
-// 			        return tmp;
-// 			    });
-
-// 			    return r;
-// 			});
 
 			sponate.angular.bridgePromise(countPromise, $q.defer(), $rootScope).then(function(count) {
 			    $scope.totalItems = count; 
@@ -698,6 +660,12 @@
 			});
 
 		};
+
+		$scope.filterTable = function(filterText) {
+		    $scope.filterText = filterText;
+			updateItems();		    
+		};
+		
 
 		$scope.$on('facete:refresh', function() {
 		    $scope.refresh();
@@ -1087,7 +1055,7 @@
 
 	<script type="text/ng-template" id="result-set-browser.html">
 		<div class="frame">
-			<form ng-submit="filterTable()">
+			<form ng-submit="filterTable(filterText)">
 			    <input type="text" ng-model="filterText" />
 				<input class="btn-primary" type="submit" value="Filter" />
 			</form>

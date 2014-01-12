@@ -494,6 +494,10 @@
 	
 		flatten: function() {
 			return new ns.ElementSubQuery(this.query.flatten());
+		},
+		
+		getVarsMentioned: function() {
+		    return this.query.getVarsMentioned();
 		}
 	};
 	
@@ -1073,6 +1077,24 @@
 			result.elements = newElements;
 
 			return result;
+		},
+		
+		
+		getVarsMentioned: function() {
+		    
+	        console.log('Not implemented properly yet. Things may break!');
+
+		    
+		    var result = [];
+		    
+		    _(this.elements).reduce(function(memo, element) {
+		        var evs = element.getVarsMentioned();
+		        var r = _(memo).union(evs);
+		        return r;
+		    }, result);
+		    
+		    
+		    return result;		    
 		},
 		
 		copySubstitute: function(fnNodeMap) {

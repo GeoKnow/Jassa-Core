@@ -192,9 +192,18 @@
 //            debugger;
             var subPattern = pattern.findPattern(criteria.getAttrPath());
 
-            var regexStr = criteria.getRegex().toString().slice(1, -1);
+            var regexStr = criteria.getRegex().toString()
+            var flagDelim = regexStr.lastIndexOf('/');
+            
+            var patternStr = regexStr.substring(1, flagDelim);
+            var flags = regexStr.substring(flagDelim + 1);
+            
+            //var regexStr = .slice(1, -1);
             var expr = this.getExpr(subPattern);
-            var e = new sparql.E_Regex(new sparql.E_Str(expr), regexStr);
+            
+            //var flags = criteria.getFlags();
+            
+            var e = new sparql.E_Regex(new sparql.E_Str(expr), patternStr, flags);
             result.push(e);
         },
 		
