@@ -144,13 +144,22 @@
 		},
 		
 		copySubstitute: function(fnNodeMap) {
-			//var node = fnNodeMap(this.v);
+			var node = fnNodeMap(this.v);
 			
-			//var result = (n == null) ? this : node;//rdf.NodeValue.makeNode(node); 
+			var result;
+			if(node == null) {
+			    result = this;
+			} else if(node.isVariable()) {
+			    result = new ns.ExprVar(node); 
+			} else {
+			    result = sparql.NodeValue.makeNode(node);
+			}
 			
-			//return result;
+			//var result = (n == null) ? this : //node;//rdf.NodeValue.makeNode(node); 
+			
+			return result;
 			//return new ns.ExprVar(this.v.copySubstitute(fnNodeMap));
-			return this;
+			//return this;
 		},
 
 		getArgs: function() {

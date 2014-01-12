@@ -192,14 +192,14 @@
 	//var sparqlEndpointUrl = 'http://localhost/sparql';
 	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';	
 	
-	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
-	var defaultGraphUris = ['http://dbpedia.org'];
+// 	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
+// 	var defaultGraphUris = ['http://dbpedia.org'];
 
 // 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
-// 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
-// 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+	var defaultGraphUris = ['http://fts.publicdata.eu/'];
 
  	
 // 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
@@ -603,6 +603,11 @@
 		$scope.totalItems = 64;
 		$scope.currentPage = 1;
 		$scope.maxSize = 5;
+		
+// 		$scope.firstText = '<<';
+// 		$scope.previousText = '<';
+// 		$scope.nextText = '>';
+// 		$scope.lastText = '>>';
 
 		$scope.toggleConstraint = function(item) {
 			var constraint = new facete.ConstraintSpecPathValue(
@@ -952,6 +957,8 @@
     
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
 
+		//$scope.maxSize = 5;
+
 // 	    $rootScope.$on('facetSelected', function(path) {
 // 			$rootScope.$broadcast('facetSelected', path);
 // 	    });
@@ -1060,9 +1067,9 @@
 <!-- ng-show="facet.pageCount > 1 || facet.children.length > 5" -->
                 <div style="width:100%; background-color: #eeeeff;">
 				    <div style="padding-right: 16px; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">
-<form ng-submit="doFilter(facet.item.getPath(), filterString)">
+<form ng-submit="doFilter(facet.item.getPath(), facet.filter.filterString)">
 						<div class="input-group">
-                            <input type="text" class="form-control" placeholder="Filter" ng-model="filterString" value="{{facet.filter.filterString}}" />
+                            <input type="text" class="form-control" placeholder="Filter" ng-model="facet.filter.filterString" value="{{facet.filter.filterString}}" />
                             <span class="input-group-btn">
                                 <button type="submit" class="btn btn-default">Filter</button>
                             </span>
@@ -1072,7 +1079,7 @@
                 </div>
 
                 <div ng-show="facet.pageCount != 1" style="width:100%; background-color: #eeeeff">
-    		         <pagination style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" class="pagination-small" max-size="10" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)"></pagination>
+    		         <pagination style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" class="pagination-mini" max-size="7" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
                 </div>
 
 			    <span ng-show="facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>

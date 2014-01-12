@@ -337,7 +337,7 @@
             }
 
 		    
-		    var result = this.labelStore.find(criteria).concept(concept);
+		    var result = this.labelStore.find(criteria).concept(concept, true);
 		    return result;
 		},
 		

@@ -329,7 +329,11 @@
 	                 
 	                var elementA = conceptElement;
 	                var elementB = innerElement;
-	                 
+
+	                console.log('elementA: ' + elementA);
+	                console.log('elementB: ' + elementB);
+
+	                
 	                var varsA = elementA.getVarsMentioned();
 	                var varsB = elementB.getVarsMentioned();
 	                 
@@ -339,6 +343,7 @@
 	                var varMap = sparql.ElementUtils.createJoinVarMap(varsB, varsA, joinVarsB, joinVarsA); //, varNameGenerator);
 	                var elementA = sparql.ElementUtils.createRenamedElement(elementA, varMap);
 	                 
+                    console.log('elementA renamed: ' + elementA);
 	                 
 	                 //var conceptElement = concept.getElement();
 	                concept = new facete.Concept(elementA, idVar);

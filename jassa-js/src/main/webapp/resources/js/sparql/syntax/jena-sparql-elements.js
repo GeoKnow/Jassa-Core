@@ -523,7 +523,7 @@
 		},
 	
 		copySubstitute: function(fnNodeMap) {
-			var exprs = _.map(this.exprs, function(expr) {
+			var exprs = _(this.exprs).map(function(expr) {
 				return expr.copySubstitute(fnNodeMap);
 			});
 		
