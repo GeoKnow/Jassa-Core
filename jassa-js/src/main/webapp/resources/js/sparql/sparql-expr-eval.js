@@ -52,8 +52,10 @@
 			
 			var result;
 			if(node == null) {
-				console.log('No Binding for variable "' + v + '" in ' + expr + ' with binding ' + binding);
-				throw 'Bailing out';
+				//console.log('No Binding for variable "' + v + '" in ' + expr + ' with binding ' + binding);
+				//throw 'Bailing out';
+			    return ns.NodeValue.nvNothing;
+			    //return null;
 			} else {
 				result = ns.NodeValue.makeNode(node);
 			}

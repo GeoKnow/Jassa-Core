@@ -89,7 +89,9 @@ ol.inline > li {
 .pagination ul > .disabled > a:focus {
   color: #999999;
   cursor: default;
-  background-color: transparent;
+  /* My change ~Claus */
+  background-color: #f5f5f5;
+  /* background-color: transparent; */
 }
 
 .pagination ul > li:first-child > a,

@@ -38,7 +38,8 @@
 	<script src="resources/libs/twitter-bootstrap/3.0.1/js/bootstrap.js"></script>
 	<script src="resources/libs/underscore/1.4.4/underscore.js"></script>
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
-	<script src="resources/libs/angularjs/1.0.8/angular.js"></script>
+<!-- 	<script src="resources/libs/angularjs/1.0.8/angular.js"></script> -->
+	<script src="resources/libs/angularjs/1.2.0-rc.3/angular.js"></script>	
 	
 	${jsIncludes}
 	
@@ -84,6 +85,10 @@
 	    'http://www.w3.org/2004/02/skos/core#altLabel'
 	];
 
+	prefLabelPropertyUris = [
+        'http://www.w3.org/2000/01/rdf-schema#label',
+    ];
+
 	var prefLangs = ['de', 'en', ''];
 
 
@@ -96,6 +101,8 @@
 	var service = Jassa.service;
 	var sponate = Jassa.sponate;
 	
+	// TODO: Move Concept to sparql namespace
+	var facete = Jassa.facete;
 	
 
 	
@@ -141,12 +148,15 @@
 			displayLabel: labelUtil.getAggFactory(),
 			hiddenLabels: [{id: '?o'}]
 		}],
-		from: new sparql.ElementGroup([
-//            new sparql.ElementString(sparql.SparqlString.create('?s a <http://dbpedia.org/ontology/Castle>')),
-            sparql.ElementString.create('Filter(?s = <http://dbpedia.org/resource/Citadel_of_Damascus>)'),
-            labelUtil.getElement()
-        ])
+        from:  labelUtil.getElement()
+// 		from: new sparql.ElementGroup([
+//             sparql.ElementString.create('Filter(?s = <http://dbpedia.org/resource/Citadel_of_Damascus>)'),
+//             labelUtil.getElement()
+//         ])
+//  new sparql.ElementString(sparql.SparqlString.create('?s a <http://dbpedia.org/ontology/Castle>')),
 	});
+	
+	var concept = new facete.Concept(sparql.ElementString.create('?s a <http://dbpedia.org/ontology/Castle>'), rdf.NodeFactory.createVar('s'));
 	
 	// store.labels.fetchByIds(nodes)
 	// store.labels.fetchByJoin(element)
@@ -156,9 +166,13 @@
 	// rdf term they correspond. This would be needed for rewriting criterias:
 	// - is 'http://foo.bar' a string or a URI?
 	
+	var foo = store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).concept(concept, true).limit(10);
+	foo.count().done(function(count) {
+	    console.log('count', count); 
+	});
 	
-	store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).limit(10).asList().done(function(items) {
-	   console.log(items); 
+	foo.asList().done(function(items) {
+	    console.log('Yay', items); 
 	});
 	
 	

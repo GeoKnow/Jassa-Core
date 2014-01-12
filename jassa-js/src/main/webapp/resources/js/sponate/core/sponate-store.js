@@ -2,15 +2,23 @@
 
 	
 	var util = Jassa.util;
+	var rdf = Jassa.rdf;
 	var sparql = Jassa.sparql;
+	var service = Jassa.service;
+	var facete = Jassa.facete;
 	
 	var ns = Jassa.sponate;
 	
+	
 	ns.QueryConfig = Class.create({
-		initialize: function(criteria, limit, offset) {
+		initialize: function(criteria, limit, offset, concept, _isLeftJoin) {
 			this.criteria = criteria;
 			this.limit = limit;
 			this.offset = offset;
+			
+			// HACK The following two attributes belong together, factor them out into a new class
+			this.concept = concept;
+			this._isLeftJoin = _isLeftJoin;
 		},
 		
 		getCriteria: function() {
@@ -23,6 +31,14 @@
 		
 		getOffset: function() {
 			return this.offset;
+		},
+		
+		getConcept: function() {
+		    return this.concept;
+		},
+		
+		isLeftJoin: function() {
+		    return this._isLeftJoin;
 		}
 	});
 	
@@ -89,6 +105,26 @@
 //			this.offset = null;
 		},
 		
+		/**
+		 * Join the lookup with the given concept
+		 */
+		concept: function(_concept, isLeftJoin) {
+		    var join = this.config.join = {};
+		    join.concept = _concept;
+		    join.isLeftJoin = isLeftJoin;
+		    
+		    return this;
+		},
+		
+		/**
+		 * find().nodes(someNodes).asList();
+		 */
+		/*
+		nodes: function(ns) {
+		    
+		},
+		*/
+		
 		skip: function(offset) {
 			this.config.offset = offset;
 			
@@ -140,12 +176,24 @@
 //				limit: this.limit,
 //				offset: this.offset
 //			};
-			var config = new ns.QueryConfig(this.config.criteria, this.config.limit, this.config.offset);
+		    var c = this.config;
+		    var j = this.config.join;
+		    
+			var config = new ns.QueryConfig(c.criteria, c.limit, c.offset, j.concept, j.isLeftJoin);
 			
 			var result = this.store.execute(config);
 			return result;
-		}
+		},
 		
+        count: function() {
+            var c = this.config;
+            var j = this.config.join;
+            
+            var config = new ns.QueryConfig(c.criteria, c.limit, c.offset, j.concept, j.isLeftJoin);
+            
+            var result = this.store.executeCount(config);
+            return result;          
+        }		
 	});
 	
 	
@@ -187,8 +235,9 @@
 		    
 		},
 		
+		
 
-		execute: function(config) {
+		createQueries: function(config) {
 			// TODO Compile the criteria to
 			// a) SPARQL filters
 			// b) post processors
@@ -197,6 +246,8 @@
 			var criteria = config.getCriteria();
 			var limit = config.getLimit();
 			var offset = config.getOffset();
+			var concept = config.getConcept();
+			var isLeftJoin = config.isLeftJoin();
 			
 			//console.log('context', JSON.stringify(this.context), this.context.getNameToMapping());
 			
@@ -213,7 +264,7 @@
 			var criteriaCompiler = new ns.CriteriaCompilerSparql();
 			
 			var elementCriteria = criteriaCompiler.compile(context, mapping, criteria);
-			console.log('Compiled criteria: ' + elementCriteria);
+			console.log('Compiled criteria: ' + elementCriteria, elementCriteria);
 			
 			
 
@@ -223,7 +274,12 @@
 			
 			// Retrieve the mapping's table and the associated element
 			var elementFactory = this.context.getElementFactory(mapping.getTableName());
-			var element = elementFactory.createElement();
+			var outerElement = elementFactory.createElement();
+			
+			
+			if(elementCriteria) {
+			    //element = new sparql.ElementGrou()
+			}
 			
 			var pattern = mapping.getPattern();
 			//console.log('Pattern here ' + JSON.stringify(pattern));
@@ -241,7 +297,6 @@
 			}
 
 			
-			
 			var sortConditions = []
 			if(idExpr != null) {
 				//console.log('Expr' + JSON.stringify(idExpr));
@@ -250,45 +305,132 @@
 
 				sortConditions.push(sc);
 			}
+
 			
+            var idVar;
+            if(!(idExpr instanceof sparql.ExprVar)) {
+                console.log("[ERROR] Currently the idExpr must be a variable. This restriction may be lifted in the future");
+                throw "Bailing out";
+            }
+            idVar = idExpr.asVar();
+
 						
-			var requireSubQuery = limit != null || offset != null;
-			if(requireSubQuery) {
-				
-				var idVar;
-				if(!(idExpr instanceof sparql.ExprVar)) {
-					console.log("[ERROR] Currently the idExpr must be a variable when used with limit and offset. This restriction can be lifted but is not implemented yet :(");
-					throw "Bailing out";
-				}
-				idVar = idExpr.asVar();
-				
+			var requireSubQuery = limit != null || offset != null || (concept != null && !concept.isSubjectConcept()) || elementCriteria.length > 0;
+
+            var innerElement = outerElement;
+
+//            debugger;
+            if(requireSubQuery) {
+
+			    
+
+
+	             if(concept && !concept.isSubjectConcept()) {
+	                 var conceptElement = concept.getElement();
+	                 
+	                 var efa = new sparql.ElementFactoryConst(conceptElement);
+	                 var efb = new sparql.ElementFactoryConst(innerElement);
+	                 
+
+	                 var joinType = isLeftJoin ? sparql.JoinType.LEFT_JOIN : sparql.JoinType.INNER_JOIN;
+	                 
+	                 var efj = new sparql.ElementFactoryJoin(efa, efb, [concept.getVar()], [idVar], joinType);
+	                 innerElement = efj.createElement();
+	             }
+
+			    
 				var subQuery = new sparql.Query();
 				
 				var subQueryElements = subQuery.getElements();
-				subQueryElements.push(element);
+				subQueryElements.push(innerElement);
+				
+				if(elementCriteria.length > 0) {
+				    subQueryElements.push(new sparql.ElementFilter(elementCriteria));
+				}
+			
+				
+				var subElement = new sparql.ElementSubQuery(subQuery);
+				var oe = outerElement;
+				
+				if(isLeftJoin) {
+				    //subElement = new sparql.ElementOptional(subElement);
+				    oe = new sparql.ElementOptional(outerElement);
+				}
+				
 				subQuery.setLimit(limit);
 				subQuery.setOffset(offset);
 				subQuery.setDistinct(true);
 				subQuery.getProjectVars().add(idVar);
-				element = new sparql.ElementGroup([
-				                                   new sparql.ElementSubQuery(subQuery),
-				                                   element]);
+				outerElement = new sparql.ElementGroup([
+				                                   subElement,
+				                                   oe]);
 
 				// TODO Do we need a sort condition on the inner query?
 				// Note that the inner query already does a distinct
 				//var orderBys = subQuery.getOrderBy();
 				//orderBys.push.apply(orderBys, sortConditions);
 
+				//console.log('innerElement: ' + innerElement);
+				//console.log('outerElement: ' + outerElement);
+				
+				innerElement = subQuery;
 			}
 
-			
+            
+            var result = {
+                requireSubQuery: requireSubQuery,
+                innerElement: innerElement,
+                outerElement: outerElement,
+                idVar: idVar,
+                vars: vars,
+                sortConditions: sortConditions,
+                pattern: pattern,
+                criteria: criteria
+            };
+            
+            return result;
+		},
+
+		
+		execute: function(config) {
+		    var spec = this.createQueries(config);
+		    
+		    var result = this.executeData(spec);
+		    
+		    return result;
+		},
+		
+		executeCount: function(config) {
+		    debugger;
+            var spec = this.createQueries(config);
+
+            var element = spec.innerElement;
+            var idVar = spec.idVar;
+            
+            var concept = new facete.Concept(element, idVar);
+            var outputVar = rdf.NodeFactory.createVar('_c_');
+            var query = facete.ConceptUtils.createQueryCount(concept, outputVar);
+            var qe = this.sparqlService.createQueryExecution(query);
+            var result = service.ServiceUtils.fetchInt(qe, outputVar);
+            
+            return result;
+		},
+		
+		executeData: function(spec) {
+		    var outerElement = spec.outerElement;
+		    var idExpr = spec.idExpr;
+		    var sortConditions = spec.sortConditions;
+		    var vars = spec.vars;
+		    var pattern = spec.pattern;
+		    var criteria = spec.criteria;
+
 			//console.log('' + pattern, idExpr);
 			//console.log('idExpr' + idExpr);
 			
 			
 			// Query generation
 			var query = new sparql.Query();
-			query.getElements().push(element);
+			query.getElements().push(outerElement);
 			_(vars).each(function(v) { query.getProjectVars().add(v); });
 			if(idExpr != null) {
 				//console.log('Expr' + JSON.stringify(idExpr));

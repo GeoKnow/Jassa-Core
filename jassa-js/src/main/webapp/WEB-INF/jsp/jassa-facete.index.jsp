@@ -138,26 +138,26 @@
 
 	
 	var prefLabelPropertyUris = [
-   		'http://www.w3.org/2004/02/skos/core#prefLabel',
-   	    'http://purl.org/dc/elements/1.1/title',
-   	    'http://purl.org/dc/terms/title',
+//    		'http://www.w3.org/2004/02/skos/core#prefLabel',
+//    	    'http://purl.org/dc/elements/1.1/title',
+//    	    'http://purl.org/dc/terms/title',
 
-   	    'http://swrc.ontoware.org/ontology#title',
-   	    'http://xmlns.com/foaf/0.1/name',
-   	    'http://usefulinc.com/ns/doap#name',
-   	    'http://rdfs.org/sioc/ns#name',
-   	    'http://www.holygoat.co.uk/owl/redwood/0.1/tags/name',
-   	    'http://linkedgeodata.org/vocabulary#name',
-   	    'http://www.geonames.org/ontology#name',
-   	    'http://www.geneontology.org/dtds/go.dtd#name',
+//    	    'http://swrc.ontoware.org/ontology#title',
+//    	    'http://xmlns.com/foaf/0.1/name',
+//    	    'http://usefulinc.com/ns/doap#name',
+//    	    'http://rdfs.org/sioc/ns#name',
+//    	    'http://www.holygoat.co.uk/owl/redwood/0.1/tags/name',
+//    	    'http://linkedgeodata.org/vocabulary#name',
+//    	    'http://www.geonames.org/ontology#name',
+//    	    'http://www.geneontology.org/dtds/go.dtd#name',
 
-   	    'http://www.w3.org/2000/01/rdf-schema#label',
+   	    'http://www.w3.org/2000/01/rdf-schema#label'
 
-   	    'http://xmlns.com/foaf/0.1/accountName',
-   	    'http://xmlns.com/foaf/0.1/nick',
-   	    'http://xmlns.com/foaf/0.1/surname',
+//    	    'http://xmlns.com/foaf/0.1/accountName',
+//    	    'http://xmlns.com/foaf/0.1/nick',
+//    	    'http://xmlns.com/foaf/0.1/surname',
    	    
-   	    'http://www.w3.org/2004/02/skos/core#altLabel'
+//    	    'http://www.w3.org/2004/02/skos/core#altLabel'
 	];
 
 	var prefLangs = ['de', 'en', ''];
@@ -429,6 +429,9 @@
 			
 			var query = facete.ConceptUtils.createQueryList(concept);			
 			
+			
+
+			
 			var pageSize = 10;
 			
 			query.setLimit(pageSize);
@@ -602,35 +605,89 @@
 			}
 
 			var concept = fctService.createConceptFacetValues(path, true);
+			/*
 			var countVar = rdf.NodeFactory.createVar("_c_");
 			var queryCount = facete.ConceptUtils.createQueryCount(concept, countVar);
  			var qeCount = qef.createQueryExecution(queryCount);
 			var countPromise = service.ServiceUtils.fetchInt(qeCount, countVar);
 			
 			var query = facete.ConceptUtils.createQueryList(concept);			
+			*/
+			
+			var text = $scope.filterText;
+			var criteria = {};
+			if(text) {
+			    criteria = {hiddenLabels: {$elemMatch: {id: {$regex: text}}}};
+			}
+			var tmp = store.labels.find(criteria).concept(concept, true);
+			    
+// 	 		tmp.count().done(function(count) {
+// 	 		   console.log('filter count', count); 
+// 	 		});
+
+			var countPromise = tmp.count();
 			
 			var pageSize = 10;
-			
-			query.setLimit(pageSize);
-			query.setOffset(($scope.currentPage - 1) * pageSize);
-			
- 			var qe = qef.createQueryExecution(query);
-			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
+	 		
+			var dp = tmp.skip(($scope.currentPage - 1) * pageSize).limit(pageSize);
+
+			var dataPromise = dp.asList().pipe(function(docs) {
 
 			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
 			    
-			    var r = _(nodes).map(function(node) {
+			    var r = _(docs).map(function(doc) {
+			        // TODO Sponate must support retaining node objects
+			        var node = rdf.NodeFactory.parseRdfTerm(doc.id);
+			        
+			        
+			        var label = doc.displayLabel ? doc.displayLabel : doc.id;
 			        var tmp = {
+			            displayLabel: label,
 						path: path,
 						node: node,
 						tags: tagger.getTags(node)
 			        };
 
 			        return tmp;
+			        
 			    });
+			    
+// 			    var nodes = _(docs).pluck('id');
+			    
+// 			    var r = _(nodes).map(function(node) {
+// 			        var tmp = {
+// 						path: path,
+// 						node: node,
+// 						tags: tagger.getTags(node)
+// 			        };
+
+// 			        return tmp;
+// 			    });
 
 			    return r;
 			});
+
+	 		
+			//query.setLimit(pageSize);
+			//query.setOffset(($scope.currentPage - 1) * pageSize);
+			
+//  			var qe = qef.createQueryExecution(query);
+// 			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
+
+// 			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
+			    
+// 			    var r = _(nodes).map(function(node) {
+// 			        var tmp = {
+// 						path: path,
+// 						node: node,
+// 						tags: tagger.getTags(node)
+// 			        };
+
+// 			        return tmp;
+// 			    });
+
+// 			    return r;
+// 			});
 
 			sponate.angular.bridgePromise(countPromise, $q.defer(), $rootScope).then(function(count) {
 			    $scope.totalItems = count; 
@@ -908,6 +965,15 @@
 // 			$rootScope.$broadcast('facetSelected', path);
 // 	    });
 
+		$scope.doFilter = function(path, text) {
+
+// 		    var concept = ;
+		    
+// 		    var foo = store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: text}}}}).concept(concept, true);
+		    
+		    console.log(text); 
+		};
+
 		$scope.$on('facete:constraintsChanged', function() {
 		    $scope.refresh();
 		});
@@ -998,11 +1064,11 @@
 			<div ng-show="facet.isExpanded" style="width:100%"> 
 
                 <div ng-show="facet.pageCount > 1 || facet.children.length > 5" style="width:100%; background-color: #eeeeff;">
-				    <div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">
+				    <div style="padding-right: 16px; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">
 						<div class="input-group">
                             <input type="text" class="form-control" placeholder="Filter" ng-model="filterText" />
                             <span class="input-group-btn">
-                                <button type="button" class="btn btn-default">Filter</button>
+                                <button type="button" class="btn btn-default" ng-click="doFilter(filterText)">Filter</button>
                             </span>
 						</div>			    	    
 				    </div>
@@ -1028,7 +1094,7 @@
 			<table>
                 <tr><th>Value</th><th>Count</th><th>Constrained</th></tr>
 			    <tr ng-repeat="item in facetValues">
-                    <td>{{item.node.toString()}}</td>
+                    <td>{{item.displayLabel}}</td>
                     <td>todo</td>
                     <td><input type="checkbox" ng-model="item.tags.isConstrainedEqual" ng-change="toggleConstraint(item)"</td>
                 </tr>

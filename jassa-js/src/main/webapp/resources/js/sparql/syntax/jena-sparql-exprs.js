@@ -454,7 +454,7 @@
 	
 	ns.E_LangMatches.prototype = {
 			copySubstitute: function(fnNodeMap) {
-				return new ns.E_LangMatches(fnNodeMap(this.left), fnNodeMap(this.right));
+				return new ns.E_LangMatches(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
 			},
 
 			getArgs: function() {
@@ -477,7 +477,7 @@
 	
 	ns.E_Lang.prototype = {
 			copySubstitute: function(fnNodeMap) {
-				return new ns.E_Lang(fnNodeMap(this.expr));
+				return new ns.E_Lang(this.expr.copySubstitute(fnNodeMap));
 			},
 
 			getArgs: function() {
@@ -844,7 +844,7 @@
 	 * do something more generic
 	 */
 	_.extend(ns.NodeValue, {
-		
+			    
 		createLiteral: function(val, typeUri) {
 			var node = rdf.NodeFactory.createTypedLiteralFromValue(val, typeUri);
 			var result = new ns.NodeValueNode(node);
@@ -891,6 +891,7 @@
 	});
 	
 	
+	
 	ns.NodeValueNode = Class.create(ns.NodeValue, {
 		initialize: function(node) {
 			this.node = node;
@@ -918,6 +919,8 @@
 		}
 	});
 	
+    ns.NodeValue.nvNothing = ns.NodeValue.makeNode(rdf.NodeFactory.createAnon(new rdf.AnonIdStr('node value nothing')));
+
 	
 //	ns.NodeValueInteger = Class.create(ns.NodeValue, {
 //		initialize: function(val) {

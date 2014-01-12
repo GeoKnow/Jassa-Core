@@ -785,6 +785,8 @@
 					result = node.toString();
 				} else if (node.isLiteral()) {
 					result = node.getLiteralValue();
+				} else if(sparql.NodeValue.nvNothing.asNode().equals(node)) {
+				    result = null;
 				} else {
 					throw 'Unsupported node type';
 				}

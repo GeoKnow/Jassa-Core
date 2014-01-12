@@ -115,7 +115,8 @@
             if(label && label.isConstant()) {
                 l = label.getConstant().asNode();
                 
-                var lang = l.getLiteralLanguage();
+                var lang = l.isLiteral() ? l.getLiteralLanguage() : 'nolang';
+                
 //              var val = l.getLiteralLexicalForm();
 
 //              if(val == 'Foobar' || val == 'Baz') {
@@ -218,11 +219,12 @@
             var propFilter = new sparql.E_OneOf(propertyExpr, this.prefLabelProperties);
             //);
             
+            var els = [];
+            els.push(new sparql.ElementTriplesBlock([ new rdf.Triple(s, p, o)] ));
+            els.push(new sparql.ElementFilter([propFilter]));
+            els.push(new sparql.ElementFilter([langConstraint]));
             
-            var langElement = new sparql.ElementGroup([
-                new sparql.ElementTriplesBlock([ new rdf.Triple(s, p, o)] ),
-                new sparql.ElementFilter([propFilter, langConstraint])
-            ]);
+            var langElement = new sparql.ElementGroup(els);
             
             var result = new ns.LabelUtil(aggFactoryLabel, langElement);
             return result;

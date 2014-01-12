@@ -170,7 +170,7 @@
 	var efA = new sparql.ElementFactoryConst(a);
 	var efB = new sparql.ElementFactoryConst(b);
 
-	debugger;
+	//debugger;
 	var efC = new sparql.ElementFactoryJoin(efA, efB, [vl], [vs], sparql.JoinType.LEFT_JOIN);
 	var x = efC.createElement();
 	console.log('Joined element is: ' + x);

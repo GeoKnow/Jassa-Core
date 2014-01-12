@@ -98,10 +98,12 @@
 	
 	ns.PatternUtils = {
 		getVarsMentioned: function(elements) {
-			var result = [];
-			_.each(elements, function(element) {
-				_(result).union(element.getVarsMentioned());
-			});
+			
+			var result = _(elements).reduce(function(memo, element) {
+				var vs = element.getVarsMentioned();
+			    var r = _(memo).union(vs);
+			    return r;
+			}, []);
 			
 			return result;
 		}
@@ -153,19 +155,37 @@
 	        this.elementFactoryB = elementFactoryB;
 	        this.joinVarsA = joinVarsA;
 	        this.joinVarsB = joinVarsB;
-	        this.joinType = joinType ? ns.JoinType.INNER_JOIN : joinType;
+	        this.joinType = joinType ? joinType : ns.JoinType.INNER_JOIN;
 	    },
 	   
 	    createElement: function() {
 	        var elementA = this.elementFactoryA.createElement();
 	        var elementB = this.elementFactoryB.createElement();
-	       
-	        var rootJoinNode = ns.JoinBuilderElement.create(elementB);
-	        var joinNode = rootJoinNode.joinAny(this.joinType, this.joinVarsB, elementA, this.joinVarsA);
 
-	        var joinBuilder = joinNode.getJoinBuilder();
-	        var elements = joinBuilder.getElements();
-	        var result = new sparql.ElementGroup(elements);
+	        
+	        var varsA = elementA.getVarsMentioned();
+	        var varsB = elementB.getVarsMentioned();
+	        
+//            var aliasGenerator = new ns.GenSym('v');
+//            var varNamesA = sparql.VarUtils.getVarNames(varsA);
+//            var varNameGenerator = new ns.GeneratorBlacklist(new ns.GenSym('v'), varNamesA); 
+	        
+            var varMap = ns.ElementUtils.createJoinVarMap(varsB, varsA, this.joinVarsB, this.joinVarsA); //, varNameGenerator);
+            
+            elementA = ns.ElementUtils.createRenamedElement(elementA, varMap);
+
+            if(this.joinType == ns.JoinType.LEFT_JOIN) {
+                elementB = new ns.ElementOptional(elementB);
+            }
+	        
+            var result = new ns.ElementGroup([elementA, elementB]);
+	        
+	        //var rootJoinNode = ns.JoinBuilderElement.create(elementA);
+	        //var joinNode = rootJoinNode.joinAny(this.joinType, this.joinVarsB, elementA, this.joinVarsA);
+
+	        //var joinBuilder = joinNode.getJoinBuilder();
+	        //var elements = joinBuilder.getElements();
+	        //var result = new ns.ElementGroup(elements);
 	        //var aliasToVarMap = joinBuilder.getAliasToVarMap();
 
 	        return result;

@@ -145,7 +145,7 @@
 		},
 		
 		getBlankNodeId: function() {
-			return anonId;
+			return this.anonId;
 		},
 		
 		toString: function() {
@@ -300,7 +300,7 @@
 		},
 
 		getLabelString: function() {
-			return label;
+			return this.label;
 		},
 		
 		toString: function() {
@@ -676,7 +676,7 @@
 		        result = ns.NodeFactory.createUri(uriStr);
 		        break;
 		    case '_':
-		        var anonId = new ns.AnonId(c);
+		        var anonId = new ns.AnonIdStr(c);
 		        result = ns.NodeFactory.createAnon(anonId);
 		        break;
 		    case '"':
@@ -794,7 +794,14 @@
 	ns.Triple.pushVar = function(array, node) {
 		
 		if(node.isVariable()) {
-			_(array).union(node);
+		    var c = _(array).some(function(item) {
+		        node.equals(item);
+		    });
+		    
+		    if(!c) {
+		        array.push(node);
+		    }
+			//_(array).union(node);
 		}
 		
 		return array;
