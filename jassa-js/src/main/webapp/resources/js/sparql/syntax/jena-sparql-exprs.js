@@ -430,6 +430,9 @@
 	ns.E_Equals = Class.create(ns.ExprFunction2, {
 	
 		copySubstitute: function(fnNodeMap) {
+//		    if(!this.right.copySubstitute) {
+//		        debugger;
+//		    }
 			return new ns.E_Equals(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
 		},	
 	

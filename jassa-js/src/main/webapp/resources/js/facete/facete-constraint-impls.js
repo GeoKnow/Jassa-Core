@@ -49,8 +49,13 @@
 			var pathVar = facetNode.getVar();
 			var exprVar = new sparql.ExprVar(pathVar);
 			
-			var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];		
-			var exprs = [new sparql.E_Equals(exprVar, constraintSpec.getValue())]; //sparql.NodeValue.makeNode(constraintSpec.getValue()))];
+			var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];
+	
+			//var valueExpr = constraintSpec.getValue();
+			var valueExpr = sparql.NodeValue.makeNode(constraintSpec.getValue());
+	
+	
+			var exprs = [new sparql.E_Equals(exprVar, valueExpr)];
 			
 			var result = new ns.ElementsAndExprs(elements, exprs);
 			

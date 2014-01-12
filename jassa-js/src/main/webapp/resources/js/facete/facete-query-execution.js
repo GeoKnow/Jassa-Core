@@ -9,10 +9,13 @@
 	
 	
 	ns.FacetTreeServiceImpl = Class.create({
-		initialize: function(facetService, expansionSet, facetStateProvider) { //facetStateProvider) {
+		initialize: function(facetService, expansionSet, facetStateProvider, pathToFilterString) { //facetStateProvider) {
 			this.facetService = facetService;
 			this.expansionSet = expansionSet;
 			this.facetStateProvider = facetStateProvider;
+			
+			this.labelStore = labelStore;
+			this.pathToFilterString = pathToFilterString;
 		},
 		
 		fetchFacetTree: function(path) {
@@ -110,8 +113,19 @@
                 baseData.limit = limit;
                 baseData.offset = offset;
 
-                var countPromise = this.facetService.fetchFacetCount(path, false);
-                var childFacetsPromise = this.facetService.fetchFacets(path, false, limit, offset);
+
+                var filterString = this.pathToFilterString.get(path);
+                var baseFlow = this.facetService.createFlow(path, false, filterString);
+
+                var countPromise = baseFlow.count();
+                
+                //var countPromise = this.facetService.fetchFacetCount(path, false);
+                //var childFacetsPromise = this.facetService.fetchFacets(path, false, limit, offset);
+                
+                var dataFlow = baseFlow.skip(offset).limit(limit);
+                
+                var childFacetsPromise = this.facetService.fetchFacetsFromFlow(dataFlow, path, false);
+                
                 var promises = [countPromise, childFacetsPromise];
                 
                 $.when.apply(window, promises).done(function(childFacetCount, facetItems) {
@@ -295,9 +309,12 @@
 	
 
 	ns.FacetServiceImpl = Class.create(ns.FacetService, {
-		initialize: function(queryExecutionFactory, facetConceptGenerator) {
+		initialize: function(queryExecutionFactory, facetConceptGenerator, labelStore) {
 			this.qef = queryExecutionFactory;
 			this.facetConceptGenerator = facetConceptGenerator;
+			
+			// TODO This is a hack - Somehow Sponate should abstract away the qef as a store object....
+			this.labelStore = labelStore;
 		},
 
 		
@@ -307,6 +324,23 @@
 		},
 		
 	
+		createFlow: function(path, isInverse, filterString) {
+
+		    var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
+		    
+            var criteria = {};
+            if(filterString) {
+                criteria = {$or: [
+                    {hiddenLabels: {$elemMatch: {id: {$regex: filterString, $options: 'i'}}}},
+                    {id: {$regex: filterString, $options: 'i'}}
+                ]};
+            }
+
+		    
+		    var result = this.labelStore.find(criteria).concept(concept);
+		    return result;
+		},
+		
 		fetchFacetCount: function(path, isInverse) {
             var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
             
@@ -378,8 +412,41 @@
             return result;
 		},
 		
+		fetchFacetsFromFlow: function(flow, path, isInverse) {
+            var promise = flow.asList();
+		    
+            var deferred = $.Deferred();
+
+            var self = this;
+	        promise.done(function(docs) {
+	            var properties = _(docs).map(function(doc) {
+	                return rdf.NodeFactory.parseRdfTerm(doc.id);
+	            });
+
+	            if(properties.length === 0) {
+                    deferred.resolve([]);
+                    return;
+	            }
+	            
+                var promise = self.fetchFacetValueCounts(path, isInverse, properties, false);
+
+                promise.done(function(r) {
+                    console.log('PropertyCounts', r);
+                    deferred.resolve(r);
+                }).fail(function() {
+                    deferred.fail();
+                });
+
+	        }).fail(function() {
+	           deferred.fail();
+	        });
+	        
+	        return deferred.promise(); 
+		},
 		
 		/**
+		 * TODO Superseded by fetchFacetsFromFlow
+		 * 
 		 * This strategy first fetches a list of properties,
 		 * and only for the list members does to counting,
 		 * this way, ordering by count is supported

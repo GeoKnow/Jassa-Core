@@ -192,14 +192,14 @@
 	//var sparqlEndpointUrl = 'http://localhost/sparql';
 	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';	
 	
-// 	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
-// 	var defaultGraphUris = ['http://dbpedia.org'];
+	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
+	var defaultGraphUris = ['http://dbpedia.org'];
 
 // 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
-	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
-	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+// 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+// 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
 
  	
 // 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
@@ -239,6 +239,9 @@
 //        ])
 	});
 
+	
+	var labelStore = store.labels;
+
 // 	store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).limit(10).asList().done(function(items) {
 	    
 // 	});
@@ -271,15 +274,19 @@
 	// By default, a limit of 10 is used
 	var facetStateProvider = new facete.FacetStateProviderImpl(10);
 
+	// A map from path to search string
+	var pathToFilterString = new util.HashMap();
+	
 	var expansionSet = new util.HashSet();
 	expansionSet.add(new facete.Path());
 	
 	//facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
 	
-	var fctService = new facete.FacetServiceImpl(qef, facetConceptGenerator);
+	var fctService = new facete.FacetServiceImpl(qef, facetConceptGenerator, labelStore);
 
 	
-	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, expansionSet, facetStateProvider);
+
+	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, expansionSet, facetStateProvider, pathToFilterString);
 
 
     var constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);
@@ -355,7 +362,23 @@
             return result;
         }
     });
+
     
+    ns.ItemTaggerFilterString = Class.create(ns.ItemTagger, {
+        initialize: function(pathToFilterString) {
+            this.pathToFilterString = pathToFilterString;
+        },
+        
+        createTags: function(path) {
+            var filterString = this.pathToFilterString.get(path);
+            //var isContained = paths.contains(path);
+            
+            var result = { filterString: filterString };
+            //console.log('table: ' + path, isContained);
+            return result;
+        }
+    });
+
 
     ns.ItemTaggerManager = Class.create(ns.ItemTagger, {
        initialize: function() {
@@ -384,7 +407,7 @@
     
     var pathTagger = new ns.ItemTaggerManager();
     pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableMod);
-
+    pathTagger.getTaggerMap()['filter'] = new ns.ItemTaggerFilterString(pathToFilterString);
     
     ns.FacetTreeTagger = Class.create({
         initialize: function(itemTagger) {
@@ -933,13 +956,16 @@
 // 			$rootScope.$broadcast('facetSelected', path);
 // 	    });
 
-		$scope.doFilter = function(path, text) {
+		$scope.doFilter = function(path, filterString) {
 
+		    pathToFilterString.put(path, filterString);
+		    //alert(JSON.stringify(pathToFilterString));
 // 		    var concept = ;
 		    
 // 		    var foo = store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: text}}}}).concept(concept, true);
 		    
-		    console.log(text); 
+		    //console.log(text);
+		    $scope.refresh();
 		};
 
 		$scope.$on('facete:constraintsChanged', function() {
@@ -1031,14 +1057,17 @@
 			</div>
 			<div ng-show="facet.isExpanded" style="width:100%"> 
 
-                <div ng-show="facet.pageCount > 1 || facet.children.length > 5" style="width:100%; background-color: #eeeeff;">
+<!-- ng-show="facet.pageCount > 1 || facet.children.length > 5" -->
+                <div style="width:100%; background-color: #eeeeff;">
 				    <div style="padding-right: 16px; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">
+<form ng-submit="doFilter(facet.item.getPath(), filterString)">
 						<div class="input-group">
-                            <input type="text" class="form-control" placeholder="Filter" ng-model="filterText" />
+                            <input type="text" class="form-control" placeholder="Filter" ng-model="filterString" value="{{facet.filter.filterString}}" />
                             <span class="input-group-btn">
-                                <button type="button" class="btn btn-default" ng-click="doFilter(filterText)">Filter</button>
+                                <button type="submit" class="btn btn-default">Filter</button>
                             </span>
 						</div>			    	    
+</form>
 				    </div>
                 </div>
 

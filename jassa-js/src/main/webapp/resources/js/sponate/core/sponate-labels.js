@@ -102,14 +102,16 @@
            
             
             // Determine the score vector for the property and the language
-            var propertyScore;
+            var propertyScore = -1;
             var langScore;
             
             var l;
             if(property && property.isConstant()) {
                 var p = property.getConstant().asNode();
-                var propertyUri = p.getUri();
-                propertyScore = this.labelPrios.indexOf(propertyUri);
+                if(p.isUri()) {
+                    var propertyUri = p.getUri();
+                    propertyScore = this.labelPrios.indexOf(propertyUri);
+                }
             }
             
             if(label && label.isConstant()) {
