@@ -1,9 +1,6 @@
 package org.aksw.jassa.web.main;
 
-import org.aksw.jena_sparql_api.cache.extra.CacheCoreEx;
-import org.aksw.jena_sparql_api.cache.extra.CacheCoreH2;
-import org.aksw.jena_sparql_api.cache.extra.CacheEx;
-import org.aksw.jena_sparql_api.cache.extra.CacheExImpl;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,31 +16,33 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class WebMvcConfig
 	extends WebMvcConfigurerAdapter
 {
-    public static CacheEx createSparqlCache() {
-        long timeToLive = 360l * 24l * 60l * 60l * 1000l; 
-        CacheCoreEx cacheBackend;
-        try {
-            cacheBackend = CacheCoreH2.create(true, "/tmp/facete-server/cache/sparql", "sparql", timeToLive, true);
-        }
-        catch(Exception e) {
-            throw new RuntimeException(e);
-        }
-        CacheEx result = new CacheExImpl(cacheBackend);
-
-        return result;
+    public static CacheFrontend createSparqlCache() {
+//        long timeToLive = 360l * 24l * 60l * 60l * 1000l; 
+//        CacheBackend cacheBackend;
+//        try {
+//            cacheBackend = CacheCoreH2.create(true, "/tmp/facete-server/cache/sparql", "sparql", timeToLive, true);
+//        }
+//        catch(Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        CacheEx result = new CacheExImpl(cacheBackend);
+//
+//        return result;
+        return null;
     }
     
-    @Bean
-    public CacheEx sparqlCache() 
-    {
-        CacheEx result = createSparqlCache();
-        return result;
-    }
+//    @Bean
+//    public CacheFrontend sparqlCache() 
+//    {
+//        CacheFrontend result = createSparqlCache();
+//        return result;
+//    }
     
     @Bean
     @Autowired
-    public SparqlServiceFactory sparqlServiceFactory(CacheEx sparqlCache) {
-        SparqlServiceFactory result = new SparqlServiceFactoryImpl(sparqlCache);
+    public SparqlServiceFactory sparqlServiceFactory() {//CacheFrontend sparqlCache) {
+        //SparqlServiceFactory result = new SparqlServiceFactoryImpl(sparqlCache);
+        SparqlServiceFactory result = new SparqlServiceFactoryImpl(null);
         return result;
     }
 }

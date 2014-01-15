@@ -61,7 +61,7 @@ public class MainJassaServer {
 
 		LoggerCount loggerCount = new LoggerCount(logger);
 
-		Class.forName("org.postgresql.Driver");
+		//Class.forName("org.postgresql.Driver");
 		
 		CommandLineParser cliParser = new GnuParser();
 

@@ -7,13 +7,13 @@ import java.util.Set;
 import org.aksw.jassa.sparql_path.core.algorithm.ConceptPathFinder;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
 import org.aksw.jassa.sparql_path.core.domain.Path;
-import org.aksw.jena_sparql_api.cache.extra.CacheEx;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 
 
 public class TestMain {
     public static void main(String[] args) {
-        CacheEx cacheFrontend = WebMvcConfig.createSparqlCache();
+        CacheFrontend cacheFrontend = WebMvcConfig.createSparqlCache();
         SparqlServiceFactory sparqlServiceFactory = new SparqlServiceFactoryImpl(cacheFrontend);
         
         Set<String> defaultGraphs = Collections.emptySet();

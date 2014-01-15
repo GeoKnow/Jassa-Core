@@ -1,0 +1,9 @@
+Package: jassa-tomcat7
+Version: [[version]]
+Section: web
+Priority: optional
+Architecture: all
+Depends: jassa-tomcat-common, xsltproc, tomcat7
+Maintainer: Claus Stadler <cstadler@informatik.uni-leipzig.de>
+Description: Jassa Server for Tomcat 7
+Distribution: development

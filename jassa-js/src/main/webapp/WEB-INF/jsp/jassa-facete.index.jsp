@@ -130,8 +130,15 @@
 
 	${jsIncludes}
 
+
+    <script type="text/javascript" src="resources/libs/jquery-ui/1.10.2/ui/jquery-ui.js"></script>
+
 	<script src="resources/js/facete/facete-playground.js"></script>
 
+    <script type="text/javascript" src="resources/libs/open-layers/2.12/OpenLayers.js"></script>
+
+    <script type="text/javascript" src="resources/libs/open-layers/2.12/OpenLayers.js"></script>
+    <script type="text/javascript" src="resources/js/geo/jquery.ssb.map.js"></script>
 	
 	<script type="text/javascript">
 	_.mixin(_.str.exports());
@@ -199,7 +206,8 @@
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
-	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+//	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 
  	
 // 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
@@ -495,7 +503,54 @@
 	 * Angular
 	 */	
 	var myModule = angular.module('FaceteDBpediaExample', ['ui.bootstrap']);
+
 	
+	myModule.directive('ssbMap', function($timeout, $parse) {
+        //console.log('starting map');
+        
+	    return {
+	        restrict: 'EA', // says that this directive is only for html elements
+	        replace: false,        
+	        template: '<div></div>', 
+	        link: function (scope, element, attrs) {
+	            // turn the button into a jQuery button
+	            $timeout(function () {
+	                console.log('rendering map');
+	                /* set text from attribute of custom tag*/
+	                //element.text(attrs.text).button();
+	                var $el = jQuery(element).ssbMap();
+	      	      	var widget = $el.data("custom-ssbMap");
+	    	      
+	    	      	// Extract the map
+	    	      	var map = widget.map;
+	                
+	    	      	var parentScope = element.parent().scope();
+	                
+	    	      	parentScope.$watch('boxes', function(boxes) {
+	    	      	    angular.forEach(boxes, function(bounds, id) {
+	    	      	      	console.log('adbox', bounds, id);
+	    	      	        widget.addBox(id, bounds);
+	    	      	    });
+						console.log('boxes', boxes);
+	                });
+
+	                var model = $parse(attrs.ssbMap);
+	                console.log('model', model);
+	                //Set scope variable for the map
+	                if(model && !_(model).isFunction()) {
+	                    model.assign(scope, map);
+	                }
+	                    
+	            }, 10);/* very slight delay, even using "0" works*/
+	        }
+	    };
+//         return function (scope, element, attr) {
+//             jQuery(element).ssbMap();
+//             scope.$watch(attr.ngVisible, function (visible) {
+//                 element.css('visibility', visible ? 'visible' : 'hidden');
+//             });
+//         };
+	});
 	
 	myModule.directive('portletheading', function() {
 	    return {
@@ -911,8 +966,8 @@
      * Source: https://gist.github.com/c0bra/5859295
      */
     myModule.directive('ngVisible', function () {
-        return function (scope, element, attr) {
-            scope.$watch(attr.ngVisible, function (visible) {
+        return function (scope, element, attrs) {
+            scope.$watch(attrs.ngVisible, function (visible) {
                 element.css('visibility', visible ? 'visible' : 'hidden');
             });
         };
@@ -933,8 +988,9 @@
 		    var sourceConcept = fctService.createConceptFacetValues(new facete.Path());			
 
 			var targetVar = rdf.NodeFactory.createVar('s');
-			var targetConcept = new facete.Concept(sparql.ElementString.create('?s ?p ?o . Filter(regex(str(?p), "' + newValue + '", "i"))'), targetVar);
-		    			
+			//var targetConcept = new facete.Concept(sparql.ElementString.create('?s ?p ?o . Filter(regex(str(?p), "' + newValue + '", "i"))'), targetVar);
+			var targetConcept = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), targetVar);
+
 		    var promise = conceptPathFinder.findPaths(sourceConcept, targetConcept);
 			var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 
@@ -954,6 +1010,10 @@
 
     });
     
+    
+    myModule.controller('MapCtrl', function($scope) {
+        $scope.boxes = {foo: {left: -10, bottom: -10, right: 10, top: 10}};
+    });
     
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
 
@@ -1195,12 +1255,15 @@
 							<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
 					    </th></tr>		
 				    </table>
-				</div>
-	        	        
-	        
+				</div>	        
 	        </td>        
 	    </tr>
     </table>
+    
+    <div ng-controller="MapCtrl">
+		<div ssb-map style="width: 500px; height: 300px;"></div>
+	</div>	        
+    
 </body>
 
 </html>

@@ -7,12 +7,11 @@ import java.util.Set;
 
 import org.aksw.jassa.sparql_path.core.domain.Concept;
 import org.aksw.jassa.sparql_path.utils.ElementTreeAnalyser;
+import org.aksw.jena_sparql_api.utils.CnfUtils;
 import org.aksw.jena_sparql_api.utils.ExprUtils;
-import org.aksw.sparqlify.core.ReplaceConstants;
+import org.aksw.jena_sparql_api.utils.ReplaceConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import sparql.CnfUtils;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;

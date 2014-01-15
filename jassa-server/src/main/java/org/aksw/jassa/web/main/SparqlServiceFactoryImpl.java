@@ -6,22 +6,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.aksw.jena_sparql_api.cache.core.QueryExecutionFactoryCacheEx;
-import org.aksw.jena_sparql_api.cache.extra.CacheEx;
+import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
-import org.aksw.jena_sparql_api.delay.core.QueryExecutionFactoryDelay;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
-import org.aksw.jena_sparql_api.pagination.core.QueryExecutionFactoryPaginated;
-import org.aksw.jena_sparql_api.retry.core.QueryExecutionFactoryRetry;
 
 public class SparqlServiceFactoryImpl
     implements SparqlServiceFactory
 {
     private Map<String, QueryExecutionFactory> keyToSparqlService = new HashMap<String, QueryExecutionFactory>();
     
-    private CacheEx cacheFrontend = null;
+    private CacheFrontend cacheFrontend = null;
     
-    public SparqlServiceFactoryImpl(CacheEx cacheFrontend) {
+    public SparqlServiceFactoryImpl(CacheFrontend cacheFrontend) {
         this.cacheFrontend = cacheFrontend;
     }
     

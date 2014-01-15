@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.aksw.jassa.sparql_path.core.domain.Concept;
-import org.aksw.sparqlify.core.algorithms.GeneratorBlacklist;
+import org.aksw.jena_sparql_api.utils.GeneratorBlacklist;
 
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.sdb.core.Generator;

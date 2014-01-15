@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.aksw.jassa.sparql_path.utils.ElementUtils;
 import org.aksw.jassa.sparql_path.utils.VarUtils;
-import org.aksw.sparqlify.core.algorithms.GeneratorBlacklist;
+import org.aksw.jena_sparql_api.utils.GeneratorBlacklist;
 
 import com.google.common.collect.Sets;
 import com.hp.hpl.jena.graph.Triple;

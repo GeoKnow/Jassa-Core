@@ -9,10 +9,6 @@ import java.util.Set;
 
 import org.aksw.jassa.sparql_path.utils.ElementUtils;
 import org.aksw.jena_sparql_api.cache.core.QueryExecutionFactoryCacheEx;
-import org.aksw.jena_sparql_api.cache.extra.CacheCoreEx;
-import org.aksw.jena_sparql_api.cache.extra.CacheCoreH2;
-import org.aksw.jena_sparql_api.cache.extra.CacheEx;
-import org.aksw.jena_sparql_api.cache.extra.CacheExImpl;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.delay.core.QueryExecutionFactoryDelay;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
@@ -73,9 +69,9 @@ public class AdjacencyMatrixMain {
 		//String outer = "Select ?p1 (Count(*) As ?c) { ?s ?p1 ?o } Group By ?p1 Order By Asc(?c)";
 	    String outer = "Select ?p1 (Count(*) As ?c) { ?s ?p1 ?o . ?p1 a rdf:Property . } Group By ?p1 Order By Asc(?c)";
 		
-		long timeToLive = 360l * 24l * 60l * 60l * 1000l; 
-		CacheCoreEx cacheBackend = CacheCoreH2.create("sparql", timeToLive, true);
-		CacheEx cacheFrontend = new CacheExImpl(cacheBackend);
+//		long timeToLive = 360l * 24l * 60l * 60l * 1000l; 
+//		CacheCoreEx cacheBackend = CacheCoreH2.create("sparql", timeToLive, true);
+//		CacheEx cacheFrontend = new CacheExImpl(cacheBackend);
 
 		//String endpointUrl = "http://dbpedia.org/sparql";
 		String endpointUrl = "http://cstadler.aksw.org/vos-freebase/sparql";
@@ -85,14 +81,14 @@ public class AdjacencyMatrixMain {
 		QueryExecutionFactory qef1 = new QueryExecutionFactoryHttp(endpointUrl, defaultGraphs);
 		qef1 = new QueryExecutionFactoryDelay(qef1, 10000l);
 		qef1 = new QueryExecutionFactoryRetry(qef1, 5, 30000l);
-		qef1 = new QueryExecutionFactoryCacheEx(qef1, cacheFrontend);
+//		qef1 = new QueryExecutionFactoryCacheEx(qef1, cacheFrontend);
 		
 		
 		QueryExecutionFactory qef2 = new QueryExecutionFactoryHttp(endpointUrl, defaultGraphs);
 		qef2 = new QueryExecutionFactoryDelay(qef2, 10000l);
 		qef2 = new QueryExecutionFactoryRetry(qef2, 5, 30000l);
 		qef2 = new QueryExecutionFactoryPaginated(qef2, 1000);
-		qef2 = new QueryExecutionFactoryCacheEx(qef2, cacheFrontend);
+//		qef2 = new QueryExecutionFactoryCacheEx(qef2, cacheFrontend);
 	
 		
 		QueryExecution qe = qef1.createQueryExecution(outer);

@@ -19,7 +19,7 @@ import org.aksw.jassa.sparql_path.utils.QueryGenerationUtils;
 import org.aksw.jassa.sparql_path.utils.VarUtils;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
-import org.aksw.sparqlify.core.algorithms.GeneratorBlacklist;
+import org.aksw.jena_sparql_api.utils.GeneratorBlacklist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

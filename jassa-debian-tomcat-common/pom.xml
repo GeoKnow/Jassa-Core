@@ -4,7 +4,7 @@
 
 	<parent>
 		<groupId>org.aksw.jassa</groupId>
-		<artifactId>jassa-debian-tomcat-common</artifactId>
+		<artifactId>jassa-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
@@ -109,8 +109,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.aksw.sparqlify</groupId>
-			<artifactId>sparqlify-web-admin-server</artifactId>
+			<groupId>org.aksw.jassa</groupId>
+			<artifactId>jassa-server</artifactId>
 			<type>war</type>
 		</dependency>
 	</dependencies>

@@ -64,7 +64,7 @@ public class BreathFirstTask {
 	}
 	
 	public static int maxPaths = 100;
-	public static int maxDepth = 3;
+	public static int maxDepth = 7;
 	
 	public static void run(NeighborProvider<Resource> np, Resource start, Resource dest, List<Step> steps, PathCallback callback) {
 		

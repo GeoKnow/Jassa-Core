@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.aksw.jassa</groupId>
@@ -28,15 +29,18 @@
 
 
 	<modules>
-<!-- 		<module>jassa-js</module> -->
+		<!-- <module>jassa-js</module> -->
 		<module>jassa-server</module>
+		<module>jassa-debian-tomcat-common</module>
+		<module>jassa-debian-tomcat7</module>
 	</modules>
 
 
 	<properties>
 
 		<!-- Dependency Versions -->
-		<jena-sparql-api.version>2.10.0-20</jena-sparql-api.version>
+		<!-- Jassa only works with jena-sparql-api version 2.10.0-26 and onwards -->
+		<jena-sparql-api.version>2.10.0-26</jena-sparql-api.version>
 
 		<slf4j.version>1.6.0</slf4j.version>
 		<log4j.version>1.2.14</log4j.version>
@@ -55,40 +59,48 @@
 		<!-- <connection>scm:git:git@github.com:AKSW/Sparqlify.git</connection> -->
 		<!-- developerConnection></developerConnection -->
 		<!-- url>https://my-project.googlecode.com/svn</url -->
-		<connection>scm:git:git@github.com:GeoKnow/Facete.git</connection>
+		<connection>scm:git:git@github.com:GeoKnow/Jassa.git</connection>
 		<tag>HEAD</tag>
 	</scm>
 
 
 	<dependencyManagement>
 		<dependencies>
-
-			<!-- Jena SPARQL API -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.aksw.jena-sparql-api</groupId> -->
-<!-- 				<artifactId>jena-sparql-api-core</artifactId> -->
-<!-- 				<version>${jena-sparql-api.version}</version> -->
-<!-- 			</dependency> -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.aksw.jena-sparql-api</groupId> -->
-<!-- 				<artifactId>jena-sparql-api-server</artifactId> -->
-<!-- 				<version>${jena-sparql-api.version}</version> -->
-<!-- 			</dependency> -->
-
 			<dependency>
-				<groupId>org.aksw.sparqlify</groupId>
-				<artifactId>sparqlify-core</artifactId>
-				<version>0.6.5-SNAPSHOT</version>
+				<groupId>org.aksw.jassa</groupId>
+				<artifactId>jassa-server</artifactId>
+				<version>${project.version}</version>
+				<type>war</type>
 			</dependency>
 
+
+
+			<!-- Jena SPARQL API -->
+			<!-- <dependency> -->
+			<!-- <groupId>org.aksw.jena-sparql-api</groupId> -->
+			<!-- <artifactId>jena-sparql-api-core</artifactId> -->
+			<!-- <version>${jena-sparql-api.version}</version> -->
+			<!-- </dependency> -->
+			<dependency>
+				<groupId>org.aksw.jena-sparql-api</groupId>
+				<artifactId>jena-sparql-api-server</artifactId>
+				<version>${jena-sparql-api.version}</version>
+			</dependency>
+
+			<!-- <dependency> -->
+			<!-- <groupId>org.aksw.sparqlify</groupId> -->
+			<!-- <artifactId>sparqlify-core</artifactId> -->
+			<!-- <version>0.6.5-SNAPSHOT</version> -->
+			<!-- </dependency> -->
+
 			<!-- Logging -->
-<!-- 			<dependency> -->
-<!-- 				<groupId>org.slf4j</groupId> -->
-<!-- 				<artifactId>slf4j-ext</artifactId> -->
-<!-- 				<version>${slf4j.version}</version> -->
-<!-- 				<type>jar</type> -->
-<!-- 				<scope>compile</scope> -->
-<!-- 			</dependency> -->
+			<!-- <dependency> -->
+			<!-- <groupId>org.slf4j</groupId> -->
+			<!-- <artifactId>slf4j-ext</artifactId> -->
+			<!-- <version>${slf4j.version}</version> -->
+			<!-- <type>jar</type> -->
+			<!-- <scope>compile</scope> -->
+			<!-- </dependency> -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-log4j12</artifactId>
@@ -144,7 +156,7 @@
 				<configuration>
 					<arguments>-P!source-artifacts</arguments>
 					<useReleaseProfile>false</useReleaseProfile>
-					<goals>-Dmaven.test.skip=true deploy</goals>					
+					<goals>-Dmaven.test.skip=true deploy</goals>
 				</configuration>
 			</plugin>
 
@@ -245,15 +257,15 @@
 					<!-- excluding some jars, if jar name contains any of these strings 
 						it won't be analyzed -->
 					<excludes>
-						<exclude>postgresql-</exclude>
+						<!-- <exclude>postgresql-</exclude> -->
 
 						<exclude>commons-beanutils-</exclude>
 
 						<!-- TODO These conflicts should be resolved -->
-<!-- 						<exclude>stax-api-</exclude> -->
-<!-- 						<exclude>xml-apis-</exclude> -->
+						<!-- <exclude>stax-api-</exclude> -->
+						<!-- <exclude>xml-apis-</exclude> -->
 
-<!-- 						<exclude>commons-logging-</exclude> -->
+						<!-- <exclude>commons-logging-</exclude> -->
 
 					</excludes>
 				</configuration>
