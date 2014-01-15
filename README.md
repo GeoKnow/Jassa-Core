@@ -283,5 +283,11 @@ flow.asList()
 	});
 ```
 
+## Debian Package
+TODO: Finish this section
+There exists a debian package for the server functionality.
 
+Example
+
+[Concept Path Finder Example](http://localhost:8080/jassa/api/path-finding?service-uri=http://localhost:8800/sparql&source-element=?s%20?p%20?o&source-var=s&target-element=?s%20%3Chttp%3A//www.w3.org/2003/01/geo/wgs84_pos%23long%3E%20?x&target-var=s)
 
