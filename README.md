@@ -1,5 +1,7 @@
 ## JAvascript Suite for Sparql Access (Jassa)
 
+[![Build Status](http://ci.aksw.org/jenkins/job/Jassa/badge/icon)](http://ci.aksw.org/jenkins/job/Jassa/)
+
 This repository contains several tools for JavaScript based Sparql access. It works both from the client side from the browser and server side with nodejs.
 
 The highlights of this repository are:
