@@ -8,7 +8,7 @@ set -e
 
 # you can set the default database encoding to something else
 dbc_pgsql_createdb_encoding="UTF8"
-dbc_go sparqlify-tomcat-common $@
+dbc_go jassa-tomcat-common $@
 
 
 case "$1" in

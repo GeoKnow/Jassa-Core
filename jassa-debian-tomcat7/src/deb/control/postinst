@@ -6,7 +6,7 @@ set -e
 . /usr/share/debconf/confmodule
 . /usr/share/dbconfig-common/dpkg/postinst.pgsql 
 
-. /etc/dbconfig-common/sparqlify-tomcat-common.conf
+. /etc/dbconfig-common/jassa-tomcat-common.conf
 
 # you can set the default database encoding to something else
 dbc_pgsql_createdb_encoding="UTF8"
@@ -43,10 +43,10 @@ function updateDbCredentials {
 </xsl:stylesheet>
 "
 
-  xsltFile="/tmp/sparqlify-tomcat7-context.xslt"
+  xsltFile="/tmp/jassa-tomcat7-context.xslt"
   echo "$xslt" > "$xsltFile"
 
-  xmlFile="/etc/tomcat7/Catalina/localhost/sparqlify.xml"
+  xmlFile="/etc/tomcat7/Catalina/localhost/jassa.xml"
 
   xml=`cat "$xmlFile"`
   echo "$xml" | xsltproc "$xsltFile" - > "$xmlFile"

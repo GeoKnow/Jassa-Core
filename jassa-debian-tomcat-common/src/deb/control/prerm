@@ -5,6 +5,6 @@ set -e
 
 . /usr/share/debconf/confmodule
 . /usr/share/dbconfig-common/dpkg/prerm.pgsql 
-dbc_go sparqlify-tomcat-common $@
+dbc_go jassa-tomcat-common $@
 
 #DEBHELPER#
