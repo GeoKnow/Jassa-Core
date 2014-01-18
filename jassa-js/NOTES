@@ -19,3 +19,6 @@ The rdf and vocab namespace are a bit interleaved, as the literal part of rdf ma
 <param>vocab/util.js</param>
 <param>vocab/xsd.js</param>
 <param>rdf/rdf-literals.js</param>
+
+copy to release repo
+cp target/jassa/webapp/resources/js/jassa.js ~/Projects/Eclipse/jassa-bower/

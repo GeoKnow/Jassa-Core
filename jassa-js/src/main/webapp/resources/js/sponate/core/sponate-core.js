@@ -6,6 +6,52 @@
 	var ns = Jassa.sponate;
 	
 	
+	
+    ns.AccumulatorFactoryFn = Class.create({
+        initialize: function(fn, referencedVars) {
+            this.fn = fn;
+            this.referencedVars = referencedVars;
+        },
+        
+        createAggregator: function() {
+            var result = new ns.AccumulatorFn(this.fn, this.referencedVars);
+            return result;
+        },
+        
+        getVarsMentioned: function() {
+            return this.referencedVars;
+        }
+    });
+    
+    ns.AccumulatorFn = Class.create({
+        initialize: function(fn) {
+            this.fn = fn;
+            // TODO Is this really a node, or an arbitrary object?
+            this.node = null;
+        },
+        
+        processBinding: function(binding) {
+            var val = this.fn(binding);
+            this.node = val;
+        },
+        
+        toJson: function() {
+            return this.node;
+            //return this.node.toString();
+        },
+        
+        toNode: function() {
+            return this.node
+        }
+    });
+
+	
+	/**
+	 * TODO Like Jena, we could use the namings Aggregator and Accumulator
+	 * I think our aggregators are closer to accumulators. 
+	 * 
+	 */
+	
 	/**
 	 * A path of attributes.
 	 * 
@@ -1253,6 +1299,16 @@
 			else if(_(val).isArray()) {
 				result = this.parseArray(val);
 			}
+            else if(_(val).isFunction()) {
+                result = new ns.PatternCustomAgg(new ns.AccumulatorFactoryFn(val));
+            }
+            else if(val instanceof rdf.Node && val.isVariable()) {
+                var expr = new sparql.ExprVar(val);             
+                result = new ns.PatternLiteral(expr);               
+            }
+            else if(val instanceof sparql.Expr) {
+                result = new ns.PatternLiteral(expr);               
+            }
 			else if(_(val).isObject()) {
 			    
 			    var fnCustomAggFactory = val['createAggregator'];
@@ -1266,6 +1322,7 @@
 			    }
 			}
 			else {
+			    console.log('[ERROR] Unknown item type: ', val);
 				throw "Unkown item type";
 			}
 

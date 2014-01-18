@@ -12,17 +12,95 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.aksw.commons.util.StreamUtils;
+import org.aksw.jassa.sparql_path.core.algorithm.PathFinderConfig;
 import org.aksw.jassa.sparql_path.core.domain.Path;
 import org.aksw.jassa.sparql_path.core.domain.Step;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Multimap;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+
+
+class Step<T> {
+    
+}
+
+/*
+ *  We could mark each node with the paths on which they lie
+ *  Multimap<T> startToTargetToPaths
+ *   
+ */
+
+
+class Frontier<T> {
+    private Frontier<T> parent;
+    
+    // The step taken from the parent
+    private Step<T> step;
+    
+    // The nodes to which that step led
+    private Set<T> nodes;
+    
+    private Multimap<T, Step<T>> nodeToReachingSet;
+}
+
+
+/**
+ * 
+ * 
+ * @author raven
+ *
+ * @param <T>
+ */
+class BfsTask<T> {
+
+    private Map<>pairToPaths
+    
+    private PathFinderConfig config;
+    
+    
+    // A map from the nodes by which frontiers it has been visited
+    private Map<Node, Map<Integer, Frontie>>
+    
+    
+    List<Set<Frontier<T>>> waves;
+    
+    public BfsTask(PathFinderConfig config) {
+        this.config = config;
+    }
+    
+    public void run() {
+        for(Set<Frontier<T>> frontiers : waves) {
+            List<Frontier<T>> nextFrontiers = new List<Frontier<T>>());
+            
+            for(Frontier<T> frontier : frontiers) {
+                Frontier<T> outF = createFrontier(frontier, true);
+                
+                
+                // Check if any of the nodes of the frontier overlap with nodes of another wave
+                for(T node : frontier.getNodes()) {
+                    nodeToWaves.get(node);
+                    
+                    
+                }
+            }
+            
+        }
+    }
+    
+    
+    
+
+    public static void create(NeighborProvider<Resource> np, Resource start, Resource dest) {
+    }
+}
+
 
 
 /**

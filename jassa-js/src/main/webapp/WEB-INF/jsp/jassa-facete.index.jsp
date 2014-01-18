@@ -187,7 +187,97 @@
 	var util = Jassa.util;
 	var client = Jassa.client;
 	
+	var geo = Jassa.geo;
+	
 	var facete = Jassa.facete;
+	
+	
+    var ns = {};
+
+		
+	
+	
+	var conceptPathFinderApiUrl = 'http://localhost:8080/jassa/api/path-finding';
+
+	
+	var conceptWgs84 = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), rdf.NodeFactory.createVar('s'));
+	var conceptGeoVocab = new facete.Concept(sparql.ElementString.create('?s <http://geovocab.org/geometry#geometry> ?w'), rdf.NodeFactory.createVar('s'));
+
+	var geoConcepts = [conceptWgs84, conceptGeoVocab];
+	
+	
+	var mapParser = new sponate.MapParser();
+
+	var vs = rdf.NodeFactory.createVar('s');
+	var vx = rdf.NodeFactory.createVar('x');
+	var vy = rdf.NodeFactory.createVar('y');
+	var vw = rdf.NodeFactory.createVar('w');
+	
+	var wgs84GeoView = mapParser.parseMap({
+		name: 'lonlat',
+		template: [{
+			id: conceptWgs84.getVar(), //'?s',
+			lon: vx, // '?x',
+			lat: vy, // '?y'
+			wkt: function(b) { return 'POINT(' + b.get(vx) + ' ' + b.get(vy) + ')';}
+		}],
+		from: conceptWgs84.getElement()
+	});
+	
+	
+	var ogcGeoView = mapParser.parseMap({
+		name: 'lonlat',
+		template: [{
+		    id: conceptGeoVocab.getVar(),
+		    wkt: vw
+		}],
+		from: conceptGeoVocab.getElement()
+	});
+	
+	
+    ns.GeoMapFactory = Class.create({
+	    initialize: function(baseSponateView, bboxExprFactory) {
+	        //this.template = template;
+	        //this.baseElement = baseElement;
+	        this.baseSponateView = baseSponateView;
+	        this.bboxExprFactory = bboxExprFactory;
+	    },
+
+	    createMap: function(bounds) {
+	        var baseSponateView = this.baseSponateView;
+	        var bboxExprFactory = this.bboxExprFactory;
+	        
+	        var pattern = baseSponateView.getPattern();
+		    var baseElementFactory = baseSponateView.getElementFactory();
+		    
+		    var baseElement = baseElementFactory.createElement();
+			var element = this.baseBaseElement;	       
+		    if(bounds) {
+				var filterExpr = bboxExprFactory.createExpr(bounds);
+				var filterElement = new sparql.ElementFilter(filterExpr);
+		       
+		       	element = new sparql.ElementGroup([baseElement, filterElement]);
+		    }
+		       
+			var result = new sponate.Mapping(null, pattern, new sparql.ElementFactoryConst(element));
+			return result;
+		}
+	});
+	
+	
+    var wgs84MapFactory = new ns.GeoMapFactory(wgs84GeoView, new geo.BBoxExprFactoryWgs84(vx, vy));
+	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
+    
+	var bounds = {left: 0, bottom: 0, right: 10, top: 10};
+	
+	var tmp = wgs84MapFactory.createMap(bounds);
+	/*
+	var flow = sponateBuilder.create(startMap).
+	
+	*/
+	
+	console.log('geoLonLatView ' + tmp);
+
 	
 // 	alert(rdf.NodeFactory.parseRdfTerm('_:boo'));
 // 	alert(rdf.NodeFactory.parseRdfTerm('<http://example.org>'));
@@ -206,7 +296,7 @@
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
-//	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+	//var defaultGraphUris = ['http://fts.publicdata.eu/'];
 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 
  	
@@ -250,6 +340,26 @@
 	
 	var labelStore = store.labels;
 
+	/* 
+	var pathToElement = function(path) {
+
+	    var concept = fctService.createConceptFacetValues(path);			
+		
+		var baseConcept = configModel.get('concept');				
+		var tmpConcept = hack.createConcept();
+
+		
+		var concept = baseConcept.combineWith(tmpConcept);
+
+		var pathConstraintFactory = new facets.PathConstraintWgs84.Factory.create(geoPath);
+		var geoConceptFactoryBase = new facets.GeoConceptFactory(rootFacetNode, pathConstraintFactory);
+		
+		
+		var geoConceptFactory = new facets.GeoConceptFactoryCombine(concept, geoConceptFactoryBase);
+			    
+	};
+	*/
+	
 // 	store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).limit(10).asList().done(function(items) {
 	    
 // 	});
@@ -302,7 +412,6 @@
     
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
     
-    var ns = {};
     
 
     ns.flattenTree = function(node, childPropertyName, result) {
@@ -983,7 +1092,7 @@
 		        return;
 		    }
 		    
-		    var conceptPathFinder = new client.ConceptPathFinderApi('http://localhost:7532/api/path-finding', sparqlEndpointUrl, defaultGraphUris);
+		    var conceptPathFinder = new client.ConceptPathFinderApi(conceptPathFinderApiUrl, sparqlEndpointUrl, defaultGraphUris);
 		    
 		    var sourceConcept = fctService.createConceptFacetValues(new facete.Path());			
 
@@ -997,7 +1106,10 @@
 			result.then(function(paths) {
 			    console.log('Paths', paths);
 			    var tmp = _(paths).map(function(path) {
-			        return {name: path.toString()};
+			        
+			        var geoConcept = fctService.createConceptFacetValues(path);
+			        
+			        return {name: path.toString(), geoConcept: geoConcept.toString() };
 			    });
 			   
 			    $scope.items = tmp;
@@ -1239,7 +1351,7 @@
 	        	<div ng-controller="FacetTreeSearchCtrl">
 	        		<input type="search" ng-model="searchText" /><button>Search</button>
 	        		<ul>
-	        			<li ng-repeat="item in items">{{item.name}}</li>
+	        			<li ng-repeat="item in items">{{item.name}} --- {{item.geoConcept}}</li>
 	        		</ul>
 	        	</div>
 	        

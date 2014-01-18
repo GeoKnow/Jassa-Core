@@ -8,8 +8,8 @@
  */
 
 (function() {
-
-	var ns = Namespace("org.aksw.ssb.collections.QuadTree");
+    
+	var ns = Jassa.geo;
 	
 	ns.QuadTree = function(bounds, maxDepth, k) {
 		if(k == undefined) {

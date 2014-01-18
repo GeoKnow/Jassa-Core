@@ -479,6 +479,11 @@
 			
 			toString: function() {
 				return "langMatches(" + this.left + ", " + this.right + ")";
+			},
+			
+			getVarsMentioned: function() {
+			    var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+			    return result;
 			}
 	};
 	
@@ -503,6 +508,10 @@
 			
 			toString: function() {
 				return "lang(" + this.expr + ")";
+			},
+			
+			getVarsMentioned: function() {
+			    return this.expr.getVarsMentioned();
 			}
 	};
 	
@@ -574,48 +583,63 @@
 		return "(" + this.left + " < " + this.right + ")";
 	};
 	
-	ns.E_LogicalAnd = function(left, right) {
-		this.left = left;
-		this.right = right;
-	};
+	ns.E_LogicalAnd = Class.create(ns.ExprFunction2, {
+	    initialize: function(left, right) {
+	        this.left = left;
+	        this.right = right;
+	    },
 
-	ns.E_LogicalAnd.prototype.copySubstitute = function(fnNodeMap) {
-		//return new ns.E_LogicalAnd(fnNodeMap(this.left), fnNodeMap(this.right));
-		return new ns.E_LogicalAnd(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
-	};
+	    copySubstitute: function(fnNodeMap) {
+	        // return new ns.E_LogicalAnd(fnNodeMap(this.left), fnNodeMap(this.right));
+	        return new ns.E_LogicalAnd(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
+	    },
 	
-	ns.E_LogicalAnd.prototype.getArgs = function() {
-		return [this.left, this.right];
-	};
+	    getArgs: function() {
+	        return [this.left, this.right];
+	    },
 	
-	ns.E_LogicalAnd.prototype.copy = function(args) {
-		return ns.newBinaryExpr(ns.E_LogicalAnd, args);
-	};
+	    copy: function(args) {
+	        return ns.newBinaryExpr(ns.E_LogicalAnd, args);
+	    },
 	
-	ns.E_LogicalAnd.prototype.toString = function() {
-		return "(" + this.left + " && " + this.right + ")";
-	};
+	    toString: function() {
+	        return "(" + this.left + " && " + this.right + ")";
+	    },
+	    
+	    getVarsMentioned: function() {
+	        var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+	        return result;
+	    }
+	});
 	
-	ns.E_LogicalOr = function(left, right) {
-		this.left = left;
-		this.right = right;
-	};
+	ns.E_LogicalOr = Class.create(ns.ExprFunction2, {
+	    initialize: function(left, right) {
+		    this.left = left;
+		    this.right = right;
+	    },
 
-	ns.E_LogicalOr.prototype.copySubstitute = function(fnNodeMap) {
-		return new ns.E_LogicalOr(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
-	};
+	    copySubstitute: function(fnNodeMap) {
+	        return new ns.E_LogicalOr(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
+	    },
 	
-	ns.E_LogicalOr.prototype.getArgs = function() {
-		return [this.left, this.right];
-	};
+	    getArgs: function() {
+	        return [this.left, this.right];
+	    },
 	
-	ns.E_LogicalOr.prototype.copy = function(args) {
-		return ns.newBinaryExpr(ns.E_LogicalOr, args);
-	};
+	    copy: function(args) {
+	        return ns.newBinaryExpr(ns.E_LogicalOr, args);
+	    },
 
-	ns.E_LogicalOr.prototype.toString = function() {
-		return "(" + this.left + " || " + this.right + ")";
-	};
+	    toString: function() {
+	        return "(" + this.left + " || " + this.right + ")";
+	    },
+	    
+        getVarsMentioned: function() {
+            var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+            return result;
+        }
+    });
+
 
 
 	ns.E_LogicalNot = function(expr) {
@@ -887,6 +911,10 @@
 		makeInteger: function(val) {
 			return new ns.NodeValue.createLiteral(val, xsd.str.xint);
 		},
+
+		makeDecimal: function(val) {
+            return new ns.NodeValue.createLiteral(val, xsd.str.decimal);
+        },
 		
 		makeFloat: function(val) {
 			return new ns.NodeValue.createLiteral(val, xsd.str.xfloat);

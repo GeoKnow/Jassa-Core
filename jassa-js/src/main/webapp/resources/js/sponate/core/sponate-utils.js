@@ -5,8 +5,82 @@
 	
 	var sparql = Jassa.sparql; 
 	var util = Jassa.util;
+
 	var ns = Jassa.sponate;
 
+	
+	ns.MapParser = Class.create({
+	    initialize: function(prefixMap, patternParser) {
+	        this.patternParser = patternParser || new ns.ParserPattern();
+	    },
+	    
+	    parseMap: function(spec) {
+	        var result = ns.SponateUtils.parseMap(spec, this.prefixMap, this.patternParser);
+	        return result;
+	    }
+	});
+	
+	ns.SponateUtils = {
+	    /**
+	     * Parse a sponate mapping spec JSON object and return a sponate.Mapping object 
+	     * 
+	     * TODO Add fallback to default patternParser if none provided
+	     */
+	    parseMap: function(spec, prefixMap, patternParser) {
+            var name = spec.name;
+
+            var jsonTemplate = spec.template;
+            var from = spec.from;
+
+            var context = this.context;
+            
+            // Parse the 'from' attribute into an ElementFactory
+            // TODO Move to util class
+            var elementFactory;
+            if(_(from).isString()) {
+                
+                var elementStr = from;
+                
+                if(prefixMap != null) {
+                    var prefixes = prefixMap.getJson();
+                    //var vars = sparql.extractSparqlVars(elementStr);
+                    var str = sparql.expandPrefixes(prefixes, elementStr);
+                }
+
+                var element = sparql.ElementString.create(str);//, vars);
+                
+                elementFactory = new sparql.ElementFactoryConst(element);
+            }
+            else if(from instanceof sparql.Element) {
+                elementFactory = new sparql.ElementFactoryConst(from);
+            }
+            else if(from instanceof sparql.ElementFactory) {
+                elementFactory = from;
+            }
+            else {
+                console.log('[ERROR] Unknown argument type for "from" attribute', from);
+                throw 'Bailing out';
+            }
+            
+            //this.context.mapTableNameToElementFactory(name, elementFactory);
+            
+            // TODO The support joining the from element
+            
+            var pattern = patternParser.parsePattern(jsonTemplate);           
+
+            var patternRefs = ns.PatternUtils.getRefs(pattern);
+
+            //console.log('Parsed pattern', JSON.stringify(pattern));
+
+            // The table name is the same as that of the mapping
+            //ns.ContextUtils.createTable(this.context, name, from, patternRefs);
+    
+
+            var result = new ns.Mapping(name, pattern, elementFactory, patternRefs);
+
+            return result;
+	    }
+	};
 	
 	/**
 	 * @Deprecated - Do not use - will be removed asap.

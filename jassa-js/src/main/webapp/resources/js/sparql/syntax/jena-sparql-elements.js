@@ -346,7 +346,7 @@
 	
 	
     ns.Element = Class.create({
-	        
+
     });
 	    
 
@@ -405,7 +405,7 @@
 	 * An element that injects a string "as is" into a query.
 	 * 
 	 */
-	ns.ElementString = Class.create({
+	ns.ElementString = Class.create(ns.Element, {
 		initialize: function(sparqlString) {
 //			if(_(sparqlString).isString()) {
 //				debugger;
@@ -501,8 +501,13 @@
 		}
 	};
 	
-	ns.ElementFilter = function(exprs) {
-		this.exprs = exprs;
+	ns.ElementFilter = function(expr) {
+	    if(_(expr).isArray()) {
+	        console.log('[WARN] Array argument for filter is deprecated');
+	        expr = ns.andify(expr);
+	    }
+	    
+		this.expr = expr;
 	};
 	
 	ns.ElementFilter.classLabel = 'ElementFilter';
@@ -518,20 +523,27 @@
 			}
 		
 		// 	FIXME: Should we clone the attributes too?
-			var result = new ns.ElemenFilter(this.exprs);
+			var result = new ns.ElemenFilter(this.expr);
 			return result;
 		},
 	
 		copySubstitute: function(fnNodeMap) {
-			var exprs = _(this.exprs).map(function(expr) {
-				return expr.copySubstitute(fnNodeMap);
-			});
-		
-			return new ns.ElementFilter(exprs);
+//			var exprs = _(this.exprs).map(function(expr) {
+//				return expr.copySubstitute(fnNodeMap);
+//			});
+
+		    var newExpr = this.expr.copySubstitute(fnNodeMap);
+			return new ns.ElementFilter(newExpr);
 		},
 
 		getVarsMentioned: function() {
-			return [];
+//            _(this.elements).reduce(function(memo, element) {
+//                var evs = element.getVarsMentioned();
+//                var r = _(memo).union(evs);
+//                return r;
+//            }, result);
+		    console.log('filter expr ', this.expr);
+			return this.expr.getVarsMentioned();
 		},
 	
 		flatten: function() {
@@ -540,9 +552,9 @@
 	
 		toString: function() {
 			
-			var expr = ns.andify(this.exprs);
+			//var expr = ns.andify(this.exprs);
 			
-			return "Filter(" + expr + ")";
+			return "Filter(" + this.expr + ")";
 		}
 	};
 	

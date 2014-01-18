@@ -136,6 +136,11 @@
 								
 								<param>facete/facete-playground.js</param>
 								<param>facete/facete-tables.js</param>
+								
+								
+								<param>geo/geo-bbox-expr-factories.js</param>
+								<param>geo/quad-tree.js</param>
+								<param>geo/geo-filter-utils.js</param>
 							</jsSourceFiles>
 							
 

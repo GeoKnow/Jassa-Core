@@ -37,9 +37,9 @@ var Jassa = {
 		//collection: {}
 	},
 	
-	client: {
-	    
-	}
+	client: {},
+	
+	geo: {}
 };
 
 // Export for nodejs

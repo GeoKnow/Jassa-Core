@@ -9,10 +9,13 @@
 	
 	
 	ns.Mapping = Class.create({
-		initialize: function(name, pattern, tableName, patternRefs) {
+		initialize: function(name, pattern, elementFactory, patternRefs) {
 			this.name = name;
 			this.pattern = pattern;
-			this.tableName = tableName;
+			this.elementFactory = elementFactory;
+			
+			// TODO Remove this attribute
+			this.tableName = name;
 
 			// Cached value; inferred from pattern
 			this.patternRefs = patternRefs;
@@ -26,12 +29,21 @@
 			return this.pattern;
 		},
 		
+		getElementFactory: function() {
+		    return this.elementFactory;
+		},
+		
 		getTableName: function() {
 			return this.tableName;
 		},
 		
 		getPatternRefs: function() {
 			return this.patternRefs;
+		},
+		
+		toString: function() {
+		    var result = '[pattern: ' + this.pattern + ', element: ' + this.elementFactory.createElement() + ']';
+		    return result;
 		}
 	});
 	
@@ -61,6 +73,22 @@
 		 * 
 		 */
 		addMap: function(spec) {
+		    var mapping = ns.SponateUtils.parseMap(spec, this.context.getPrefixMap(), this.context.getPatternParser());
+	            
+		    var name = mapping.getName();
+
+		    var elementFactory = mapping.getElementFactory();
+            this.context.mapTableNameToElementFactory(name, elementFactory);
+
+		    this.context.addMapping(mapping);
+	            
+		    // Create a new store object
+		    this.createStore(name);
+	            
+		    return this;
+
+		    
+		    /*
 			var name = spec.name;
 
 			var jsonTemplate = spec.template;
@@ -116,6 +144,7 @@
 			this.createStore(name);
 			
 			return this;
+			*/
 		},
 		
 		createStore: function(name) {
