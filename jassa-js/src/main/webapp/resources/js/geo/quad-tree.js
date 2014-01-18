@@ -46,12 +46,22 @@
 	// In order to make the QuadTree self contained, I added a Point and Bounds class
 	// However, this makes it necessary to and from OpenLayers.
 	// TODO Clarify whether this implementation should be tied to OpenLayers.
-	ns.Point = function(x, y) {
-		this.x = x;
-		this.y = y;
-	};
+	ns.Point = Class.create({
+	    initialize: function(x, y) {
+    		this.x = x;
+    		this.y = y;
+	    },
+	    
+	    getX: function() {
+	        return this.x;
+	    },
+	    
+	    getY: function() {
+	        return this.y;
+	    }
+    });
 	
-	ns.Bounds = function(left, right, bottom, top) {
+	ns.Bounds = function(left, bottom, right, top) {
 		this.left = left;
 		this.right = right;
 		this.bottom = bottom;

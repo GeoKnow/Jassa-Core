@@ -141,6 +141,7 @@
 								<param>geo/geo-bbox-expr-factories.js</param>
 								<param>geo/quad-tree.js</param>
 								<param>geo/geo-filter-utils.js</param>
+								<param>geo/geo-quad-tree-cache.js</param>
 							</jsSourceFiles>
 							
 

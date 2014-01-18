@@ -243,7 +243,12 @@
 	        this.bboxExprFactory = bboxExprFactory;
 	    },
 
-	    createMap: function(bounds) {
+	    createMapForGlobal: function() {
+	        var result = this.createMapForBounds(null);
+	        return result;
+	    },
+	    
+	    createMapForBounds: function(bounds) {
 	        var baseSponateView = this.baseSponateView;
 	        var bboxExprFactory = this.bboxExprFactory;
 	        
@@ -263,14 +268,27 @@
 			return result;
 		}
 	});
+    
+    
+    
+    var wkt = "POLYGON((1 2 3 4 5 6 7 8))";
+    var points = geo.WktUtils.extractPoints(wkt);
+    console.log('points: ' + JSON.stringify(points));
+
+    var bbox = geo.WktUtils.createBBoxFromPoints(points);
+    console.log('bbox: ' + bbox);
+
+    
+    
+    throw 'Done';
 	
 	
     var wgs84MapFactory = new ns.GeoMapFactory(wgs84GeoView, new geo.BBoxExprFactoryWgs84(vx, vy));
 	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
-    
+	pointRegex
 	var bounds = {left: 0, bottom: 0, right: 10, top: 10};
 	
-	var tmp = wgs84MapFactory.createMap(bounds);
+	var tmp = wgs84MapFactory.createMapForBounds(bounds);
 	/*
 	var flow = sponateBuilder.create(startMap).
 	
@@ -624,6 +642,7 @@
 	        link: function (scope, element, attrs) {
 	            // turn the button into a jQuery button
 	            $timeout(function () {
+	                
 	                console.log('rendering map');
 	                /* set text from attribute of custom tag*/
 	                //element.text(attrs.text).button();
@@ -714,7 +733,25 @@
 		};
 	});
 	
-	myModule.controller('ShowQueryCtrl', function($scope, facetService) {
+	
+	
+// 	myModule.controller('Foobar', function($scope, $compile) {
+//         $scope.alert = function() { alert('hi'); };
+	    
+// // 	    $k = $rootScope.$new();
+	    
+// //         $k.total = 1000;
+        
+// //         var xxx = $compile('<div ng-controller="Foobar"><p ng-click="alert()">{{total}}</p></div>')($k);
+// //         console.log('Hooray', xxx);
+// //         jQuery('#foobar2').replaceWith(xxx);
+// //         return {};
+// 	});
+	
+
+	myModule.controller('ShowQueryCtrl', function($rootScope, $scope, facetService, $compile) {
+	    
+	    
 	    $scope.updateQuery = function() {
 		    var concept = fctService.createConceptFacetValues(new facete.Path());			
 			var query = facete.ConceptUtils.createQueryList(concept);			
@@ -1375,7 +1412,7 @@
     <div ng-controller="MapCtrl">
 		<div ssb-map style="width: 500px; height: 300px;"></div>
 	</div>	        
-    
+
 </body>
 
 </html>
