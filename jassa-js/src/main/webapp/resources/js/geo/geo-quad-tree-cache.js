@@ -2,14 +2,13 @@
     
     var ns = Jassa.geo;
 
-    var defaultFn = function(doc) {
-        var str = doc.wkt;
+    var defaultDocWktExtractorFn = function(doc) {
+        var wktStr = doc.wkt;
 
-        // TODO Parse the wkt and extract the BBOX
-        // Hacky regex to get all pairs of points - for the bounding box this could be
-        // sufficient
+        var points = ns.WktUtils.extractPointsFromWkt(wktStr);
+        var result = ns.WktUtils.createBBoxFromPoints(points);
 
-        return new ns.Bounds(0, 0, 10, 10);
+        return result;
     };
 
     var number = '(\\d+(\\.\\d*)?)';
@@ -18,7 +17,7 @@
 
     ns.WktUtils = {
 
-        extractPoints: function(wktStr) {
+        extractPointsFromWkt: function(wktStr) {
             var result = [];
             
             while (match = ns.pointRegexPattern.exec(wktStr)) {
@@ -60,7 +59,11 @@
     
     
     /**
-     * geomPosFetcher
+     * 
+     * fetchData
+     *   runWorkflow
+     *      runGlobalWorkflow
+     *      runTiledWorkflow
      * 
      * 
      * Given a geoQueryFactory (i.e. a factory object, that can create queries for given bounds),
@@ -97,7 +100,7 @@
             
 
             
-            this.fnGetBBox = fnGetBBox || defaultFn;
+            this.fnGetBBox = fnGetBBox || ns.defaultDocWktExtractorFn;
         },
 
         
@@ -115,7 +118,7 @@
     
             var result = $.Deferred();
             
-            var task = this.createWorkflow(bounds);
+            var task = this.runWorkflow(bounds);
             
             task.done(function(nodes) {
                 result.resolve(nodes);
@@ -128,7 +131,7 @@
             return result;
         },
         
-        createWorkflow: function(bounds) {
+        runWorkflow: function(bounds) {
             var rootNode = this.quadTree.getRootNode();
             
             var self = this;
@@ -153,7 +156,7 @@
                     //console.log("Applicability: ", canUseGlobal);
                     
                     rootNode.checkedGlobal = true;
-                    task = canUseGlobal ? self.createGlobalWorkflow(rootNode) : self.loadTiles(bounds);
+                    task = canUseGlobal ? self.runGlobalWorkflow(rootNode) : self.runTiledWorkflow(bounds);
     
                     $.when(task).then(function(nodes) {
                         result.resolve(nodes);
@@ -165,26 +168,30 @@
                 });
             } else {
                 console.log("Using tile based strategy (global strategy checked)");
-                result = self.loadTiles(bounds);
+                result = self.runTiledWorkflow(bounds);
             }
             
             return result;
         },
     
-        createGlobalWorkflow: function(node) {
+        runGlobalWorkflow: function(node) {
         
             var self = this;
             
             var result = $.Deferred();
     
             // Fetch the items
-            var loadTask = self.backendFactory.forGlobal().fetchGeomToFeatureCount().pipe(function(geomToFeatureCount) {
+            var flow = sponate.SponateUtils.createQueryFlow(geoMapFactory.createMapForGlobal());
+
+            var promise = sponate.SponateUtils.exec(sparqlService, flow);
+            
+            var loadTask = promise.pipe(function(docs) {
                 //console.log("Global fetching: ", geomToFeatureCount);
-                self.loadTaskAction(node, geomToFeatureCount);
+                self.loadTaskAction(node, docs);
             });
     
-            $.when(loadTask).then(function() {
-                $.when(self.postProcess([node])).then(function() {
+            loadTask.done(function() {
+                $.when(self.postProcess([node])).done(function() {
                     //console.log("Global workflow completed.");
                     //console.debug("Workflow completed. Resolving deferred.");
                     result.resolve([node]);
@@ -199,143 +206,6 @@
         },
         
         
-        
-        
-        
-        createCountTask: function(node) {
-
-            var self = this;
-            
-            var result =
-                this.backendFactory.forBounds(node.getBounds()).fetchGeomCount(self.maxItemsPerTileCount).pipe(function(value) {
-    
-                    //console.debug("Counted items within " + node.getBounds(), value);
-                    
-                    node.setMinItemCount(value); 
-                    
-                    // If the value is 0, also mark the node as loaded
-                    if(value === 0) {
-                        //self.initNode(node);
-                        node.isLoaded = true;
-                    }
-                });
-            
-            return result;
-        },
-    
-        /**
-         * If either the minimum number of items in the node is above the threshold or
-         * all children have been counted, then there is NO need for counting
-         * 
-         */
-        isCountingNeeded: function(node) {
-            //console.log("Node To Count:", node, node.isCountComplete());
-            
-            return !(this.isTooManyGeoms(node) || node.isCountComplete());
-        },
-    
-    
-
-        /**
-         * Loading is needed if NONE of the following criteria applies:
-         * . node was already loaded
-         * . there are no items in the node
-         * . there are to many items in the node
-         * 
-         */
-        isLoadingNeeded: function(node) {
-    
-            //(node.data && node.data.isLoaded)
-            var noLoadingNeeded = node.isLoaded || (node.isCountComplete() && node.infMinItemCount === 0) || this.isTooManyGeoms(node);
-            
-            return !noLoadingNeeded;
-        },
-    
-    
-        isTooManyGeoms: function(node) {    
-            //console.log("FFS", node.infMinItemCount, node.getMinItemCount());
-            return node.infMinItemCount >= this.maxItemsPerTileCount;
-        },
-        
-    
-    
-        createCountTasks: function(nodes) {
-            var self = this;
-            var result = _.compact(_.map(nodes, function(node) { return self.createCountTask(node); }));
-            
-            /*
-            var result = [];
-            $.each(nodes, function(i, node) {
-                var task = self.createCountTask(node);
-                if(task) {
-                    result.push(task);
-                }
-            });
-            */
-    
-            return result;
-        },
-    
-    
-        /**
-         * 
-         * @param node
-         * @returns
-         */
-        createTaskGeomToFeatureCount: function(node) {
-            var result = this.backend.fetchGeomToFeatureCount().pipe(function(geomToFeatureCount) {
-                node.data.geomToFeatureCount = geomToFeatureCount;
-            });
-            
-            return result;
-        },
-    
-    
-        /**
-         * Sets the node's state to loaded, attaches the geomToFeatureCount to it.
-         * 
-         * @param node
-         * @param geomToFeatureCount
-         */
-        loadTaskAction: function(node, geomToFeatureCount) {
-            //console.log("GeomToFeatureCount", geomToFeatureCount);
-            
-            node.data.geomToFeatureCount = geomToFeatureCount;
-            
-            // We need to load all positions of the geometries
-            
-            
-            // Determine for which geoms we can load the features
-            
-            node.isLoaded = true;
-            //node.data.graph = rdfQueryUtils.rdfQueryFromTalisJson(data); //ns.triplesFromTalisJson(data); //data;//ns.rdfQueryFromTalisJson(data);
-            
-        },
-    
-        createLoadTasks: function(nodes) {
-            var self = this;
-            var result = [];
-                        
-            //$.each(nodes, function(index, node) {
-            _.each(nodes, function(node) {
-                //console.debug("Inferred minimum item count: ", node.infMinItemCount);
-    
-                //if(node.data.absoluteGeomToFeatureCount)
-                
-                var loadTask = self.backendFactory.forBounds(node.getBounds()).fetchGeomToFeatureCount().pipe(function(geomToFeatureCount) {
-                    self.loadTaskAction(node, geomToFeatureCount);
-                });
-    
-                result.push(loadTask);
-            });
-            
-            return result;
-        },
-    
-    
-        
-    
-    
         /**
          * This method implements the primary workflow for tile-based fetching data.
          * 
@@ -358,7 +228,7 @@
          * } 
          * 
          */
-        loadTiles: function(bounds) {
+        runTiledWorkflow: function(bounds) {
             var self = this;
                 
             
@@ -409,7 +279,149 @@
             return result;
         },
 
+        
+        
+        
+        createCountTask: function(node) {
+
+            var self = this;
+
+            var flow = null;
+            
+            var map = geoMapFactory.createMapForBounds(node.getBounds());
+            
+            
+            var limit = self.maxItemsPerTileCount ? self.maxItemsPerTileCount + 1 : null;
+            flow.limit(limit)
+            var concept = flow.getConcept();
+            
+            
+            
+            var result =
+                service.ConceptUtils.fetchCount(concept).pipe(function(itemCount) {
     
+                    //console.debug("Counted items within " + node.getBounds(), value);
+                    
+                    node.setMinItemCount(itemCount); 
+                    
+                    // If the value is 0, also mark the node as loaded
+                    if(itemCount === 0) {
+                        //self.initNode(node);
+                        node.isLoaded = true;
+                    }
+                });
+            
+            return result;
+        },
+    
+        /**
+         * If either the minimum number of items in the node is above the threshold or
+         * all children have been counted, then there is NO need for counting
+         * 
+         */
+        isCountingNeeded: function(node) {
+            //console.log("Node To Count:", node, node.isCountComplete());            
+            return !(this.isTooManyGeoms(node) || node.isCountComplete());
+        },
+    
+    
+
+        /**
+         * Loading is needed if NONE of the following criteria applies:
+         * . node was already loaded
+         * . there are no items in the node
+         * . there are to many items in the node
+         * 
+         */
+        isLoadingNeeded: function(node) {
+    
+            //(node.data && node.data.isLoaded)
+            var noLoadingNeeded = node.isLoaded || (node.isCountComplete() && node.infMinItemCount === 0) || this.isTooManyGeoms(node);
+            
+            return !noLoadingNeeded;
+        },
+    
+    
+        isTooManyGeoms: function(node) {    
+            //console.log("FFS", node.infMinItemCount, node.getMinItemCount());
+            return node.infMinItemCount >= this.maxItemsPerTileCount;
+        },
+        
+    
+    
+        createCountTasks: function(nodes) {
+            var self = this;
+            var result = _(nodes).chain()
+                .map(nodes, function(node) {
+                    return self.createCountTask(node);
+                })
+                .compact() // Remove null entries
+                .value();
+            
+            /*
+            var result = [];
+            $.each(nodes, function(i, node) {
+                var task = self.createCountTask(node);
+                if(task) {
+                    result.push(task);
+                }
+            });
+            */
+    
+            return result;
+        },
+    
+//    
+//        /**
+//         * 
+//         * @param node
+//         * @returns
+//         */
+//        createTaskGeomToFeatureCount: function(node) {
+//            var result = this.backend.fetchGeomToFeatureCount().pipe(function(geomToFeatureCount) {
+//                node.data.geomToFeatureCount = geomToFeatureCount;
+//            });
+//            
+//            return result;
+//        },
+    
+    
+        /**
+         * Sets the node's state to loaded, attaches the geomToFeatureCount to it.
+         * 
+         * @param node
+         * @param geomToFeatureCount
+         */
+        loadTaskAction: function(node, docs) {
+            node.data.docs = docs;
+            node.isLoaded = true;            
+        },
+    
+        createLoadTasks: function(nodes) {
+            var self = this;
+            var result = [];
+                        
+            //$.each(nodes, function(index, node) {
+            _.each(nodes, function(node) {
+                //console.debug("Inferred minimum item count: ", node.infMinItemCount);
+    
+                //if(node.data.absoluteGeomToFeatureCount)
+                
+                var loadTask = self.backendFactory.forBounds(node.getBounds()).fetchGeomToFeatureCount().pipe(function(geomToFeatureCount) {
+                    self.loadTaskAction(node, geomToFeatureCount);
+                });
+    
+                result.push(loadTask);
+            });
+            
+            return result;
+        },
+        
+            
+        /**
+         * TODO Finishing this method at some point to merge nodes together could be useful
+         * 
+         */
         finalizeLoading: function(nodes) {
             // Restructure all nodes that have been completely loaded, 
             var parents = [];
@@ -469,6 +481,8 @@
 
     
         /**
+         * TODO Make sure we never need this method again.
+         * 
          * Extracts labels and geometries from the databanks that were fetched for the nodes 
          * 
          */

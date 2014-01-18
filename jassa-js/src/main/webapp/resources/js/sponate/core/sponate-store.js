@@ -177,7 +177,7 @@
 //				offset: this.offset
 //			};
 		    var c = this.config;
-		    var j = this.config.join;
+		    var j = this.config.join || {};
 		    
 			var config = new ns.QueryConfig(c.criteria, c.limit, c.offset, j.concept, j.isLeftJoin);
 			
@@ -273,7 +273,8 @@
 			//console.log('mapping:', mapping);
 			
 			// Retrieve the mapping's table and the associated element
-			var elementFactory = this.context.getElementFactory(mapping.getTableName());
+			
+			var elementFactory = mapping.getElementFactory(); //this.context.getElementFactory(mapping.getTableName());
 			var outerElement = elementFactory.createElement();
 			
 			

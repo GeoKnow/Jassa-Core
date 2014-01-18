@@ -17,9 +17,11 @@
 		 */
 		compile: function(context, mapping, criteria) {
 
-		    var tableName = mapping.getTableName();
-		    var tableNameToElementFactory = context.getTableNameToElementFactory();
-		    var elementFactory = tableNameToElementFactory[tableName];
+		    //var tableName = mapping.getTableName();
+		    //var tableNameToElementFactory = context.getTableNameToElementFactory();
+		    //var elementFactory = tableNameToElementFactory[tableName];
+		    var elementFactory = mapping.getElementFactory();
+		    
 		    var element = elementFactory.createElement();
 		    		    
 		    var joinNode = sparql.JoinBuilderElement.create(element);

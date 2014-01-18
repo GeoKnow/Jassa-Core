@@ -10,15 +10,16 @@
 	
 	ns.Mapping = Class.create({
 		initialize: function(name, pattern, elementFactory, patternRefs) {
-			this.name = name;
+			// TODO Remove the name attribute
+		    this.name = name;
 			this.pattern = pattern;
 			this.elementFactory = elementFactory;
 			
 			// TODO Remove this attribute
-			this.tableName = name;
+			//this.tableName = name;
 
 			// Cached value; inferred from pattern
-			this.patternRefs = patternRefs;
+			this.patternRefs = patternRefs || [];
 		},
 		
 		getName: function() {
@@ -33,9 +34,9 @@
 		    return this.elementFactory;
 		},
 		
-		getTableName: function() {
-			return this.tableName;
-		},
+//		getTableName: function() {
+//			return this.tableName;
+//		},
 		
 		getPatternRefs: function() {
 			return this.patternRefs;
@@ -67,25 +68,48 @@
 			this.context = new ns.Context();
 			this.context.getPrefixMap().addJson(prefixes);
 		},
+
+		addMap: function(obj, name) {
+		    var result = (obj instanceof ns.Mapping) ? this.addMapObj(name, obj) : this.addMapSpec(obj);
+		    return result;
+		},
+		
+		addMapObj: function(name, map) {
+            //var name = nameOverride || mapping.getName();
+
+            var elementFactory = map.getElementFactory();
+            this.context.mapTableNameToElementFactory(name, elementFactory);
+
+            this.context.addMapping(name, map);
+                
+            // Create a new store object
+            this.createStore(name);
+                
+            return this;
+		    
+		},
 		
 		/**
 		 * Add a mapping specification
 		 * 
 		 */
-		addMap: function(spec) {
-		    var mapping = ns.SponateUtils.parseMap(spec, this.context.getPrefixMap(), this.context.getPatternParser());
+		addMapSpec: function(spec) {
+		    var map = ns.SponateUtils.parseMap(spec, this.context.getPrefixMap(), this.context.getPatternParser());
 	            
-		    var name = mapping.getName();
+		    var name = spec.name; //mapping.getName();
 
-		    var elementFactory = mapping.getElementFactory();
-            this.context.mapTableNameToElementFactory(name, elementFactory);
-
-		    this.context.addMapping(mapping);
-	            
-		    // Create a new store object
-		    this.createStore(name);
-	            
-		    return this;
+		    var result = this.addMapObj(name, map);
+		    return result;
+		    
+//		    var elementFactory = mapping.getElementFactory();
+//            this.context.mapTableNameToElementFactory(name, elementFactory);
+//
+//		    this.context.addMapping(mapping);
+//	            
+//		    // Create a new store object
+//		    this.createStore(name);
+//	            
+//		    return this;
 
 		    
 		    /*

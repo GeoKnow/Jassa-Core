@@ -270,7 +270,12 @@
 		
 		getRight: function() {
 			return this.right;
-		}
+		},
+		
+	    getVarsMentioned: function() {
+	        var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+	        return result;
+	    }
 	});
 	
 
@@ -437,7 +442,10 @@
 	
 	
 	ns.E_Equals = Class.create(ns.ExprFunction2, {
-	
+	    initialize: function($super, left, right) {
+	        $super(left, right);
+	    },
+	    
 		copySubstitute: function(fnNodeMap) {
 //		    if(!this.right.copySubstitute) {
 //		        debugger;
@@ -455,7 +463,7 @@
 	
 		eval: function(binding) {
 			// TODO Evaluate the expression
-		},
+		}
 	});
 
 	
@@ -541,62 +549,63 @@
 	
 	
 	
-	ns.E_GreaterThan = function(left, right) {
-		this.left = left;
-		this.right = right;
-	};
+	ns.E_GreaterThan = Class.create(ns.ExprFunction2, {
+	    initialize: function($super, left, right) {
+	        $super(left, right);
+	    },
 
-	ns.E_GreaterThan.prototype.copySubstitute = function(fnNodeMap) {
-		return new ns.E_GreaterThan(fnNodeMap(this.left), fnNodeMap(this.right));
-	};
+	    copySubstitute: function(fnNodeMap) {
+	        return new ns.E_GreaterThan(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
+	    },
 
-	ns.E_GreaterThan.prototype.getArgs = function() {
-		return [this.left, this.right];
-	};
+//	    getArgs: function() {
+//    		return [this.left, this.right];
+//    	},
 	
-	ns.E_GreaterThan.prototype.copy = function(args) {
-		return ns.newBinaryExpr(ns.E_GreaterThan, args);
-	};
+    	copy: function(args) {
+    	    return ns.newBinaryExpr(ns.E_GreaterThan, args);
+    	},
 	
-	ns.E_GreaterThan.prototype.toString = function() {
-		return "(" + this.left + " > " + this.right + ")";
-	};
+    	toString: function() {
+    	    return "(" + this.left + " > " + this.right + ")";
+    	}
+	});
 
-	ns.E_LessThan = function(left, right) {
-		this.left = left;
-		this.right = right;
-	};
+	ns.E_LessThan = Class.create(ns.ExprFunction2, {
+        initialize: function($super, left, right) {
+            $super(left, right);
+        },
 
-	ns.E_LessThan.prototype.copySubstitute = function(fnNodeMap) {
-		return new ns.E_LessThan(fnNodeMap(this.left), fnNodeMap(this.right));
-	};
+        copySubstitute: function(fnNodeMap) {
+            return new ns.E_LessThan(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
+        },
 
-	ns.E_LessThan.prototype.getArgs = function() {
-		return [this.left, this.right];
-	};
+//        getArgs: function() {
+//            return [this.left, this.right];
+//        },
 	
-	ns.E_LessThan.prototype.copy = function(args) {
-		return ns.newBinaryExpr(ns.E_LessThan, args);
-	};
+        copy: function(args) {
+            return ns.newBinaryExpr(ns.E_LessThan, args);
+        },
 
-	ns.E_LessThan.prototype.toString = function() {
-		return "(" + this.left + " < " + this.right + ")";
-	};
+        toString: function() {
+            return "(" + this.left + " < " + this.right + ")";
+        }
+    });
 	
 	ns.E_LogicalAnd = Class.create(ns.ExprFunction2, {
-	    initialize: function(left, right) {
-	        this.left = left;
-	        this.right = right;
-	    },
+        initialize: function($super, left, right) {
+            $super(left, right);
+        },
 
 	    copySubstitute: function(fnNodeMap) {
 	        // return new ns.E_LogicalAnd(fnNodeMap(this.left), fnNodeMap(this.right));
 	        return new ns.E_LogicalAnd(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
 	    },
 	
-	    getArgs: function() {
-	        return [this.left, this.right];
-	    },
+//	    getArgs: function() {
+//	        return [this.left, this.right];
+//	    },
 	
 	    copy: function(args) {
 	        return ns.newBinaryExpr(ns.E_LogicalAnd, args);
@@ -604,19 +613,13 @@
 	
 	    toString: function() {
 	        return "(" + this.left + " && " + this.right + ")";
-	    },
-	    
-	    getVarsMentioned: function() {
-	        var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
-	        return result;
-	    }
+	    }	    
 	});
 	
 	ns.E_LogicalOr = Class.create(ns.ExprFunction2, {
-	    initialize: function(left, right) {
-		    this.left = left;
-		    this.right = right;
-	    },
+        initialize: function($super, left, right) {
+            $super(left, right);
+        },
 
 	    copySubstitute: function(fnNodeMap) {
 	        return new ns.E_LogicalOr(this.left.copySubstitute(fnNodeMap), this.right.copySubstitute(fnNodeMap));
@@ -632,12 +635,7 @@
 
 	    toString: function() {
 	        return "(" + this.left + " || " + this.right + ")";
-	    },
-	    
-        getVarsMentioned: function() {
-            var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
-            return result;
-        }
+	    }	    
     });
 
 

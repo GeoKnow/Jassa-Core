@@ -197,106 +197,6 @@
 		
 	
 	
-	var conceptPathFinderApiUrl = 'http://localhost:8080/jassa/api/path-finding';
-
-	
-	var conceptWgs84 = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), rdf.NodeFactory.createVar('s'));
-	var conceptGeoVocab = new facete.Concept(sparql.ElementString.create('?s <http://geovocab.org/geometry#geometry> ?w'), rdf.NodeFactory.createVar('s'));
-
-	var geoConcepts = [conceptWgs84, conceptGeoVocab];
-	
-	
-	var mapParser = new sponate.MapParser();
-
-	var vs = rdf.NodeFactory.createVar('s');
-	var vx = rdf.NodeFactory.createVar('x');
-	var vy = rdf.NodeFactory.createVar('y');
-	var vw = rdf.NodeFactory.createVar('w');
-	
-	var wgs84GeoView = mapParser.parseMap({
-		name: 'lonlat',
-		template: [{
-			id: conceptWgs84.getVar(), //'?s',
-			lon: vx, // '?x',
-			lat: vy, // '?y'
-			wkt: function(b) { return 'POINT(' + b.get(vx) + ' ' + b.get(vy) + ')';}
-		}],
-		from: conceptWgs84.getElement()
-	});
-	
-	
-	var ogcGeoView = mapParser.parseMap({
-		name: 'lonlat',
-		template: [{
-		    id: conceptGeoVocab.getVar(),
-		    wkt: vw
-		}],
-		from: conceptGeoVocab.getElement()
-	});
-	
-	
-    ns.GeoMapFactory = Class.create({
-	    initialize: function(baseSponateView, bboxExprFactory) {
-	        //this.template = template;
-	        //this.baseElement = baseElement;
-	        this.baseSponateView = baseSponateView;
-	        this.bboxExprFactory = bboxExprFactory;
-	    },
-
-	    createMapForGlobal: function() {
-	        var result = this.createMapForBounds(null);
-	        return result;
-	    },
-	    
-	    createMapForBounds: function(bounds) {
-	        var baseSponateView = this.baseSponateView;
-	        var bboxExprFactory = this.bboxExprFactory;
-	        
-	        var pattern = baseSponateView.getPattern();
-		    var baseElementFactory = baseSponateView.getElementFactory();
-		    
-		    var baseElement = baseElementFactory.createElement();
-			var element = this.baseBaseElement;	       
-		    if(bounds) {
-				var filterExpr = bboxExprFactory.createExpr(bounds);
-				var filterElement = new sparql.ElementFilter(filterExpr);
-		       
-		       	element = new sparql.ElementGroup([baseElement, filterElement]);
-		    }
-		       
-			var result = new sponate.Mapping(null, pattern, new sparql.ElementFactoryConst(element));
-			return result;
-		}
-	});
-    
-    
-    
-    var wkt = "POLYGON((1 2 3 4 5 6 7 8))";
-    var points = geo.WktUtils.extractPoints(wkt);
-    console.log('points: ' + JSON.stringify(points));
-
-    var bbox = geo.WktUtils.createBBoxFromPoints(points);
-    console.log('bbox: ' + bbox);
-
-    
-    
-    throw 'Done';
-	
-	
-    var wgs84MapFactory = new ns.GeoMapFactory(wgs84GeoView, new geo.BBoxExprFactoryWgs84(vx, vy));
-	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
-	pointRegex
-	var bounds = {left: 0, bottom: 0, right: 10, top: 10};
-	
-	var tmp = wgs84MapFactory.createMapForBounds(bounds);
-	/*
-	var flow = sponateBuilder.create(startMap).
-	
-	*/
-	
-	console.log('geoLonLatView ' + tmp);
-
-	
 // 	alert(rdf.NodeFactory.parseRdfTerm('_:boo'));
 // 	alert(rdf.NodeFactory.parseRdfTerm('<http://example.org>'));
 // 	alert(rdf.NodeFactory.parseRdfTerm('"foo"'));
@@ -358,6 +258,124 @@
 	
 	var labelStore = store.labels;
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	var conceptPathFinderApiUrl = 'http://localhost:8080/jassa/api/path-finding';
+
+	
+	var conceptWgs84 = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), rdf.NodeFactory.createVar('s'));
+	var conceptGeoVocab = new facete.Concept(sparql.ElementString.create('?s <http://geovocab.org/geometry#geometry> ?w'), rdf.NodeFactory.createVar('s'));
+
+	var geoConcepts = [conceptWgs84, conceptGeoVocab];
+	
+	
+	var mapParser = new sponate.MapParser();
+
+	var vs = rdf.NodeFactory.createVar('s');
+	var vx = rdf.NodeFactory.createVar('x');
+	var vy = rdf.NodeFactory.createVar('y');
+	var vw = rdf.NodeFactory.createVar('w');
+	
+	// TODO WARNING: BUG: For all variables used in the function must be 'simple' var references, otherwise the generated query will not know about them
+	var wgs84GeoView = mapParser.parseMap({
+		name: 'lonlat',
+		template: [{
+			id: conceptWgs84.getVar(), //'?s',
+			lon: vx, // '?x',
+			lat: vy, // '?y'
+			wkt: function(b) { return 'POINT(' + b.get(vx).getLiteralValue() + ' ' + b.get(vy).getLiteralValue() + ')';}
+		}],
+		from: conceptWgs84.getElement()
+	});
+	
+	
+	var ogcGeoView = mapParser.parseMap({
+		name: 'lonlat',
+		template: [{
+		    id: conceptGeoVocab.getVar(),
+		    wkt: vw
+		}],
+		from: conceptGeoVocab.getElement()
+	});
+	
+	
+    ns.GeoMapFactory = Class.create({
+	    initialize: function(baseSponateView, bboxExprFactory) {
+	        //this.template = template;
+	        //this.baseElement = baseElement;
+	        this.baseSponateView = baseSponateView;
+	        this.bboxExprFactory = bboxExprFactory;
+	    },
+
+	    createMapForGlobal: function() {
+	        var result = this.createMapForBounds(null);
+	        return result;
+	    },
+	    
+	    createMapForBounds: function(bounds) {
+	        var baseSponateView = this.baseSponateView;
+	        var bboxExprFactory = this.bboxExprFactory;
+	        
+	        var pattern = baseSponateView.getPattern();
+		    var baseElementFactory = baseSponateView.getElementFactory();
+		    
+		    var baseElement = baseElementFactory.createElement();
+			var element = this.baseBaseElement;	       
+		    if(bounds) {
+				var filterExpr = bboxExprFactory.createExpr(bounds);
+				var filterElement = new sparql.ElementFilter(filterExpr);
+		       
+		       	element = new sparql.ElementGroup([baseElement, filterElement]);
+		    }
+		       
+			var result = new sponate.Mapping(null, pattern, new sparql.ElementFactoryConst(element));
+			return result;
+		}
+	});
+    
+    
+    
+    var wkt = "POLYGON((1 2 3 4 5 6 7 8))";
+    wkt = 'GEOMETRYCOLLECTION(POINT(10 10), POINT(30 30), LINESTRING(15 15, 20 20))';
+    var points = geo.WktUtils.extractPointsFromWkt(wkt);
+    console.log('points: ' + JSON.stringify(points));
+
+    var bbox = geo.WktUtils.createBBoxFromPoints(points);
+    console.log('bbox: ' + bbox);
+
+    
+	
+	
+    var wgs84MapFactory = new ns.GeoMapFactory(wgs84GeoView, new geo.BBoxExprFactoryWgs84(vx, vy));
+	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
+
+	var bounds = {left: 0, bottom: 0, right: 10, top: 10};
+	
+	var wgs84Map = wgs84MapFactory.createMapForBounds(bounds);
+	
+	store.addMap(wgs84Map, 'wgs84');
+	store.wgs84.find().limit(10).asList().done(function(docs) {
+	   console.log('docs: ', docs); 
+	});
+	
+	/*
+	var flow = sponateBuilder.create(startMap).
+	
+	*/
+	
+	
+	
+	
+	
+	
+	
 	/* 
 	var pathToElement = function(path) {
 

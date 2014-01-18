@@ -186,8 +186,8 @@
 			this.tableNameToElementFactory[tableName] = elementFactory;
 		},
 		
-		addMapping: function(mapping) {
-			var name = mapping.getName();
+		addMapping: function(name, mapping) {
+			//var name = mapping.getName();
 			this.nameToMapping[name] = mapping;
 		},
 		

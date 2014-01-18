@@ -35,7 +35,7 @@
             this.node = val;
         },
         
-        toJson: function() {
+        getJson: function() {
             return this.node;
             //return this.node.toString();
         },
@@ -384,6 +384,10 @@
 	 */
 	ns.PatternObject = Class.create(ns.Pattern, {
 		initialize: function(attrToPattern) {
+
+		    console.log('attrToPattern', attrToPattern);
+		    
+		    
 			this.attrToPattern = attrToPattern;
 		},
 
@@ -429,8 +433,15 @@
 				return x.toString();
 			});
 			
-			_.each(this.attrToPattern, function(member, k) {
-				result = result.concat(member.getVarsMentioned());
+			_(this.attrToPattern).each(function(member, k) {
+			    var vs = member.getVarsMentioned();
+			    
+			    if(!vs) {
+			        console.log('[ERROR] Could not retrieve vars for member of pattern', this, member);
+			    }
+			    else {
+			        result = result.concat(vs);
+			    }
 			});
 			result = _.uniq(result, false, fnToString);	
 			
