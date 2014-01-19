@@ -29,7 +29,8 @@
 	}
 	
 	.highlite {
-	    background-color: #ddeeff;
+	    /*background-color: #ddeeff;*/
+	    background-color: #ddddff;
 	}
 	
 	input[type=text] .btn-xs, input[type=password] .btn-xs {
@@ -49,6 +50,22 @@
 /* 		background-color: #EEEEEE; */
 	}
 	
+	.portlet {
+/* 		border: 1px; */
+/* 		border-collapse: true; */
+/* 		border-style: solid; */
+/* 		border-color: #cccccc; */
+/* 		padding-right: 0px; */
+		padding: 5px;
+/* 		padding-bottom: 16px; */
+/*  		margin-top: 3px; */
+ 		margin: 5px;
+/*  		margin-bottom: 3px; */
+ 		background-color: #EFEFEF;
+/*  		background-color: #eeeeee; */
+/* 		background-color: #EEEEEE; */
+	}
+
 	a {
 	    cursor: pointer
 	}
@@ -327,7 +344,7 @@
 		    var baseElementFactory = baseSponateView.getElementFactory();
 		    
 		    var baseElement = baseElementFactory.createElement();
-			var element = this.baseBaseElement;	       
+			var element = baseElement;	       
 		    if(bounds) {
 				var filterExpr = bboxExprFactory.createExpr(bounds);
 				var filterElement = new sparql.ElementFilter(filterExpr);
@@ -365,6 +382,16 @@
 	   console.log('docs: ', docs); 
 	});
 	
+	
+	var qtc = new geo.QuadTreeCache(qef, wgs84MapFactory);
+	var b = new geo.Bounds.createFromJson(bounds);
+	var promise = qtc.fetchData(b);
+	promise.done(function(data) {
+	    console.log('yay:', data);
+	}).fail(function(data) {
+	   console.log('nay:', data); 
+	});
+
 	/*
 	var flow = sponateBuilder.create(startMap).
 	
@@ -655,7 +682,7 @@
         
 	    return {
 	        restrict: 'EA', // says that this directive is only for html elements
-	        replace: false,        
+	        replace: true,        
 	        template: '<div></div>', 
 	        link: function (scope, element, attrs) {
 	            // turn the button into a jQuery button
@@ -1359,78 +1386,79 @@
 
 <body ng-controller="FaceteContextCtrl">
 
-    <table class="layout-table">
-        <colgroup>
-            <col width="30%" />
-            <col width="70%" />
-        </colgroup>
-		<tr>
-		    <td>
-	
-				<h3>FavFacets</h3>
-				<div portletheading>
-				    This is a test
-				</div>
-				
-				
-			    <div ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
-			        <span ng-show="favFacets.length == 0">No favourited facets</span> 
-			        <ul ng-repeat="facet in favFacets">
-						<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
-					</ul>
-			    </div>
-			
-				<h3>FacetTree</h3>
-				<div ng-controller="MyCtrl" data-ng-init="refresh()">
-					<div ng-include="'facet-tree-item.html'"></div>
-				</div>
-			
-				<div ng-controller="MyCtrl2">
-					<div ng-include="'result-set-browser.html'"></div>	
-				</div>
-				
-				<div ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
-				    <span ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</span>
-					<ul>
-					    <li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
-					</ul>
-				</div>
-				
-				<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()">
-					<span>Query = {{queryString}}</span>	
-				</div>
-	
-	        </td>
-	
-	        <td style="vertical-align: top">
-	        	<div ng-controller="FacetTreeSearchCtrl">
-	        		<input type="search" ng-model="searchText" /><button>Search</button>
-	        		<ul>
-	        			<li ng-repeat="item in items">{{item.name}} --- {{item.geoConcept}}</li>
-	        		</ul>
-	        	</div>
-	        
-				<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
-				    <table>
-					    <tr><th ng-repeat="column in columns">
+<!-- style="position:fixed; width:100%; height: 100%" -->
+<!-- 	<div style="position:fixed; width:100%; height: 100%"> -->
+		 
+		 
+	 	<div style="position: absolute; top: 0px; left: 0px; width: 30%; height: 100%">
+		
+						<h3>FavFacets</h3>
+						<div portletheading>
+						    This is a test
+						</div>
 						
-						    <a href="" ng-click="removeColumn($index)"><span ng-show="column.isRemoveable" class="glyphicon glyphicon-remove-circle"></span></a>
-						    {{column.displayName}}
-						    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
-			
-							<a href="" ng-visible="column.isSortable && column.sortDirection >= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? 1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-up"></span></a>
-							<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
-					    </th></tr>		
-				    </table>
-				</div>	        
-	        </td>        
-	    </tr>
-    </table>
-    
-    <div ng-controller="MapCtrl">
-		<div ssb-map style="width: 500px; height: 300px;"></div>
-	</div>	        
+						
+					    <div ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
+					        <span ng-show="favFacets.length == 0">No favourited facets</span> 
+					        <ul ng-repeat="facet in favFacets">
+								<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
+							</ul>
+					    </div>
+					
+						<h3>FacetTree</h3>
+						<div class="portlet" ng-controller="MyCtrl" data-ng-init="refresh()">
+							<div ng-include="'facet-tree-item.html'"></div>
+						</div>
+					
+						<div ng-controller="MyCtrl2">
+							<div ng-include="'result-set-browser.html'"></div>	
+						</div>
+						
+						<div ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
+						    <span ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</span>
+							<ul>
+							    <li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
+							</ul>
+						</div>
+						
+						<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()">
+							<span>Query = {{queryString}}</span>	
+						</div>						
+		</div>			
 
+		<div style="position: absolute; top: 0px; left: 30%; width: 20%; height: 10%;">
+			
+			        	<div ng-controller="FacetTreeSearchCtrl">
+			        		<input type="search" ng-model="searchText" /><button>Search</button>
+			        		<ul>
+			        			<li ng-repeat="item in items">{{item.name}} --- {{item.geoConcept}}</li>
+			        		</ul>
+			        	</div>
+			        
+						<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
+						    <table>
+							    <tr><th ng-repeat="column in columns">
+								
+								    <a href="" ng-click="removeColumn($index)"><span ng-show="column.isRemoveable" class="glyphicon glyphicon-remove-circle"></span></a>
+								    {{column.displayName}}
+								    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
+					
+									<a href="" ng-visible="column.isSortable && column.sortDirection >= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? 1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-up"></span></a>
+									<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
+							    </th></tr>		
+						    </table>
+						</div>	        
+		
+		</div>
+
+<!-- 		<div ssb-map style="position: absolute; z-index:-9999; top: 0px; left: 0px; width: 100%; height: 100%;" ng-controller="MapCtrl"></div> -->
+
+		<div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index:-9999" ng-controller="MapCtrl">
+			<div ssb-map style="width: 100%; height: 100%"></div>
+		</div>	        
+
+<!-- 	</div> -->
+		
 </body>
 
 </html>

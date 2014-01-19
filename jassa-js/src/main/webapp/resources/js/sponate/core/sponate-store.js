@@ -187,7 +187,7 @@
 		
         count: function() {
             var c = this.config;
-            var j = this.config.join;
+            var j = this.config.join || {};
             
             var config = new ns.QueryConfig(c.criteria, c.limit, c.offset, j.concept, j.isLeftJoin);
             

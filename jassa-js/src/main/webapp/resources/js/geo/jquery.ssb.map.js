@@ -35,7 +35,7 @@ $.widget("custom.ssbMap", {
 		this.domElement = this.element.get(0);
 
 
-		this.options.zoomLabel = "Click to zoom in on the markers";
+		this.options.zoomLabel = "Click to\nzoom in\non the\ndata";
 
 		
 		//this.nodeToPos = this.options.nodeToPos;

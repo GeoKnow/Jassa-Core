@@ -1,4 +1,4 @@
-(function() {
+(function($) {
     
     var ns = Jassa.geo;
 
@@ -84,11 +84,9 @@
         initialize: function(sparqlService, geoMapFactory, fnGetBBox, options) {
             this.sparqlService = sparqlService;
             
-            var maxBounds = new qt.Bounds(-180.0, 180.0, -90.0, 90.0);
-            this.quadTree = new qt.QuadTree(maxBounds, 18, 0);
+            var maxBounds = new geo.Bounds(-180.0, -90.0, 180.0, 90.0);
+            this.quadTree = new geo.QuadTree(maxBounds, 18, 0);
         
-            this.backendFactory = backendFactory;
-    
             if(!options) {
                 options = {};
             }
@@ -131,6 +129,20 @@
             return result;
         },
         
+        createFlowForBounds: function(bounds) {
+            var store = new sponate.StoreFacade(this.sparqlService); //, prefixes); 
+            var geoMap = this.geoMapFactory.createMapForBounds(bounds);
+            store.addMap(geoMap, 'geoMap');
+            return store.geoMap;            
+        },
+        
+        createFlowForGlobal: function() {
+            var store = new sponate.StoreFacade(this.sparqlService); //, prefixes); 
+            var geoMap = this.geoMapFactory.createMapForGlobal();
+            store.addMap(geoMap, 'geoMap');
+            return store.geoMap;
+        },
+        
         runWorkflow: function(bounds) {
             var rootNode = this.quadTree.getRootNode();
             
@@ -143,8 +155,10 @@
                 
                 result = $.Deferred();
 
-                
-                globalCheckTask = this.backendFactory.forGlobal().fetchGeomCount(self.maxGlobalItemCount).pipe(function(geomCount) {
+
+                var countFlow = this.createFlowForGlobal().find().limit(self.maxGlobalItemCount);
+                var countTask = countFlow.count();
+                var globalCheckTask = countTask.pipe(function(geomCount) {
                     //console.debug("Global check counts", geomCount, self.maxGlobalItemCount);
                     return !(geomCount >= self.maxGlobalItemCount);
                 });
@@ -153,12 +167,17 @@
     
                 globalCheckTask.done(function(canUseGlobal) {
     
-                    //console.log("Applicability: ", canUseGlobal);
+                    console.log("Can use global strategy: ", canUseGlobal);
                     
                     rootNode.checkedGlobal = true;
-                    task = canUseGlobal ? self.runGlobalWorkflow(rootNode) : self.runTiledWorkflow(bounds);
+                    var task;
+                    if(canUseGlobal) {
+                        task = self.runGlobalWorkflow(rootNode);
+                    } else {
+                        task = self.runTiledWorkflow(bounds);
+                    }
     
-                    $.when(task).then(function(nodes) {
+                    $.when(task).done(function(nodes) {
                         result.resolve(nodes);
                     }).fail(function() {
                         result.fail();
@@ -181,15 +200,13 @@
             var result = $.Deferred();
     
             // Fetch the items
-            var flow = sponate.SponateUtils.createQueryFlow(geoMapFactory.createMapForGlobal());
-
-            var promise = sponate.SponateUtils.exec(sparqlService, flow);
-            
-            var loadTask = promise.pipe(function(docs) {
+            var baseflow = this.createFlowForGlobal().find();            
+            var loadTask = baseFlow.asList().pipe(function(docs) {
                 //console.log("Global fetching: ", geomToFeatureCount);
                 self.loadTaskAction(node, docs);
             });
     
+            /*
             loadTask.done(function() {
                 $.when(self.postProcess([node])).done(function() {
                     //console.log("Global workflow completed.");
@@ -201,6 +218,7 @@
             }).fail(function() {
                 result.fail();
             });
+            */
     
             return result;
         },
@@ -230,11 +248,13 @@
          */
         runTiledWorkflow: function(bounds) {
             var self = this;
-                
-            
-            //console.log("Aquiring nodes for " + bounds);
+
+            console.log("Aquiring nodes for " + bounds);
             var nodes = this.quadTree.aquireNodes(bounds, 2);
     
+            debugger;
+            //console.log('Done aquiring');
+            
             // Init the data attribute if needed
             _.each(nodes, function(node) {
                 if(!node.data) {
@@ -285,31 +305,18 @@
         createCountTask: function(node) {
 
             var self = this;
-
-            var flow = null;
-            
-            var map = geoMapFactory.createMapForBounds(node.getBounds());
-            
-            
             var limit = self.maxItemsPerTileCount ? self.maxItemsPerTileCount + 1 : null;
-            flow.limit(limit)
-            var concept = flow.getConcept();
-            
-            
-            
-            var result =
-                service.ConceptUtils.fetchCount(concept).pipe(function(itemCount) {
-    
-                    //console.debug("Counted items within " + node.getBounds(), value);
-                    
-                    node.setMinItemCount(itemCount); 
-                    
-                    // If the value is 0, also mark the node as loaded
-                    if(itemCount === 0) {
-                        //self.initNode(node);
-                        node.isLoaded = true;
-                    }
-                });
+
+            var countFlow = this.createFlowForBounds(node.getBounds()).find().limit(limit);
+            var result = countFlow.count().pipe(function(itemCount) {
+                node.setMinItemCount(itemCount); 
+                
+                // If the value is 0, also mark the node as loaded
+                if(itemCount === 0) {
+                    //self.initNode(node);
+                    node.isLoaded = true;
+                }
+            });
             
             return result;
         },
@@ -352,7 +359,7 @@
         createCountTasks: function(nodes) {
             var self = this;
             var result = _(nodes).chain()
-                .map(nodes, function(node) {
+                .map(function(node) {
                     return self.createCountTask(node);
                 })
                 .compact() // Remove null entries
@@ -393,6 +400,7 @@
          * @param geomToFeatureCount
          */
         loadTaskAction: function(node, docs) {
+            //console.log('Data for ' + node.getBounds() + ': ', docs);
             node.data.docs = docs;
             node.isLoaded = true;            
         },
@@ -406,9 +414,10 @@
                 //console.debug("Inferred minimum item count: ", node.infMinItemCount);
     
                 //if(node.data.absoluteGeomToFeatureCount)
-                
-                var loadTask = self.backendFactory.forBounds(node.getBounds()).fetchGeomToFeatureCount().pipe(function(geomToFeatureCount) {
-                    self.loadTaskAction(node, geomToFeatureCount);
+
+                var loadFlow = self.createFlowForBounds(node.getBounds()).find();
+                var loadTask = loadFlow.asList().pipe(function(docs) {
+                    self.loadTaskAction(node, docs);
                 });
     
                 result.push(loadTask);
@@ -487,6 +496,9 @@
          * 
          */
         postProcess: function(nodes) {
+            
+            return;
+            
             var self = this;
 
             var deferred = $.Deferred();
@@ -643,4 +655,4 @@
 
     
     
-})();
+})(jQuery);
