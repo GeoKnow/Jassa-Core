@@ -142,6 +142,7 @@
 								<param>geo/quad-tree.js</param>
 								<param>geo/geo-filter-utils.js</param>
 								<param>geo/geo-quad-tree-cache.js</param>
+								<param>geo/geo-map-state.js</param>
 							</jsSourceFiles>
 							
 

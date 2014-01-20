@@ -108,23 +108,24 @@
          */
         fetchData: function(bounds) {
             // TODO Why do we lock at all???? - The frequency of locks should not be of concern here
-            var self = this;
-            if(this.isLocked) {
-                return;
-            }
-            this.isLocked = true;
+//            var self = this;
+//            if(this.isLocked) {
+//                return;
+//            }
+//            this.isLocked = true;
     
-            var result = $.Deferred();
+            var result = this.runWorkflow(bounds);
+            return result;
             
-            var task = this.runWorkflow(bounds);
+//            return task.done(function(nodes) {
+//                result.resolve(nodes);
+//            }).fail(function() {
+//                result.fail();
+//            });
             
-            task.done(function(nodes) {
-                result.resolve(nodes);
-            }).fail(function() {
-                result.fail();
-            }).then(function() {
-                self.isLocked = false;                
-            });
+//            .then(function() {
+//                self.isLocked = false;                
+//            });
             
             return result;
         },
@@ -159,7 +160,7 @@
                 var countFlow = this.createFlowForGlobal().find().limit(self.maxGlobalItemCount);
                 var countTask = countFlow.count();
                 var globalCheckTask = countTask.pipe(function(geomCount) {
-                    //console.debug("Global check counts", geomCount, self.maxGlobalItemCount);
+                    console.debug("Global check counts", geomCount, self.maxGlobalItemCount);
                     return !(geomCount >= self.maxGlobalItemCount);
                 });
     
@@ -197,11 +198,10 @@
         
             var self = this;
             
-            var result = $.Deferred();
     
             // Fetch the items
-            var baseflow = this.createFlowForGlobal().find();            
-            var loadTask = baseFlow.asList().pipe(function(docs) {
+            var baseFlow = this.createFlowForGlobal().find();            
+            var result = baseFlow.asList().pipe(function(docs) {
                 //console.log("Global fetching: ", geomToFeatureCount);
                 self.loadTaskAction(node, docs);
             });
@@ -251,8 +251,7 @@
 
             console.log("Aquiring nodes for " + bounds);
             var nodes = this.quadTree.aquireNodes(bounds, 2);
-    
-            debugger;
+
             //console.log('Done aquiring');
             
             // Init the data attribute if needed

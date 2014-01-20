@@ -233,6 +233,8 @@
 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
 	//var defaultGraphUris = ['http://fts.publicdata.eu/'];
 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
+	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
+	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
 
  	
 // 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
@@ -288,7 +290,7 @@
 
 	
 	var conceptWgs84 = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), rdf.NodeFactory.createVar('s'));
-	var conceptGeoVocab = new facete.Concept(sparql.ElementString.create('?s <http://geovocab.org/geometry#geometry> ?w'), rdf.NodeFactory.createVar('s'));
+	var conceptGeoVocab = new facete.Concept(sparql.ElementString.create('?s <http://www.opengis.net/ont/geosparql#asWKT> ?w'), rdf.NodeFactory.createVar('s'));
 
 	var geoConcepts = [conceptWgs84, conceptGeoVocab];
 	
@@ -368,10 +370,13 @@
     console.log('bbox: ' + bbox);
 
     
+	var intersectsFnName = 'bif:st_intersects';
+	var geomFromTextFnName = 'bif:st_geomFromText';
 	
 	
     var wgs84MapFactory = new ns.GeoMapFactory(wgs84GeoView, new geo.BBoxExprFactoryWgs84(vx, vy));
-	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
+	//var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
+	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw, intersectsFnName, geomFromTextFnName));
 
 	var bounds = {left: 0, bottom: 0, right: 10, top: 10};
 	
@@ -384,6 +389,8 @@
 	
 	
 	var qtc = new geo.QuadTreeCache(qef, wgs84MapFactory);
+	//var qtc = new geo.QuadTreeCache(qef, ogcMapFactory);
+
 	var b = new geo.Bounds.createFromJson(bounds);
 	var promise = qtc.fetchData(b);
 	promise.done(function(data) {
@@ -668,7 +675,17 @@
 	});
 
 	
-	
+	ns.MapUtils = {
+	    getExtent: function(map) {
+	        var olRawExtent = map.getExtent();
+	        var e = olRawExtent.transform(map.projection, map.displayProjection);
+	        
+	        var result = new geo.Bounds(e.left, e.bottom, e.right, e.top);
+	        
+	        return result;
+	    }
+	              
+	};
 
 
 	/**
@@ -683,11 +700,42 @@
 	    return {
 	        restrict: 'EA', // says that this directive is only for html elements
 	        replace: true,        
-	        template: '<div></div>', 
+	        template: '<div></div>',
+	        priority: -10,
 	        link: function (scope, element, attrs) {
-	            // turn the button into a jQuery button
-	            $timeout(function () {
-	                
+	            
+	            // Source: https://github.com/mpriour/azimuthjs/blob/master/src/directives/olMap.js 
+//                 var mapCtls = [];
+//                 $.each(controls, function(i, ctl) {
+//                     var opts = controlOptions[ctl] || undefined;
+//                     ctl = ctl.replace(/^\w/, function(m) {
+//                         return m.toUpperCase()
+//                     });
+//                     mapCtls.push(new OpenLayers.Control[ctl](opts));
+//                 });
+//                 var listeners = {};
+                jQuery.each(attrs, function(key, val) {
+                    var evtType = key.match(/map([A-Z]\w+)/);
+                    if(evtType) {
+                        evtType = evtType[1].replace(/^[A-Z]/,function(m){return m.toLowerCase()});
+                        var $event = {
+                            type: key
+                        };
+                        listeners[evtType] = function(evtObj) {
+                            evtObj.evtType = evtObj.type;
+                            delete evtObj.type;
+                            elem.trigger(angular.extend({}, $event, evtObj));
+                            //We create an $apply if it isn't happening.
+                            //copied from angular-ui uiMap class
+                            if(!scope.$$phase) scope.$apply();
+                        };
+                        var fn = $parse(val);
+                        elem.bind(key, function (evt) {
+                          fn(scope, evt);
+                                                });
+                    }
+                });
+                
 	                console.log('rendering map');
 	                /* set text from attribute of custom tag*/
 	                //element.text(attrs.text).button();
@@ -696,25 +744,60 @@
 	    	      
 	    	      	// Extract the map
 	    	      	var map = widget.map;
-	                
-	    	      	var parentScope = element.parent().scope();
-	                
-	    	      	parentScope.$watch('boxes', function(boxes) {
-	    	      	    angular.forEach(boxes, function(bounds, id) {
-	    	      	      	console.log('adbox', bounds, id);
-	    	      	        widget.addBox(id, bounds);
-	    	      	    });
-						console.log('boxes', boxes);
-	                });
 
+	    	      	map.widget = widget;
 	                var model = $parse(attrs.ssbMap);
 	                console.log('model', model);
 	                //Set scope variable for the map
-	                if(model && !_(model).isFunction()) {
-	                    model.assign(scope, map);
+	                //if(model && !_(model).isFunction()) {
+	                if(model) {
+	                    model.assign(scope, map);//map);
 	                }
+
+	    	      	
+	    	      	//parentScope.map = {};
+	    	      	
+// 	    	      	var inProcess = false;
+// 	    	      	parentScope.$watch('map', function(state) {
+// 	    	      	    if(inProcess) {
+// 	    	      	        inProcess = false;
+// 	    	      	        return;
+// 	    	      	    }
+	    	      	    
+// 	    	      	    console.log('map loading state', state);
+	    	      	    
+// 	    	      	    widget.loadState(state);
+// 	    	      	});
+	    	      	
+	    	      	
+	    			map.events.register("moveend", this, function(event) {
+	    			    if(!scope.$$phase) {
+	    			        scope.$apply();
+	    			    }
+	    			    //console.log('moveend');
+	    			    //inProcess = true;
+	    			    //parentScope.map = widget.getState();
+	    			});
+	    			
+	    			map.events.register("zoomend", this, function(event) {
+	    			    if(!scope.$$phase) {
+	    			        scope.$apply();
+	    			    }
+	    			    //inProcess = true;
+	    			    //parentScope.map = widget.getState();
+	    			});
+	    	      	
+	                
+// 	    	      	parentScope.$watch('boxes', function(boxes) {
+// 	    	      	    angular.forEach(boxes, function(bounds, id) {
+// 	    	      	      	console.log('adbox', bounds, id);
+// 	    	      	        widget.addBox(id, bounds);
+// 	    	      	    });
+// 						console.log('boxes', boxes);
+// 	                });
+
 	                    
-	            }, 10);/* very slight delay, even using "0" works*/
+	            //}, 10);/* very slight delay, even using "0" works*/
 	        }
 	    };
 //         return function (scope, element, attr) {
@@ -1207,6 +1290,42 @@
     
     myModule.controller('MapCtrl', function($scope) {
         $scope.boxes = {foo: {left: -10, bottom: -10, right: 10, top: 10}};
+        
+        console.log('MapScope is ', $scope);
+        $scope.$watch('map.center', function(center) {
+        
+            var bounds = ns.MapUtils.getExtent($scope.map)
+            console.log('extent', bounds);
+            
+        	var promise = qtc.fetchData(bounds);
+        	promise.done(function(nodes) {
+                $scope.map.widget.clearItems();
+        	    console.log('nodes', nodes);
+
+        	    _(nodes).each(function(node) {
+        	        
+        	        if(!node.isLoaded) {
+        	            console.log('box: ' + node.getBounds());
+        	        }
+        	        
+        	        var data = node.data || {};
+            	    var docs = data.docs || [];
+
+            	    _(docs).each(function(doc) {
+ 
+            	        $scope.map.widget.addWkt(doc.id, doc.wkt);
+            	        
+            	        //var wktParser = new OpenLayers.Format.WKT();
+                 	    //var polygonFeature = wktParser.read(wkt);
+            	        //console.log('wkt: ', polygonFeature);
+                 	    //polygonFeature.geometry.transform(map.displayProjection, map.getProjectionObject());         
+            	    });        	        
+        	    });
+        	    
+//         	    vectors.addFeatures([polygonFeature]);
+        	});
+            
+        });
     });
     
 	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
@@ -1398,7 +1517,7 @@
 						</div>
 						
 						
-					    <div ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
+					    <div class="portlet" ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
 					        <span ng-show="favFacets.length == 0">No favourited facets</span> 
 					        <ul ng-repeat="facet in favFacets">
 								<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
@@ -1410,11 +1529,11 @@
 							<div ng-include="'facet-tree-item.html'"></div>
 						</div>
 					
-						<div ng-controller="MyCtrl2">
+						<div class="portlet" ng-controller="MyCtrl2">
 							<div ng-include="'result-set-browser.html'"></div>	
 						</div>
 						
-						<div ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
+						<div class="portlet" ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
 						    <span ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</span>
 							<ul>
 							    <li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
@@ -1454,7 +1573,7 @@
 <!-- 		<div ssb-map style="position: absolute; z-index:-9999; top: 0px; left: 0px; width: 100%; height: 100%;" ng-controller="MapCtrl"></div> -->
 
 		<div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index:-9999" ng-controller="MapCtrl">
-			<div ssb-map style="width: 100%; height: 100%"></div>
+			<div ssb-map="map" style="width: 100%; height: 100%"></div>
 		</div>	        
 
 <!-- 	</div> -->

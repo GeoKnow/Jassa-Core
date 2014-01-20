@@ -100,6 +100,12 @@
 		getVarsMentioned: function(elements) {
 			
 			var result = _(elements).reduce(function(memo, element) {
+			    
+			    var fn = element.getVarsMentioned; 
+			    if(!fn || !_(fn).isFunction()) {
+			        console.log('[ERROR] .getVarsMentioned not found on object ', element);
+			    }
+			    
 				var vs = element.getVarsMentioned();
 			    var r = _(memo).union(vs);
 			    return r;

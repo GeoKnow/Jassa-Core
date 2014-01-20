@@ -11,28 +11,16 @@ var appvocab = Namespace("org.aksw.ssb.vocabs.appvocab");
 
 (function(ns) {
 
-	ns.createSubMap = function(obj, keys) {
-		var result = {};
-
-		for(var i = 0; i < keys.length; ++i) {
-			var key = keys[i];
-			var value = obj[key];
-			result[key] = value;
-		}
-
-		return result;
-	};
-	
 	ns.createMapDiff = function(a, b) {
 
-		var aIds = _.keys(a);
-		var bIds = _.keys(b);
+		var aIds = _(a).keys();
+		var bIds = _(b).keys();
 		
-		var addedIds = _.difference(aIds, bIds);
-		var removedIds = _.difference(bIds, aIds);
+		var addedIds = _(aIds).difference(bIds);
+		var removedIds = _(bIds).difference(aIds);
 
-		var added = ns.createSubMap(a, addedIds);
-		var removed = ns.createSubMap(b, removedIds);
+		var added = _(a).pick(addedIds);
+		var remoed = _(b).pick(removedIds);
 
 		var result = {
 				added: added,
@@ -41,106 +29,6 @@ var appvocab = Namespace("org.aksw.ssb.vocabs.appvocab");
 
 		return result;
 	};
-	
-	/**
-	 * Indexes geometries in the given datastore
-	 * 
-	 * NOTE Assumes that geometries only have a single lon/lat pair.
-	 * If there are multiple ones, an arbitrary pair is chosen.
-	 * If there is a lat but no long, or vice versa, the resource does not appear in the output
-	 * 
-	 * @returns
-	 */
-	ns.extractGeomsWgs84 = function(databank) {
-		var rdf = $.rdf({databank: databank});
-		
-		var result = {};
-		
-		var geomToX = {};
-		var geomToY = {};
-		
-		rdf.where("?geom " + geo.lon + " ?x .").each(function() {
-			geomToX[this.geom.value] = this.x.value;
-		});
-		
-		rdf.where("?geom " + geo.lat + " ?y").each(function() {
-			geomToY[this.geom.value] = this.y.value;
-		});
-		
-		for(var geom in geomToX) {
-			if(geom in geomToY) {
-				var point = new qt.Point(geomToX[geom], geomToY[geom]);
-				result[geom] = point;
-			}
-		}
-		
-		return result;		
-	};
-	
-    /**
-     * Given bounds and a set of quat tree nodes, this method
-     * Creates a map resource->geometry and also determines which resources are visible
-     */
-	ns.indexGeoms = function(nodes, bounds) {
-
-		if(!nodes) {
-			// FIXME undefined 'nodes' happens, if there was an empty set of geometries or
-			// a query failed. this should be trapped at a different location than here
-			console.log("No nodes to index, should not happen; using workaround");
-			
-			nodes = [];
-		}
-
-		//debugger;
-		
-		var globalGeomToPoint = {};
-		var visibleGeoms = [];
-
-		for(var i = 0; i < nodes.length; ++i) {
-			var node = nodes[i];
-
-			var nodeBounds = node.getBounds();
-			
-			var databank = node.data.graph;
-			var geomToPoint = node.data.geomToPoint ? node.data.geomToPoint : ns.extractGeomsWgs84(databank);
-
-			
-			//console.debug("geomToPoint", geomToPoint);
-			//console.debug("Databank for node ", i, databank);
-			
-			// Attach the info to the node, so we reuse it the next time
-			node.data.geomToPoint = geomToPoint;
-			
-			_.extend(globalGeomToPoint, geomToPoint);
-
-			var geoms = _.keys(geomToPoint);
-		
-		
-			// If the node is completely in the bounds, we can skip the boundary check
-			if(bounds.contains(nodeBounds)) {
-			
-				visibleGeoms.push.apply(visibleGeoms, geoms);
-			
-			} else if(bounds.isOverlap(nodeBounds)) {
-		
-				//for(var geom in geoms) {
-				for(var j = 0; j < geoms.length; ++j) {
-					var geom = geoms[j];
-					var point = geomToPoint[geom];
-				
-					//console.log("point is: ", geomToPoint);
-				
-					if(bounds.containsPoint(point)) {
-						visibleGeoms.push(geom);
-					}
-				}
-			
-			}
-		}
-
-		return {geomToPoint: globalGeomToPoint, visibleGeoms: visibleGeoms};
-    };
-
 
 	/**
 	 * TODO/Note This data should be (also) part of the model I suppose
@@ -152,16 +40,6 @@ var appvocab = Namespace("org.aksw.ssb.vocabs.appvocab");
 		
 		this.visibleBoxes = visibleBoxes ? visibleBoxes : {};
 	};
-
-	
-	
-	ns.DynamicMapModel = Backbone.Model.extend({
-		defaults: {
-			sparqlService: null,
-			geoConstraintFactory: null,
-			viewState: null
-		}
-	});
 	
 	
 	/**

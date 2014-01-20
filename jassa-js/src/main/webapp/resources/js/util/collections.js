@@ -2,6 +2,94 @@
 	
 	var ns = Jassa.util;
 	
+	ns.MultiMapUtils = {
+	    get: function(obj, key) {
+            return (key in obj)
+                ? obj[key]
+                : [];
+	    },
+	    
+	    put: function(obj, key, val) {
+            var values;
+            
+            if(key in obj) {
+                values = obj[key];
+            } else {
+                values = [];
+                obj[key] = values;
+            }
+            
+            values.push(value);
+	    },
+	    
+	    clear: function(obj) {
+            var keys = _(obj).keys();
+            _(keys).each(function(key) {
+                delete obj[key];
+            });	        
+	    }
+	};
+	
+	   
+    ns.MultiMapObjectArray = Class.create({
+        initialize: function() {
+            this.entries = {};
+        },
+    
+        clone: function() {
+            var result = new ns.MultiMapObjectArray();
+            result.addMultiMap(this);
+            
+            return result;
+        },
+    
+        clear: function() {
+            //this.entries = {};
+            var keys = _(this.entries).keys();
+            _(keys).each(function(key) {
+                delete this.entries[key];
+            });
+        },
+    
+        addMultiMap: function(other) {
+            for(var key in other.entries) {
+                var values = other.entries[key];
+                
+                for(var i = 0; i < values.length; ++i) {
+                    var value = values[i];
+                    
+                    this.put(key, value);
+                }           
+            }
+        },
+    
+        get: function(key) {
+            return (key in this.entries)
+                ? this.entries[key]
+                : [];
+        },
+    
+        put: function(key, value) {
+            var values;
+            
+            if(key in this.entries) {
+                values = this.entries[key];
+            } else {
+                values = [];
+                this.entries[key] = values;
+            }
+            
+            values.push(value);
+        },
+
+        removeKey: function(key) {
+            delete this.entries[key];
+        }
+    });
+    
+	
+	
+	
 	ns.ArrayUtils = {
 	
 	        clear: function(arr) {

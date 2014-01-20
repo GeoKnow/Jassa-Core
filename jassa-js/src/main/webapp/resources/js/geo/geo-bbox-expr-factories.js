@@ -25,13 +25,14 @@
     
 
     ns.BBoxExprFactoryWkt = Class.create(ns.BBoxExprFactory, {
-        initialize: function(wktVar, intersectsSparqlFnName) {
+        initialize: function(wktVar, intersectsFnName, geomFromTextFnName) {
             this.wktVar = wktVar;
-            this.intersectsSparqlFnName = intersectsSparqlFnName;
+            this.intersectsFnName = intersectsFnName;
+            this.geomFromTextFnName = geomFromTextFnName;
         },
         
         createExpr: function(bounds) {
-            var result = ns.GeoExprUtils.createExprWgs84Intersects(this.wktVar, this.intersectsSparqlFnName);
+            var result = ns.GeoExprUtils.createExprOgcIntersects(this.wktVar,bounds, this.intersectsFnName, this.geomFromTextFnName);
             return result;
         }
     });

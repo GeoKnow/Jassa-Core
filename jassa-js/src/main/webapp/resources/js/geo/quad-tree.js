@@ -162,8 +162,10 @@
 	// Node
 	
 	ns.Node = Class.create({ 
-	    initialize: function(parent, bounds, maxDepth, depth, k) {
-    		this.parent = parent;	
+	    initialize: function(parent, bounds, maxDepth, depth, k, parentChildIndex) {
+    		this.parent = parent;
+    		this.parentChildIndex = parentChildIndex;
+    		
     		this._bounds = bounds;
     		this._maxDepth = maxDepth;
     		this._depth = depth;
@@ -183,6 +185,13 @@
     		this._classConstructor = ns.Node;
     	},
 	
+    	getId: function() {
+    	    var parent = this.parent;
+    	    var parentId = parent ? parent.getId() : '';
+    	    
+    	    var result = parentId + parentChildIndex;
+    	},
+    	
     	isLeaf: function() {
     	    return !this.children;
     	},
@@ -300,8 +309,8 @@
     			c.y - eh,
                 c.x + ew, 
     			this._bounds.top
-    		), 
-    		this._maxDepth, depth, this._k);
+    		),
+    		this._maxDepth, depth, this._k, ns.Node.TOP_LEFT);
     		
     		this.children[ns.Node.TOP_RIGHT] = new this._classConstructor(this, new ns.Bounds(
     			c.x - ew, 
@@ -309,7 +318,7 @@
                 this._bounds.right, 
     			this._bounds.top
     		),
-    		this._maxDepth, depth, this._k);
+    		this._maxDepth, depth, this._k, ns.Node.TOP_RIGHT);
     		
     		this.children[ns.Node.BOTTOM_LEFT] = new this._classConstructor(this, new ns.Bounds(
     			this._bounds.left, 
@@ -317,7 +326,7 @@
                 c.x + ew, 
     			c.y + eh
     		),
-    		this._maxDepth, depth, this._k);
+    		this._maxDepth, depth, this._k, ns.Node.BOTTOM_LEFT);
     	
     		this.children[ns.Node.BOTTOM_RIGHT] = new this._classConstructor(this, new ns.Bounds(
     			c.x - ew, 
@@ -325,7 +334,7 @@
     			this._bounds.right, 
     			c.y + eh
     		),
-    		this._maxDepth, depth, this._k);
+    		this._maxDepth, depth, this._k, ns.Node.BOTTOM_RIGHT);
     		
     		
     		// Uncomment for debug output

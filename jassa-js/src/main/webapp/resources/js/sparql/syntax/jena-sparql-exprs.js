@@ -413,32 +413,46 @@
 	
 
 
-	ns.E_Function = function(uriNode, args) {
-		this.uriNode = uriNode;
-		this.args = args;
-	};
+	ns.E_Function = Class.create(ns.Expr, {
+	    initialize: function(functionIri, args) {
+    		this.functionIri = functionIri;
+    		this.args = args;
+    	},
 	
-	ns.E_Function.prototype.copySubstitute = function(fnNodeMap) {
-		var newArgs = _.map(this.args, fnNodeMap);
-		
-		return new ns.E_Function(this.uriNode, newArgs);
-	};
+    	copySubstitute: function(fnNodeMap) {
+    		var newArgs = _(this.args).map(function(arg) {
+    		    var r = arg.copySubstitute(fnNodeMap);
+    		    return r;
+    		});
+    		
+    		return new ns.E_Function(this.functionIri, newArgs);
+    	},
 	
-	ns.E_Function.prototype.getArgs = function() {
-		return this.args;
-	};
+    	getArgs: function() {
+    	    return this.args;
+    	},
 	
-	ns.E_Function.prototype.copy = function(newArgs) {
-		return new ns.E_Function(this.uriNode, newArgs);
-	};
+    	copy: function(newArgs) {
+    	    return new ns.E_Function(this.functionIri, newArgs);
+    	},
 	
-	ns.E_Function.prototype.toString = function() {
-		var argStr = this.args.join(", ");
-		
-		var result = this.uriNode.value + "(" + argStr + ")";
-		return result;
-	};
-
+    	toString: function() {
+    		var argStr = this.args.join(", ");
+    		
+    		// TODO HACK for virtuoso and other cases
+    		// If the functionIri contains a ':', we assume its a compact iri
+    		var iri = '' + this.functionIri;
+    		var fnName = (iri.indexOf(':') < 0) ? '<' + iri + '>' : iri;  
+    		
+    		var result = fnName + '(' + argStr + ')';
+    		return result;
+    	},
+    	
+    	getVarsMentioned: function() {
+            var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+            return result;
+    	}
+	});
 	
 	
 	ns.E_Equals = Class.create(ns.ExprFunction2, {

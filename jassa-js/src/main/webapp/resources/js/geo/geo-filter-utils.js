@@ -35,23 +35,22 @@
         },
             
             
-        createExprOgcIntersects: function(v, bounds, intersectsSparqlFnName) {
+        createExprOgcIntersects: function(v, bounds, intersectsFnName, geomFromTextFnName) {
             var ogc = 'http://www.opengis.net/rdf#';
+
+            intersectsFnName = intersectsFnName || (ogc + 'intersects'); 
+            geomFromTextFnName = geomFromTextFnName || (ogc + "geomFromText");              
             
-            if(!sparqlFnName) {
-                sparqlFnName = ogc + 'intersects'
-            }
             
             var exprVar = new sparql.ExprVar(v);
             var wktStr = this.boundsToWkt(bounds);
             
             // FIXME: Better use typeLit with xsd:string
-            var nodeValue = new sparql.NodeValue(sparql.Node.plainLit(wktStr));
+            var wktNodeValue = sparql.NodeValue.makeString(wktStr); //new sparql.NodeValue(rdf.NodeFactory.createPlainLiteral(wktStr));
             
             var result = new sparql.E_Function(
-                intersectsSparqlFnName,
-                exprVar,
-                new sparql.E_Function(ogc + "geomFromText", wktStr)
+                    intersectsFnName,
+                [exprVar, new sparql.E_Function(geomFromTextFnName, [wktNodeValue])]
             );
 
             return result;

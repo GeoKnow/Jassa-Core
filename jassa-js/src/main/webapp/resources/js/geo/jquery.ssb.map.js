@@ -27,6 +27,8 @@ $.widget("custom.ssbMap", {
 	_create: function() {
 		var self = this;
 		
+        this.wktParser = new OpenLayers.Format.WKT();
+		
 		var opts = this.options;
 		//this.options.event += ".ssbinstances"; // namespace event
 		
@@ -39,12 +41,13 @@ $.widget("custom.ssbMap", {
 
 		
 		//this.nodeToPos = this.options.nodeToPos;
-		this.nodeToFeature = {}; //this.options.nodeToFeature;
-		this.nodeToLabel = {}; //this.options.nodeToLabel;
-		this.wayToFeature = {}; //this.options.wayToFeature;
+		this.idToFeature = {}; //this.options.idToFeature;
 		
-		this.nodeToTypes = {}; //this.options.nodeToTypes;
-		this.schemaIcons = {}; //this.options.schemaIcons;
+//		this.nodeToLabel = {}; //this.options.nodeToLabel;
+//		this.wayToFeature = {}; //this.options.wayToFeature;
+//		
+//		this.nodeToTypes = {}; //this.options.nodeToTypes;
+//		this.schemaIcons = {}; //this.options.schemaIcons;
 		
 		
 		//console.log(this.nodeToPos);
@@ -215,9 +218,18 @@ $.widget("custom.ssbMap", {
 		this.map.addLayers([mapnikLayer, this.boxLayer, this.featureLayer]); //, this.vectorLayer]); //, this.markerLayer]);
 
 		
+		var self = this;
 		/*
 		 * Forward some simple events
-		 */		
+		 */
+        this.map.events.register("moveend", this, function(event) {
+            self._trigger("mapevent", event, {"map": self.map});
+        });
+        
+        this.map.events.register("zoomend", this, function(event) {
+            self._trigger("mapevent", event, {"map": self.map});
+        });
+
 		/*
 		this.map.events.register("moveend", this, function(event) {
 			self._trigger("onMapEvent", event, {"map": self.map});
@@ -227,8 +239,6 @@ $.widget("custom.ssbMap", {
 			self._trigger("onMapEvent", event, {"map": self.map});
 		});
 		*/
-	    
-		var self = this;
 		
 
 		var report = function() {
@@ -424,6 +434,34 @@ $.widget("custom.ssbMap", {
 		this.featureLayer.redraw();
 	},
 
+	addWkt: function(id, wktStr, attrs, visible) {
+
+        var feature = this.wktParser.read(wktStr);
+        feature.geometry.transform(this.map.displayProjection, this.map.projection);
+                
+        /*
+        var newAttrs = OpenLayers.Util.extend(
+            OpenLayers.Util.extend({}, attrs), {
+                point: point,
+                nodeId: id,
+                label: attrs.abbr,
+                radius: 12
+            }
+        );
+        */
+        
+        //console.log("Feature attributes: ", newAttrs);
+        //{point: point, nodeId: nodeId}
+        //alert(JSON.stringify(attrs));
+        //alert(JSON.stringify(newAttrs)); , this.styles.markerStyle
+        //var feature = new OpenLayers.Feature.Vector(geometry, attrs);
+        this.idToFeature[id] = feature;
+        
+        this.featureLayer.addFeatures([feature]);
+        
+        //return result;
+	},
+	
 	/**
 	 * Creates a feature for the given id.
 	 * By default they are not added to the map (i.e. invisible).
@@ -434,7 +472,7 @@ $.widget("custom.ssbMap", {
 	 */
 	addItem: function(id, lonlat, attrs, visible) {
 		
-		var feature = this.nodeToFeature[id];
+		var feature = this.idToFeature[id];
 		if(feature) {
 			//console.log("Feature already existed, replacing.")
 			
@@ -443,8 +481,8 @@ $.widget("custom.ssbMap", {
 		
 		
 		var feature = this.createMarker(id, lonlat, attrs);
-		//this.nodeToFeature.put(id, feature);
-		this.nodeToFeature[id] = feature;
+		//this.idToFeature.put(id, feature);
+		this.idToFeature[id] = feature;
 		//console.log("Adding feature/marker");
 		//console.log(feature);
 		
@@ -455,7 +493,7 @@ $.widget("custom.ssbMap", {
 	},
 	
 	setVisible: function(id, value) {
-		var feature = this.nodeToFeature.get(id);
+		var feature = this.idToFeature.get(id);
 		if(!feature) {
 			return;
 		}
@@ -488,19 +526,19 @@ $.widget("custom.ssbMap", {
 	},
 	
 	clearItems: function() {
-		//this.removeItems(_.keys(this.nodeToFeature.entries));
-		this.removeItems(_.keys(this.nodeToFeature));
+		//this.removeItems(_.keys(this.idToFeature.entries));
+		this.removeItems(_.keys(this.idToFeature));
 	},
 
 	removeItem : function(id) {
-		//var feature = self.nodeToFeature.entries[id];
-		var feature = this.nodeToFeature[id];
+		//var feature = self.idToFeature.entries[id];
+		var feature = this.idToFeature[id];
 		if(feature) {
 			//self.markerLayer.removeMarker(feature.marker);
 			this.featureLayer.removeFeatures([feature]);
-			delete this.nodeToFeature[id];
+			delete this.idToFeature[id];
 		} else {
-			console.log("[WARN] Id " + id + " requested for deletion, but not found in the " + _.keys(this.nodeToFeature).length + " available ones: ", this.nodeToFeature);
+			console.log("[WARN] Id " + id + " requested for deletion, but not found in the " + _.keys(this.idToFeature).length + " available ones: ", this.idToFeature);
 		}			
 	},
 	
@@ -594,14 +632,14 @@ $.widget("custom.ssbMap", {
 		console.log(nodeToPos);
 		var self = this;
 		
-		//self.nodeToFeature.removeAll(getKeys(change.removed));
+		//self.idToFeature.removeAll(getKeys(change.removed));
 
-		for(id in self.nodeToFeature.entries) {
-			var feature = self.nodeToFeature.entries[id];
+		for(id in self.idToFeature.entries) {
+			var feature = self.idToFeature.entries[id];
 			self.markerLayer.removeMarker(feature.marker);
 		}
 		
-		this.nodeToFeature.clear();
+		this.idToFeature.clear();
 		
 		for(id in nodeToPos) {
 			var point = nodeToPos[id];
@@ -610,7 +648,7 @@ $.widget("custom.ssbMap", {
 			//console.log(point);
 			
 			var feature = self.createMarker(point, id);
-			self.nodeToFeature.put(id, feature);
+			self.idToFeature.put(id, feature);
 			//console.log("Adding feature/marker");
 			//console.log(feature);
 			self.markerLayer.addMarker(feature.marker);
@@ -631,7 +669,7 @@ $.widget("custom.ssbMap", {
 		/*
 		$(this.nodeToPos).bind("changed", function(event, change) {
 			
-			self.nodeToFeature.removeAll(getKeys(change.removed));
+			self.idToFeature.removeAll(getKeys(change.removed));
 
 			//console.log("pos");
 			console.log(change);
@@ -642,7 +680,7 @@ $.widget("custom.ssbMap", {
 				//console.log(point);
 				
 				var marker = self.createMarker(point, id);
-				self.nodeToFeature.put(id, marker);
+				self.idToFeature.put(id, marker);
 			}		
 		});
 		*/
@@ -652,7 +690,7 @@ $.widget("custom.ssbMap", {
 		 * We add all nodeFeatures to the map 
 		 */ 
 		/*
-		$(this.nodeToFeature).bind("changed", function(event, change) {
+		$(this.idToFeature).bind("changed", function(event, change) {
 			for(key in change.removed) {
 				//console.log("Features removed");
 				var marker = change.removed[key].marker;
@@ -814,26 +852,59 @@ $.widget("custom.ssbMap", {
 	*/
 
 
-	getBounds: function() {
+	getExtent: function() {
 		return this.map.getExtent().transform(this.map.projection, this.map.displayProjection);
 	},
 
 	
-	saveState: function() {
-		var result = {
-				center: this.map.getCenter(),
-				zoom: this.map.getZoom()
-		};
-		
-		return result;
-	},
+//	saveState: function() {
+//		var result = {
+//				center: this.map.getCenter(),
+//				zoom: this.map.getZoom()
+//		};
+//		
+//		return result;
+//	},
 
+    getState: function() {         
+        var map = this.map;
+        
+        var tmp = map.getCenter();
+        var lonlat = tmp.transform(map.projection, map.displayProjection);
+
+        var center = {lon: lonlat.lon, lat: lonlat.lat};
+        var zoom = map.getZoom();
+        
+        var result = {
+            center: center,
+            zoom: zoom
+        };
+        
+        console.log('Saved center', center);
+        
+        return result;
+    },
+
+    
 	loadState: function(state) {
 		if(!state) {
 			return
 		}
 
-		var center = state.center ? new OpenLayers.LonLat(state.center.lon, state.center.lat) : this.map.getCenter();
+		var map = this.map;
+
+		var c = state.center;
+        console.log('Load raw center ', c);
+		var center;
+		if(c) {
+		    var tmp = new OpenLayers.LonLat(state.center.lon, state.center.lat);
+		    center = tmp.transform(map.displayProjection, map.projection);
+		}
+		else {
+		    center = this.map.getCenter();
+		}
+		
+		console.log('Loaded center ', center);
 		var zoom = state.zoom ? state.zoom : this.map.getZoom();
 		
 		this.map.setCenter(center, zoom, false, false);		
