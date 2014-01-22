@@ -2,38 +2,120 @@
     
     var ns = Jassa.geo;
     
-    ns.createMapDiff = function(a, b) {
+//    ns.createMapDiff = function(a, b) {
+//
+//        var aIds = _(a).keys();
+//        var bIds = _(b).keys();
+//        
+//        var addedIds = _(aIds).difference(bIds);
+//        var removedIds = _(bIds).difference(aIds);
+//
+//        var added = _(a).pick(addedIds);
+//        var remoed = _(b).pick(removedIds);
+//
+//        var result = {
+//                added: added,
+//                removed: removed
+//        };
+//
+//        return result;
+//    };
 
-        var aIds = _(a).keys();
-        var bIds = _(b).keys();
+    
+    ns.ViewStateUtils = {
+        createStateHash: function(sparqlService, geoMap, concept) {
+            var serviceHash = sparqlService.getStateHash();         
+            var geoHash = JSON.stringify(geoMap); //geoMap.getElementFactory().createElement().toString();
+            var conceptHash = '' + concept;
+
+            var result = serviceHash + geoHash + conceptHash;
+            return result;
+        },
+
+        // TODO This function is generig; move to a better location 
+        diffObjects: function(newObjs, oldObjs, idFn) {
+            debugger;
+            //function(node) {return node.getNodeId(); }
+            var newIdToObj = _(newObjs).indexBy(idFn);
+            var oldIdToObj = _(oldObjs).indexBy(idFn);
+            
+            var newIds = _(newIdToObj).keys();
+            var oldIds = _(oldIdToObj).keys();
+            
+            var retainedIds = _(newIds).intersection(oldIds);
+            
+            var result = {
+                retained:  _(oldIdToObj).chain().pick(retainedIds).values().value(),
+                added: _(newIdToObj).chain().omit(oldIds).values().value(),
+                removed: _(oldIdToObj).chain().omit(newIds).values().value()
+            };
+
+            return result;
+        },
         
-        var addedIds = _(aIds).difference(bIds);
-        var removedIds = _(bIds).difference(aIds);
+        diffViewStates: function(newViewState, oldViewState) {
+            //oldViewState = oldViewState || new ns.ViewState(); 
 
-        var added = _(a).pick(addedIds);
-        var remoed = _(b).pick(removedIds);
-
-        var result = {
-                added: added,
-                removed: removed
-        };
-
-        return result;
+            var newStateHash = newViewState.getStateHash();
+            var oldStateHash = oldViewState ? oldViewState.getStateHash() : '';
+            
+            var newNodes = newViewState.getNodes();
+            var oldNodes = oldViewState ? oldViewState.getNodes() : [];
+            
+            
+            var result;
+            
+            // If the hashes do not match, replace the whole old state
+            if(newStateHash != oldStateHash) {
+                result = {
+                    retained: [],
+                    added: newNodes,
+                    removed: oldNodes
+                }
+            }
+            else {
+                var idFn = function(node) {
+                    var result = node.getId();
+                    console.log('NodeId', result);
+                    return result;
+                };
+                
+                result = this.diffObjects(newNodes, oldNodes, idFn);
+            }
+            return result;
+        }        
     };
-
     
     /**
      * TODO/Note This data should be (also) part of the model I suppose
      */
     ns.ViewState = Class.create({
-        initialize: function(nodes, bounds, visibleGeoms, visibleBoxes) {
-            this.nodes = nodes;
+        initialize: function(sparqlService, geoMap, concept, bounds, nodes) {
+            this.sparqlService = sparqlService;
+            //this.concept = concept;
+            this.geoMap = geoMap;
+            this.concept = concept;
             this.bounds = bounds; //null; //new qt.Bounds(-9999, -9998, -9999, -9998);
-            this.visibleGeoms = visibleGeoms ? visibleGeoms : [];
-            
-            this.visibleBoxes = visibleBoxes ? visibleBoxes : {};
+            this.nodes = nodes;
         },
-      
+
+        getStateHash: function() {
+            return ns.ViewStateUtils.createStateHash(this.sparqlService, this.geoMap, this.concept);  
+        },
+
+        // TODO Maybe the view state should remain agnostic of service and concept, and
+        // instead only reveal the nodes that are part of it
+        getSparqlService: function() {
+             return this.sparqlService;
+        },
+        
+        getGeoMap: function() {
+            return this.geoMap;
+        },
+//        getConcept: function() {
+//            return this.concept;
+//        },
+        
         /**
          * Returns the quad tree nodes intersecting with the viewport
          */
@@ -49,84 +131,40 @@
     });
 
     
-    ns.DynamicMapController = Class.create({
-        initialize: function(sparqlService, geoMapFactory) {
+    /**
+     * TODO Maybe replace sparqlService with sparqlServiceFactory?
+     * But then the object would have to deal with services with different state.
+     * Or we have a QuadTreeProvider/Factory, that creates QuadTreeObjects as needed,
+     * depending on the combined state of the service and concept.
+     * - Or we have a factory, that creates a MapCtrl as needed for each given service.
+     * I guess the last approach is good enough.
+     * 
+     * 
+     * Hm, rather I would prefer if some 'template' object was returned,
+     * that could be instantiated with a service.
+     * 
+     * mapCtrl.foo(geoMapFactory, conceptFactory).createService(sparqlService);
+     * or service.execute(mapping?)
+     * 
+     */
+    ns.ViewStateFetcher = Class.create({
+        initialize: function(sparqlService, geoMapFactory, conceptFactory) {
             this.sparqlService = sparqlService;
             this.geoMapFactory = geoMapFactory;
-            
-        },
-//        
-//            //model.on('change:sparqlService change:geoConceptFactory change:bounds', this.refresh, this);
-//        
-//        refresh: function() {
-//            var self = this;
-//            var task = this.computeDelta();
-//            
-//            task.then(function(state) {
-//                self.model.set({
-//                    state: state
-//                });
-//            });
-//        },
+            this.conceptFactory = conceptFactory;
 
-        /**
-         * Updates the "resource" and "boxes" field of the model
-         * 
-         */
-        computeDelta: function(bounds, oldViewState) {
-            
-            var self = this;
-
-            var sparqlService = this.sparqlService;
-            var geoMapFactory = this.geoMapFactory;
-           
-            oldViewState = oldViewState || new ns.ViewState(); 
-
-            var promise = this.fetchGeometries(sparqlService, geoMapFactory, bounds);            
-
-                                    
-            var result = promise.pipe(function(nodes) {
-                
-                // TODO Properly check if an old request is running
-                // and schedule the next request
-                if(!nodes) {
-                    console.log("Skipping refresh because an update is in progress");
-                    return;
-                }
-            
-
-                
-                var newViewState = new ns.ViewState(nodes, bounds);
-                
-                //console.log("[TRACE] Loaded " + nodes.length + " nodes");
-                //console.log("[TRACE] Nodes are:", nodes);
-                var delta = self.updateViews(oldViewState, newViewState);
-                
-                data = {
-                        oldState: oldViewState,
-                        newState: newViewState,
-                        delta: delta
-                };
-                
-                self.model.set({viewState: newViewState});
-
-                result.resolve(data);
-                
-                var r = {
-                    
-                };
-                
-                return r;
-            });
-            
-            return result;
+            //this.conceptToService = {};
+            this.hashToCache = {};
         },
         
-
-        /**
-         * This function bridges to the quad tree cache
-         */
-        fetchGeometries: function(sparqlService, geoMapFactory, bounds) {
+        fetchViewState: function() {
+            var sparqlService = this.sparqlService;
+            var geoMapFactory = this.geoMapFactory;
+            var conceptFactory = this.conceptFactory;
+            
+            
+            var concept = this.concept;
+            
             // TODO Make this configurable
             var quadTreeConfig = {
                     maxTileItemCount: 150,
@@ -134,79 +172,38 @@
             };
 
             var geoMap = geoMapFactory.createMapForGlobal();
+            // TODO This should be a concept, I assume
+            //var geoConcept = geoMap.createConcept();
             
-            var serviceHash = sparqlService.getStateHash();         
-            var geoConceptHash = geoMap.getElementFactory().createElement().toString();
+            var hash = ns.ViewStateUtils.createStateHash(sparqlService, geoMap, concept);
+            
 
-            var hash = serviceHash + conceptHash; 
+            // TODO Combine the concept with the geoConcept...
+            
+            //var serviceHash = sparqlService.getStateHash();         
+            //var geoConceptHash = geoMap.getElementFactory().createElement().toString();
+
             
             //console.log("[DEBUG] Query hash (including facets): " + hash);
             
             var cacheEntry = this.hashToCache[hash];
             if(!cacheEntry) {
-                cacheEntry = new ns.QuadTreeCache(sparqlService, geoMapFactory, null, quadTreeConfig);
+                cacheEntry = new ns.QuadTreeCache(sparqlService, geoMapFactory, concept, null, quadTreeConfig);
                 this.hashToCache[hash] = cacheEntry;
             }
             
-            var result = cacheEntry.fetchData(bounds);
+            var nodePromise = cacheEntry.fetchData(bounds);
+            
+            // Create a new view state object
+            var result = nodePromise.pipe(function(nodes) {
+                var r = new ns.ViewState(sparqlService, geoMap, concept, bounds, nodes);
+                return r;
+            });
+            
             return result;
-        },
-        
-        
-        updateViews: function(newViewState, oldViewState) {
-            
-            var nodes = newViewState.getNodes();
-            var bounds = newViewState.getBounds();
-            
-            var addedBoxes = [];
-            var removedBoxes = [];
-            
-            var visibleBoxes = {};
-            var oldVisibleBoxes = oldViewState.visibleBoxes; 
-
-            
-            // If true, shows the box of each node
-            var alwaysShowBoxes = false;
-            
-            for(var i = 0; i < nodes.length; ++i) {
-                var node = nodes[i];
-                
-                if(!node.isLoaded || alwaysShowBoxes) {
-                    
-                    //console.log("adding a box for", node);
-                    var box = {
-                        id: node.getBounds().toString(),
-                        bounds: node.getBounds()
-                    };
-                    
-                    //addedBoxes.push(box);
-                    visibleBoxes[box.id] = box;
-                    //this.addBox(node.getBounds().toString(), toOpenLayersBounds(node.getBounds()));
-                }
-            }
-            
-            
-            viewState.visibleBoxes = visibleBoxes;
-
-            var boxDiff = ns.createMapDiff(visibleBoxes, oldVisibleBoxes);
-            
-            
-            viewState.geomToFeatures = geomToFeatures;
-
-            
-            var result = {
-                    boxes: {
-                        added: boxDiff.added,
-                        removed: boxDiff.removed
-                    },
-                    items: {
-                        added: addedGeoms,
-                        removed: removedGeoms
-                    }
-            };
-
-            return result;          
         }
     });
+    
+    
     
 })();

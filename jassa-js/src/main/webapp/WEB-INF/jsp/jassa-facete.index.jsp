@@ -126,6 +126,15 @@
 	    visibility: visible;
 	}
     
+    
+    /* Not working yet, as openlayers positions the element programmatically */
+	.olControlPanZoomBar {
+		right: 10px;
+/* 		position: absolute; */
+/* 		top: 10px; */
+/* 		left: 10px; */
+	}
+	
 	</style>
 	
 	<!--  TODO PrefixMapping Object von Jena portieren ~ 9 Dec 2013 -->
@@ -133,7 +142,7 @@
 	<script src="resources/libs/jquery/1.9.1/jquery.js"></script>
 	<script src="resources/libs/twitter-bootstrap/3.0.1/js/bootstrap.js"></script>
 	
-	<script src="resources/libs/underscore/1.4.4/underscore.js"></script>
+	<script src="resources/libs/underscore/1.5.2/underscore.js"></script>
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
 	<script src="resources/libs/prototype/1.7.1/prototype.js"></script>
 
@@ -211,7 +220,6 @@
 	
     var ns = {};
 
-		
 	
 	
 // 	alert(rdf.NodeFactory.parseRdfTerm('_:boo'));
@@ -231,11 +239,15 @@
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
-	//var defaultGraphUris = ['http://fts.publicdata.eu/'];
-	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
-	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
+// 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
+	//var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
+	var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
 	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
 
+	
+// 	var sparqlEndpointUrl = 'http://localhost:8080/sparqlify/services/lgd/sparql';
+// 	var defaultGraphUris = [];
+	
  	
 // 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
 // 	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
@@ -245,6 +257,10 @@
 
 //  	var sparqlEndpointUrl = 'http://linkedgeodata.org/sparql';
 //  	var defaultGraphUris = ['http://linkedgeodata.org'];
+
+
+// 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
+// 	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
 
 	var qef = new service.SparqlServiceHttp(sparqlEndpointUrl, defaultGraphUris);
 	qef = new service.SparqlServiceCache(qef);
@@ -291,7 +307,10 @@
 	
 	var conceptWgs84 = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), rdf.NodeFactory.createVar('s'));
 	var conceptGeoVocab = new facete.Concept(sparql.ElementString.create('?s <http://www.opengis.net/ont/geosparql#asWKT> ?w'), rdf.NodeFactory.createVar('s'));
-
+	//var conceptGeoFreebaseVocab = new facete.Concept(sparql.ElementString.create('?s <http://rdf.freebase.com/ns/location.location.geolocation..location.geocode.longitude> ?x ;  <http://rdf.freebase.com/ns/location.location.geolocation..location.geocode.latitude> ?y'), rdf.NodeFactory.createVar('s'));
+	//var conceptWgs84 = conceptGeoFreebaseVocab;
+	//conceptWgs84 = conceptGeoVocab;
+	
 	var geoConcepts = [conceptWgs84, conceptGeoVocab];
 	
 	
@@ -388,8 +407,8 @@
 	});
 	
 	
-	var qtc = new geo.QuadTreeCache(qef, wgs84MapFactory);
-	//var qtc = new geo.QuadTreeCache(qef, ogcMapFactory);
+	//var qtc = new geo.QuadTreeCache(qef, wgs84MapFactory);
+	var qtc = new geo.QuadTreeCache(qef, ogcMapFactory);
 
 	var b = new geo.Bounds.createFromJson(bounds);
 	var promise = qtc.fetchData(b);
@@ -403,9 +422,6 @@
 	var flow = sponateBuilder.create(startMap).
 	
 	*/
-	
-	
-	
 	
 	
 	
@@ -515,8 +531,100 @@
         }
     });
     
+
+    var faceteConceptFactory = new ns.ConceptFactoryFacetService(fctService);
+// 	var FaceteConceptFactory = Class.create(facete.ConceptFactory, {
+// 	    initialize: function(facetService) {
+// 	        this.facetService = facetService;
+// 	    },
+	    
+// 	    createConcept: function() {
+// 		    var result = this.facetService.createConceptFacetValues(new facete.Path());
+// 		    return result;
+// 	    }
+// 	});
+	
+    var viewStateFetcher = new geo.ViewStateFetcher(qef, ogcMapFactory, faceteConceptFactory);
     
+
     
+    ns.ViewStateCtrlOpenLayers = Class.create({
+        initialize: function(mapWidget) {
+            this.mapWidget = mapWidget;
+            
+            this.oldViewState = null;
+        },
+        
+        updateView: function(newViewState) {
+            var mapWidget = this.mapWidget;
+            var oldViewState = this.oldViewState;
+            
+            var diff = geo.ViewStateUtils.diffViewStates(newViewState, oldViewState);
+            
+            console.log('ViewStateDiff: ', diff);
+            
+            _(diff.added).each(function(node) {
+    	        if(!node.isLoaded) {
+    	            console.log('box: ' + node.getBounds());
+    	            mapWidget.addBox('' + node.getBounds(), node.getBounds());
+    	        }
+    	        
+    	        var data = node.data || {};
+        	    var docs = data.docs || [];
+
+        	    _(docs).each(function(doc) {
+        	        mapWidget.addWkt(doc.id, doc.wkt);
+        	    });        	                        
+            });
+            
+            
+            _(diff.removed).each(function(node) {
+    	        var data = node.data || {};
+        	    var docs = data.docs || [];
+
+    	        //console.log('box: ' + node.getBounds());
+    	        mapWidget.removeBox('' + node.getBounds());//, node.getBounds());
+        	    
+        	    _(docs).each(function(doc) {
+        	        mapWidget.removeItem(doc.id);
+        	    });
+            });
+            
+    		this.oldViewState = newViewState;
+            /*            
+        	var promise = qtc.fetchData(bounds);
+        	promise.done(function(nodes) {
+                $scope.map.widget.clearItems();
+        	    console.log('nodes', nodes);
+
+        	    _(nodes).each(function(node) {
+        	        
+        	        if(!node.isLoaded) {
+        	            console.log('box: ' + node.getBounds());
+        	            $scope.map.widget.addBox('' + node.getBounds(), node.getBounds());
+        	        }
+        	        
+        	        var data = node.data || {};
+            	    var docs = data.docs || [];
+
+            	    _(docs).each(function(doc) {
+ 
+            	        $scope.map.widget.addWkt(doc.id, doc.wkt);
+            	        
+            	        //var wktParser = new OpenLayers.Format.WKT();
+                 	    //var polygonFeature = wktParser.read(wkt);
+            	        //console.log('wkt: ', polygonFeature);
+                 	    //polygonFeature.geometry.transform(map.displayProjection, map.getProjectionObject());         
+            	    });        	        
+        	    });
+        	    
+//         	    vectors.addFeatures([polygonFeature]);
+        	});
+*/          
+        }
+    });
+    
+    var viewStateCtrl = null;    
 
 
  
@@ -1292,11 +1400,29 @@
         $scope.boxes = {foo: {left: -10, bottom: -10, right: 10, top: 10}};
         
         console.log('MapScope is ', $scope);
+        
+//         $scope.$watch('nodes', function(newNodes, oldNodes) {
+            
+//         });
+        
         $scope.$watch('map.center', function(center) {
         
             var bounds = ns.MapUtils.getExtent($scope.map)
             console.log('extent', bounds);
             
+            if(viewStateCtrl == null) {
+                viewStateCtrl = new ns.ViewStateCtrlOpenLayers($scope.map.widget);
+            }
+            
+		    //var concept = fctService.createConceptFacetValues(new facete.Path());			
+			viewStateFetcher.fetchViewState().done(function(viewState) {
+			   //var nodes = viewState.getNodes();
+			   //console.log('viewStateNodes', nodes);
+			   
+			   viewStateCtrl.updateView(viewState);
+			   
+			});
+/*            
         	var promise = qtc.fetchData(bounds);
         	promise.done(function(nodes) {
                 $scope.map.widget.clearItems();
@@ -1306,6 +1432,7 @@
         	        
         	        if(!node.isLoaded) {
         	            console.log('box: ' + node.getBounds());
+        	            $scope.map.widget.addBox('' + node.getBounds(), node.getBounds());
         	        }
         	        
         	        var data = node.data || {};
@@ -1324,7 +1451,7 @@
         	    
 //         	    vectors.addFeatures([polygonFeature]);
         	});
-            
+*/          
         });
     });
     

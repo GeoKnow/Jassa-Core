@@ -430,7 +430,8 @@
 	
     ns.TypedValue = Class.create({
         initialize: function(lexicalValue, datatypeUri) {
-            this.lexicxalValue = datatypeUri;
+            this.lexicalValue = lexicalValue;
+            this.datatypeUri = datatypeUri;
         },
         
         getLexicalValue: function() {

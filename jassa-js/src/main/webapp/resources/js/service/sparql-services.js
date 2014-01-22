@@ -139,6 +139,14 @@
 	        this.resultCache = resultCache ? resultCache : new Cache();
 	    },
 	    
+	    getServiceId: function() {
+	        return this.qef.getServiceId();
+	    },
+	    
+	    getStateHash: function() {
+	        return this.qef.getStateHash();
+	    },
+	    
 	    createQueryExecutionStr: function(queryStr) {
 	        var serviceId = this.qef.getServiceId();
 	        var stateHash = this.qef.getStateHash();

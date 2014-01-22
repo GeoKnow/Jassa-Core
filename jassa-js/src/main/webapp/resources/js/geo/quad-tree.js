@@ -189,7 +189,9 @@
     	    var parent = this.parent;
     	    var parentId = parent ? parent.getId() : '';
     	    
-    	    var result = parentId + parentChildIndex;
+    	    var indexId = this.parentChildIndex || 'r'; // r for root
+    	    var result = parentId + indexId;
+    	    return result;
     	},
     	
     	isLeaf: function() {

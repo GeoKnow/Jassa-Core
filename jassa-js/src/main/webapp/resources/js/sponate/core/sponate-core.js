@@ -842,6 +842,11 @@
 					result = node.toString();
 				} else if (node.isLiteral()) {
 					result = node.getLiteralValue();
+					
+					if(result instanceof rdf.TypedValue) {
+					    result = result.getLexicalValue();
+					}
+					
 				} else if(sparql.NodeValue.nvNothing.asNode().equals(node)) {
 				    result = null;
 				} else {

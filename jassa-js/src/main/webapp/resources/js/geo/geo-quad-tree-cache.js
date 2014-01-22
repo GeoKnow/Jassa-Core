@@ -81,12 +81,15 @@
      * @returns {ns.QuadTreeCache}
      */
     ns.QuadTreeCache = Class.create({ 
-        initialize: function(sparqlService, geoMapFactory, fnGetBBox, options) {
+        initialize: function(sparqlService, geoMapFactory, concept, fnGetBBox, options) {
             this.sparqlService = sparqlService;
             
             var maxBounds = new geo.Bounds(-180.0, -90.0, 180.0, 90.0);
             this.quadTree = new geo.QuadTree(maxBounds, 18, 0);
         
+            
+            this.concept = concept;
+            
             if(!options) {
                 options = {};
             }
@@ -107,26 +110,7 @@
          * 
          */
         fetchData: function(bounds) {
-            // TODO Why do we lock at all???? - The frequency of locks should not be of concern here
-//            var self = this;
-//            if(this.isLocked) {
-//                return;
-//            }
-//            this.isLocked = true;
-    
             var result = this.runWorkflow(bounds);
-            return result;
-            
-//            return task.done(function(nodes) {
-//                result.resolve(nodes);
-//            }).fail(function() {
-//                result.fail();
-//            });
-            
-//            .then(function() {
-//                self.isLocked = false;                
-//            });
-            
             return result;
         },
         
@@ -144,52 +128,62 @@
             return store.geoMap;
         },
         
-        runWorkflow: function(bounds) {
-            var rootNode = this.quadTree.getRootNode();
-            
-            var self = this;
+        runCheckGlobal: function() {
             var result;
-            //console.log("Initiating data fetching workflow");
+            
+            var rootNode = this.quadTree.getRootNode();
+
+            var self = this;
             if(!rootNode.checkedGlobal) {
-                
-                //console.log("Checking applicability of global fetching strategy (was not checked before)");
-                
-                result = $.Deferred();
-
-
-                var countFlow = this.createFlowForGlobal().find().limit(self.maxGlobalItemCount);
+            
+                var countFlow = this.createFlowForGlobal().find().concept(this.concept).limit(self.maxGlobalItemCount);
                 var countTask = countFlow.count();
                 var globalCheckTask = countTask.pipe(function(geomCount) {
                     console.debug("Global check counts", geomCount, self.maxGlobalItemCount);
-                    return !(geomCount >= self.maxGlobalItemCount);
-                });
-    
-                result = $.Deferred();
-    
-                globalCheckTask.done(function(canUseGlobal) {
-    
-                    console.log("Can use global strategy: ", canUseGlobal);
-                    
+                    var canUseGlobal = !(geomCount >= self.maxGlobalItemCount);
+                    rootNode.canUseGlobal = canUseGlobal;
                     rootNode.checkedGlobal = true;
-                    var task;
-                    if(canUseGlobal) {
-                        task = self.runGlobalWorkflow(rootNode);
-                    } else {
-                        task = self.runTiledWorkflow(bounds);
-                    }
-    
-                    $.when(task).done(function(nodes) {
-                        result.resolve(nodes);
-                    }).fail(function() {
-                        result.fail();
-                    });
-                }).fail(function() {
-                    result.fail();
+                    
+                    return canUseGlobal;
                 });
+                
+                result = globalCheckTask;
+
             } else {
-                console.log("Using tile based strategy (global strategy checked)");
-                result = self.runTiledWorkflow(bounds);
+                var deferred = $.Deferred();
+                deferred.resolve(rootNode.canUseGlobal);
+                result = deferred.promise();
             }
+            
+            return result;
+        },
+        
+        runWorkflow: function(bounds) {
+            
+            var deferred = $.Deferred();
+            
+            var rootNode = this.quadTree.getRootNode();
+            
+            var self = this;
+            this.runCheckGlobal().pipe(function(canUseGlobal) {
+                console.log('Can use global? ', canUseGlobal);
+                var task;
+                if(canUseGlobal) {
+                    task = self.runGlobalWorkflow(rootNode);
+                } else {
+                    task = self.runTiledWorkflow(bounds);
+                }                
+
+                task.done(function(nodes) {
+                    deferred.resolve(nodes);
+                }).fail(function() {
+                    deferred.fail();
+                });
+            }).fail(function() {
+                deferred.fail(); 
+            });
+            
+            var result = deferred.promise();
             
             return result;
         },
@@ -200,10 +194,12 @@
             
     
             // Fetch the items
-            var baseFlow = this.createFlowForGlobal().find();            
+            var baseFlow = this.createFlowForGlobal().find().concept(this.concept);            
             var result = baseFlow.asList().pipe(function(docs) {
                 //console.log("Global fetching: ", geomToFeatureCount);
                 self.loadTaskAction(node, docs);
+                
+                return [node];
             });
     
             /*
@@ -306,7 +302,7 @@
             var self = this;
             var limit = self.maxItemsPerTileCount ? self.maxItemsPerTileCount + 1 : null;
 
-            var countFlow = this.createFlowForBounds(node.getBounds()).find().limit(limit);
+            var countFlow = this.createFlowForBounds(node.getBounds()).find().concept(this.concept).limit(limit);
             var result = countFlow.count().pipe(function(itemCount) {
                 node.setMinItemCount(itemCount); 
                 
@@ -414,7 +410,7 @@
     
                 //if(node.data.absoluteGeomToFeatureCount)
 
-                var loadFlow = self.createFlowForBounds(node.getBounds()).find();
+                var loadFlow = self.createFlowForBounds(node.getBounds()).find().concept(this.concept);
                 var loadTask = loadFlow.asList().pipe(function(docs) {
                     self.loadTaskAction(node, docs);
                 });

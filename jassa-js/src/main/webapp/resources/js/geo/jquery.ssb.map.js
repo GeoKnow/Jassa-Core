@@ -55,6 +55,17 @@ $.widget("custom.ssbMap", {
 		//this.mapWidget._load();
 		//this.tree.logDebug("Dynatree._init(): done.");
 
+
+		var panZoomBar = new OpenLayers.Control.PanZoomBar(null);
+		panZoomBar = OpenLayers.Util.extend(panZoomBar, {
+	         draw: function(px) {
+	             OpenLayers.Control.PanZoomBar.prototype.draw.apply(this, [new  OpenLayers.Pixel(250, 0)]);
+	             return this.div;
+	         }
+		});
+		
+		
+		
 		
 	    var options = {
 	    		projection: new OpenLayers.Projection("EPSG:900913"),
@@ -77,7 +88,7 @@ $.widget("custom.ssbMap", {
 	        	controls: [
 	    					new OpenLayers.Control.Navigation(),
 //	    					new OpenLayers.Control.LayerSwitcher(),
-	    					new OpenLayers.Control.PanZoom(),
+	    					panZoomBar,
 	    					new OpenLayers.Control.MousePosition(),
 //	        					new OpenLayers.Control.OverviewMap(),
 	    					//new OpenLayers.Control.PanZoomBar(),
@@ -438,6 +449,8 @@ $.widget("custom.ssbMap", {
 
         var feature = this.wktParser.read(wktStr);
         feature.geometry.transform(this.map.displayProjection, this.map.projection);
+
+        //feature.geometry = g;
                 
         /*
         var newAttrs = OpenLayers.Util.extend(
@@ -527,7 +540,8 @@ $.widget("custom.ssbMap", {
 	
 	clearItems: function() {
 		//this.removeItems(_.keys(this.idToFeature.entries));
-		this.removeItems(_.keys(this.idToFeature));
+		this.removeItems(_(this.idToFeature).keys());
+	    this.removeBoxes(_(this.idToBox).keys());
 	},
 
 	removeItem : function(id) {
@@ -617,6 +631,14 @@ $.widget("custom.ssbMap", {
         
         this.boxLayer.addFeatures([boxFeature]);
 		this.idToBox[id] = boxFeature;
+	},
+	
+	
+	removeBoxes: function(ids) {
+	    var self = this;
+	    _(ids).each(function(id) {
+	        self.removeBox(id);
+	    });
 	},
 	
 	removeBox : function(id) {
