@@ -11,7 +11,7 @@
 		xinteger: new ns.DatatypeLabelInteger(),
 		xfloat: new ns.DatatypeLabelFloat(),
 		xstring: new ns.DatatypeLabelString(),
-		decimal: new ns.DatatypeLabelInteger() // TODO Handle Decimal properly
+		decimal: new ns.DatatypeLabelFloat() // TODO Handle Decimal properly
 	};
 	
 	
@@ -26,7 +26,7 @@
 	ns.registerRdfDatype(xsd.str.xstring, ns.DatatypeLabels.xstring);
 	ns.registerRdfDatype(xsd.str.xfloat, ns.DatatypeLabels.xfloat);
 
-	ns.registerRdfDatype(xsd.str.decimal, ns.DatatypeLabels.xinteger);
+	ns.registerRdfDatype(xsd.str.decimal, ns.DatatypeLabels.xfloat);
 	
 	/**
 	 * Some default datatypes.

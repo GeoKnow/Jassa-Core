@@ -34,7 +34,7 @@
 
         // TODO This function is generig; move to a better location 
         diffObjects: function(newObjs, oldObjs, idFn) {
-            debugger;
+
             //function(node) {return node.getNodeId(); }
             var newIdToObj = _(newObjs).indexBy(idFn);
             var oldIdToObj = _(oldObjs).indexBy(idFn);
@@ -76,7 +76,7 @@
             else {
                 var idFn = function(node) {
                     var result = node.getId();
-                    console.log('NodeId', result);
+                    //console.log('NodeId', result);
                     return result;
                 };
                 
@@ -157,13 +157,13 @@
             this.hashToCache = {};
         },
         
-        fetchViewState: function() {
+        fetchViewState: function(bounds) {
             var sparqlService = this.sparqlService;
             var geoMapFactory = this.geoMapFactory;
             var conceptFactory = this.conceptFactory;
             
             
-            var concept = this.concept;
+            var concept = conceptFactory.createConcept();
             
             // TODO Make this configurable
             var quadTreeConfig = {

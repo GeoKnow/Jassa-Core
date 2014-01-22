@@ -447,6 +447,8 @@ $.widget("custom.ssbMap", {
 
 	addWkt: function(id, wktStr, attrs, visible) {
 
+	    console.log('Added: ', id + ' --- ' + wktStr);
+	    
         var feature = this.wktParser.read(wktStr);
         feature.geometry.transform(this.map.displayProjection, this.map.projection);
 

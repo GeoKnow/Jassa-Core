@@ -189,7 +189,7 @@
     	    var parent = this.parent;
     	    var parentId = parent ? parent.getId() : '';
     	    
-    	    var indexId = this.parentChildIndex || 'r'; // r for root
+    	    var indexId = this.parentChildIndex != null ? this.parentChildIndex : 'r'; // r for root
     	    var result = parentId + indexId;
     	    return result;
     	},

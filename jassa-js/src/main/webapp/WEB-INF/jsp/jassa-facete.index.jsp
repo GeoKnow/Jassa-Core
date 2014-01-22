@@ -238,10 +238,10 @@
 // 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
-	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+// 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
 // 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
 	//var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
-	var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
+// 	var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
 	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
 
 	
@@ -249,8 +249,8 @@
 // 	var defaultGraphUris = [];
 	
  	
-// 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
-// 	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
+	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
+	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
 
 //  	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/world/sparql';
 //  	var defaultGraphUris = ['http://freebase.com/2013-09-22/all'];
@@ -526,7 +526,7 @@
         },
         
         createConcept: function() {
-            var result = facetService.createConceptFacetValues(new facete.Path());
+            var result = this.facetService.createConceptFacetValues(new facete.Path());
             return result;
         }
     });
@@ -544,8 +544,8 @@
 // 	    }
 // 	});
 	
-    var viewStateFetcher = new geo.ViewStateFetcher(qef, ogcMapFactory, faceteConceptFactory);
-    
+    //var viewStateFetcher = new geo.ViewStateFetcher(qef, ogcMapFactory, faceteConceptFactory);
+    var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
 
     
     ns.ViewStateCtrlOpenLayers = Class.create({
@@ -565,7 +565,7 @@
             
             _(diff.added).each(function(node) {
     	        if(!node.isLoaded) {
-    	            console.log('box: ' + node.getBounds());
+    	            //console.log('box: ' + node.getBounds());
     	            mapWidget.addBox('' + node.getBounds(), node.getBounds());
     	        }
     	        
@@ -1415,7 +1415,7 @@
             }
             
 		    //var concept = fctService.createConceptFacetValues(new facete.Path());			
-			viewStateFetcher.fetchViewState().done(function(viewState) {
+			viewStateFetcher.fetchViewState(bounds).done(function(viewState) {
 			   //var nodes = viewState.getNodes();
 			   //console.log('viewStateNodes', nodes);
 			   
