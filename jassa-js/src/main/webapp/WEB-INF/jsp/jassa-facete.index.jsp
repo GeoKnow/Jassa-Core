@@ -135,6 +135,10 @@
 /* 		left: 10px; */
 	}
 	
+	.inactive {
+		color: #aaaaaa;
+	}
+	
 	</style>
 	
 	<!--  TODO PrefixMapping Object von Jena portieren ~ 9 Dec 2013 -->
@@ -184,13 +188,14 @@
 //    	    'http://www.geonames.org/ontology#name',
 //    	    'http://www.geneontology.org/dtds/go.dtd#name',
 
-   	    'http://www.w3.org/2000/01/rdf-schema#label'
+   	    'http://www.w3.org/2000/01/rdf-schema#label',
 
 //    	    'http://xmlns.com/foaf/0.1/accountName',
 //    	    'http://xmlns.com/foaf/0.1/nick',
 //    	    'http://xmlns.com/foaf/0.1/surname',
    	    
-//    	    'http://www.w3.org/2004/02/skos/core#altLabel'
+    	    'http://www.w3.org/2004/02/skos/core#altLabel',
+    	    'http://geoknow.eu/geodata#name'
 	];
 
 	var prefLangs = ['de', 'en', ''];
@@ -280,10 +285,13 @@
 //            labelUtil.getElement()
 //        ])
 	});
-
 	
 	var labelStore = store.labels;
 	
+	var concept = new facete.Concept(sparql.ElementString.create('?s a <http://purl.org/acco/ns#Hotel>'), rdf.NodeFactory.createVar('s'));
+	labelStore.find().concept(concept).skip(10).limit(10).asList(true).done(function(docs) {
+	   console.log('doc', docs); 
+	});
 	
 	
 	var conceptPathFinderApiUrl = 'http://localhost:8080/jassa/api/path-finding';
@@ -982,6 +990,131 @@
 // //         jQuery('#foobar2').replaceWith(xxx);
 // //         return {};
 // 	});
+
+
+	myModule.controller('WorkSpaceListCtrl', function($scope) {
+	   
+	    $scope.workSpaces = [];
+	    
+	    $scope.addWorkSpace = function() {
+	        var id = 'workSpace' + ($scope.workSpaces.length + 1);
+	        
+	        var workSpace = {
+	            id: id,
+	            name: id,
+	            sparqlServiceIri: null,
+	            graphConfig: null
+	        };
+	        
+	        $scope.workSpaces.push(workSpace);
+	    };
+	    
+	    $scope.removeWorkSpace = function(index) {
+	        var workSpace = $scope.workSpaces[index];
+
+	        if(workSpace.isActive) {
+	            $scope.selectWorkSpace(null);
+	        }
+
+	        $scope.workSpaces.splice(index, 1);
+	    };
+	    
+	    $scope.selectWorkSpace = function(index) {
+	        var workSpace = null;
+
+	        if(index != null) {
+	        	workSpace = $scope.workSpaces[index];
+	        	workSpace.isActive = true;
+	        }
+
+	        $scope.$emit('facete:workSpaceSelected', workSpace);
+	    }
+	    
+	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
+	        if(workSpace) {
+		        _($scope.workSpaces).each(function(ws) {
+		            if(ws.id != workSpace.id) {
+		                ws.isActive = false;
+		            }
+		        });
+	        }
+		});
+	});
+	
+
+	myModule.controller('WorkSpaceConfigCtrl', function($scope) {
+		$scope.activeWorkSpace = null;
+
+	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
+	        console.log('Active workSpace: ', workSpace);
+	        $scope.activeWorkSpace = workSpace;
+		});
+	});
+	
+	myModule.controller('ConceptSpaceListCtrl', function($scope) {
+	    $scope.activeWorkSpace = null;
+	    
+	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
+	        if(workSpace) {
+		        if(!workSpace.conceptSpaces) {
+		            workSpace.conceptSpaces = [];
+		        }
+	        }
+	        $scope.activeWorkSpace = workSpace;
+		});
+	    
+	    
+	    $scope.addConceptSpace = function() {
+	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
+
+	        var id = 'conceptSpace' + (conceptSpaces.length + 1);
+	        
+	        var conceptSpace = {
+	            id: id,
+	            name: id,
+	            // Facet tree stuff, (Does GeoLink stuff go here, or is it external?)
+	            // Maybe rename concept to conceptSpace
+	        };
+	        
+	        conceptSpaces.push(conceptSpace);
+	    };
+	    
+	    $scope.removeConceptSpace = function(index) {
+	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
+	        var conceptSpace = conceptSpaces[index];
+
+	        if(conceptSpace.isActive) {
+	            $scope.selectConceptSpace(null);
+	        }
+
+	        conceptSpaces.splice(index, 1);
+	    };
+	    
+	    $scope.selectConceptSpace = function(index) {
+	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
+	        var conceptSpace = null;
+
+	        if(index != null) {
+	        	conceptSpace = conceptSpaces[index];
+	        	conceptSpace.isActive = true;
+	        }
+
+	        $scope.$emit('facete:conceptSelected', conceptSpace);
+	    }
+	    
+	    $scope.$on('facete:conceptSelected', function(ev, conceptSpace) {
+	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
+	        
+	        if(conceptSpace) {
+		        _(conceptSpaces).each(function(c) {
+		            if(c.id != conceptSpace.id) {
+		                c.isActive = false;
+		            }
+		        });
+	        }
+		});
+	});
+	
 	
 
 	myModule.controller('ShowQueryCtrl', function($rootScope, $scope, facetService, $compile) {
@@ -1188,9 +1321,9 @@
 	        });
 	    };
 	    
-	    var events = ['facete:facetSelected', 'facete:constraintsChanged', 'facete:refresh'];
+	    var events = ['facete:facetSelected', 'facete:constraintsChanged', 'facete:refresh', 'facete:workSpaceSelected', 'facete:conceptSelected'];
 	    
-	    _(events).each(forwardEvent);
+	    _(events).each(function(event) { forwardEvent(event); });
 	    
 	    /*
 	    $scope.$on('facete:facetSelected', function(ev, path) {
@@ -1637,20 +1770,53 @@
 		 
 		 
 	 	<div style="position: absolute; top: 0px; left: 0px; width: 30%; height: 100%">
-		
-						<h3>FavFacets</h3>
-						<div portletheading>
-						    This is a test
+						<div class="portlet" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
+							<h4>WorkSpaces</h4>
+						    <span ng-show="workSpaces.length == 0" class="inactive">(no work spaces)</span>
+							<ul>
+							    <li ng-repeat="workSpace in workSpaces" ng-class="{'highlite': workSpace.isActive}">
+							    	<a href="" ng-click="removeWorkSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
+							    	<a href="" ng-click="selectWorkSpace($index)">{{workSpace.name}}</a>
+							   	</li>
+							</ul>
+							
+							<button class="btn btn-primary" ng-click="addWorkSpace()">New Work Space</button>
 						</div>
 						
 						
+						<h4>WorkSpace Settings</h4>
+						<div class="portlet" ng-controller="WorkSpaceConfigCtrl">
+							<div ng-show="!activeWorkSpace" class="inactive">(no active work space)</div>
+							<div ng-show="activeWorkSpace">
+								Sparql Endpoint: <input type="search" ng-model="sparqlEndpointIri" /><button>Set</button> <br />
+							</div>
+						</div>
+						
+						
+						<h4>Concepts</h4>
+						<div class="portlet" ng-controller="ConceptSpaceListCtrl">
+							<span ng-show="!activeWorkSpace" class="inactive">(no active work space)</span>
+							<div ng-show="activeWorkSpace">
+								<div ng-hide="activeWorkSpace.conceptSpaces.length" class="inactive">(no concept spaces)</div>
+								<ul>
+									<li ng-repeat="conceptSpace in activeWorkSpace.conceptSpaces" ng-class="{'highlite': conceptSpace.isActive}">
+										<a href="" ng-click="removeConceptSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
+							    		<a href="" ng-click="selectConceptSpace($index)">{{conceptSpace.name}}</a>
+									</li>
+								</ul>
+							</div>
+							<button ng-show="activeWorkSpace" class="btn btn-primary" ng-click="addConceptSpace()">New Concept Space</button>							
+						</div>
+						
+<!--						
 					    <div class="portlet" ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
 					        <span ng-show="favFacets.length == 0">No favourited facets</span> 
 					        <ul ng-repeat="facet in favFacets">
 								<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
 							</ul>
 					    </div>
-					
+-->
+  
 						<h3>FacetTree</h3>
 						<div class="portlet" ng-controller="MyCtrl" data-ng-init="refresh()">
 							<div ng-include="'facet-tree-item.html'"></div>
