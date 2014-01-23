@@ -144,8 +144,8 @@
 		},
 		*/
 		
-		asList: function() {
-			var promise = this.execute();
+		asList: function(retainRdfNodes) {
+			var promise = this.execute(retainRdfNodes);
 
 			// TODO This should be part of the store facade
 			var result = promise.pipe(function(it) {
@@ -170,7 +170,7 @@
 		
 		
 		// TODO This is a hack right now - not sure how to design the execution yet
-		execute: function() {
+		execute: function(retainRdfNodes) {
 //			var config = {
 //				criteria: this.criteria,
 //				limit: this.limit,
@@ -181,7 +181,7 @@
 		    
 			var config = new ns.QueryConfig(c.criteria, c.limit, c.offset, j.concept, j.isLeftJoin);
 			
-			var result = this.store.execute(config);
+			var result = this.store.execute(config, retainRdfNodes);
 			return result;
 		},
 		
@@ -425,10 +425,10 @@
 		},
 
 		
-		execute: function(config) {
+		execute: function(config, retainRdfNodes) {
 		    var spec = this.createQueries(config);
 		    
-		    var result = this.executeData(spec);
+		    var result = this.executeData(spec, retainRdfNodes);
 		    
 		    return result;
 		},
@@ -448,7 +448,7 @@
             return result;
 		},
 		
-		executeData: function(spec) {
+		executeData: function(spec, retainRdfNodes) {
 		    var outerElement = spec.outerElement;
 		    var idExpr = spec.idExpr;
 		    var sortConditions = spec.sortConditions;
@@ -489,7 +489,7 @@
 					instancer.process(binding);
 				}
 				
-				var json = instancer.getJson();
+				var json = instancer.getJson(retainRdfNodes);
 				
 				
 				
@@ -498,22 +498,27 @@
 				var result;
 				if(_(json).isArray()) {
 
-					
-					var filtered = _(json).filter(function(item) {												
-						var isMatch = criteria.match(item);
-						return isMatch;
-					})
-					
-					var all = json.length;
-					var fil = filtered.length;
-					var delta = all - fil;
+				    var filtered;
+				    if(retainRdfNodes) {
+				        filtered = json;
+				    }
+				    else {
+    					var filtered = _(json).filter(function(item) {												
+    						var isMatch = criteria.match(item);
+    						return isMatch;
+    					})
+    					
+    					var all = json.length;
+    					var fil = filtered.length;
+    					var delta = all - fil;
+    
+    					console.log('[DEBUG] ' + delta + ' items filtered on the client ('+ fil + '/' + all + ' remaining) using criteria ' + JSON.stringify(criteria));
+				    }
 
-					console.log('[DEBUG] ' + delta + ' items filtered on the client ('+ fil + '/' + all + ' remaining) using criteria ' + JSON.stringify(criteria));
-
-					
-					result = new util.IteratorArray(filtered);
-					
+				    result = new util.IteratorArray(filtered);
+				    
 				} else {
+				    console.log('[ERROR] Implement me');
 					throw 'Implement me';
 				}
 				

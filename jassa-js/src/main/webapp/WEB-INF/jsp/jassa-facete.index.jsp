@@ -219,15 +219,6 @@
 	
 	
     var ns = {};
-
-	
-	
-// 	alert(rdf.NodeFactory.parseRdfTerm('_:boo'));
-// 	alert(rdf.NodeFactory.parseRdfTerm('<http://example.org>'));
-// 	alert(rdf.NodeFactory.parseRdfTerm('"foo"'));
-// 	alert(rdf.NodeFactory.parseRdfTerm('"bar"@en'));
-// 	alert(rdf.NodeFactory.parseRdfTerm('"baz"^^<http://www.w3.org/2001/XMLSchema#string>'));
-	//facete.test();
 	
 	//var sparqlEndpointUrl = 'http://localhost/sparql';
 	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';	
@@ -238,19 +229,19 @@
 // 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
 // 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
 	
-// 	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
+	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
 // 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
 	//var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
-// 	var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
+	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
 	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
 
 	
 // 	var sparqlEndpointUrl = 'http://localhost:8080/sparqlify/services/lgd/sparql';
-// 	var defaultGraphUris = [];
-	
+ 	var defaultGraphUris = [];
+
  	
-	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
-	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
+// 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
+// 	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
 
 //  	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/world/sparql';
 //  	var defaultGraphUris = ['http://freebase.com/2013-09-22/all'];
@@ -292,13 +283,6 @@
 
 	
 	var labelStore = store.labels;
-
-	
-	
-	
-	
-	
-	
 	
 	
 	
@@ -555,6 +539,37 @@
             this.oldViewState = null;
         },
         
+        showNode: function(node) {
+            var mapWidget = this.mapWidget;
+            
+	        if(!node.isLoaded) {
+	            //console.log('box: ' + node.getBounds());
+	            mapWidget.addBox('' + node.getBounds(), node.getBounds());
+	        }
+	        
+	        var data = node.data || {};
+    	    var docs = data.docs || [];
+
+    	    _(docs).each(function(doc) {
+    	        mapWidget.addWkt(doc.id, doc.wkt);
+    	    });        	                        
+        },
+        
+        hideNode: function(node) {
+            var mapWidget = this.mapWidget;
+            
+	        var data = node.data || {};
+    	    var docs = data.docs || [];
+
+	        //console.log('box: ' + node.getBounds());
+	        mapWidget.removeBox('' + node.getBounds());//, node.getBounds());
+    	    
+    	    _(docs).each(function(doc) {
+    	        mapWidget.removeItem(doc.id);
+    	    });
+        },
+
+        
         updateView: function(newViewState) {
             var mapWidget = this.mapWidget;
             var oldViewState = this.oldViewState;
@@ -563,32 +578,16 @@
             
             console.log('ViewStateDiff: ', diff);
             
-            _(diff.added).each(function(node) {
-    	        if(!node.isLoaded) {
-    	            //console.log('box: ' + node.getBounds());
-    	            mapWidget.addBox('' + node.getBounds(), node.getBounds());
-    	        }
-    	        
-    	        var data = node.data || {};
-        	    var docs = data.docs || [];
-
-        	    _(docs).each(function(doc) {
-        	        mapWidget.addWkt(doc.id, doc.wkt);
-        	    });        	                        
-            });
             
             
-            _(diff.removed).each(function(node) {
-    	        var data = node.data || {};
-        	    var docs = data.docs || [];
-
-    	        //console.log('box: ' + node.getBounds());
-    	        mapWidget.removeBox('' + node.getBounds());//, node.getBounds());
-        	    
-        	    _(docs).each(function(doc) {
-        	        mapWidget.removeItem(doc.id);
-        	    });
-            });
+            mapWidget.clearItems();
+            
+            var self = this;
+            //_(diff.removed).each(this.hideNode);
+            _(diff.retained).each(function(node) { self.showNode(node); });
+            _(diff.added).each(function(node) { self.showNode(node); });
+            
+            
             
     		this.oldViewState = newViewState;
             /*            
@@ -1091,16 +1090,17 @@
 	 		
 			var dataFlow = baseFlow.skip(($scope.currentPage - 1) * pageSize).limit(pageSize);
 
-			var dataPromise = dataFlow.asList().pipe(function(docs) {
+			var dataPromise = dataFlow.asList(true).pipe(function(docs) {
 
 			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
 			    
 			    var r = _(docs).map(function(doc) {
 			        // TODO Sponate must support retaining node objects
-			        var node = rdf.NodeFactory.parseRdfTerm(doc.id);
+			        //var node = rdf.NodeFactory.parseRdfTerm(doc.id);
+			        var node = doc.id;
 			        
-			        
-			        var label = doc.displayLabel ? doc.displayLabel : doc.id;
+			        var label = doc.displayLabel ? doc.displayLabel : '' + doc.id;
+			        console.log('displayLabel', label);
 			        var tmp = {
 			            displayLabel: label,
 						path: path,

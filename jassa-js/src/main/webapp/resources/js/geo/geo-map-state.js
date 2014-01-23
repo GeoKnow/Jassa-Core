@@ -167,7 +167,7 @@
             
             // TODO Make this configurable
             var quadTreeConfig = {
-                    maxTileItemCount: 150,
+                    maxItemsPerTileCount: 150,
                     maxGlobalItemCount: 750
             };
 

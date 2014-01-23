@@ -56,7 +56,7 @@
 
             var options = critObject['$options'];
 
-			var criterias = _.chain(critObject).omit('$options').map(function(val, key) {
+			var criterias = _(critObject).chain().omit('$options').map(function(val, key) {
 				
 				var criteria;
 
@@ -390,6 +390,8 @@
 		initialize: function($super, attrPath, regex) {
 			$super('$regex', attrPath);
 			this.regex = regex;
+			
+//			console.log('REGEX', regex);
 //			this.pattern = pattern;
 //			this.flags = flags;
 		},

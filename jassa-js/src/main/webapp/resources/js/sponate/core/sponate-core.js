@@ -35,7 +35,7 @@
             this.node = val;
         },
         
-        getJson: function() {
+        getJson: function(retainRdfNodes) {
             return this.node;
             //return this.node.toString();
         },
@@ -764,7 +764,7 @@
 			throw new 'override me';
 		},
 		
-		getJson: function() {
+		getJson: function(retainRdfNodes) {
 			throw 'override me';
 		}
 	});
@@ -783,8 +783,8 @@
 	       this.customAgg.processBinding(binding);
 	   },
 	   
-	   getJson: function() {
-	       var result = this.customAgg.getJson();
+	   getJson: function(retainRdfNodes) {
+	       var result = this.customAgg.getJson(retainRdfNodes);
 	       return result;
 	   }
 	});
@@ -832,26 +832,33 @@
 			}
 		},
 		
-		getJson: function() {
+		getJson: function(retainRdfNodes) {
 			var result;
 
 			var node = this.node;
 			
 			if(node) {
-				if(node.isUri()) {
-					result = node.toString();
-				} else if (node.isLiteral()) {
-					result = node.getLiteralValue();
-					
-					if(result instanceof rdf.TypedValue) {
-					    result = result.getLexicalValue();
-					}
-					
-				} else if(sparql.NodeValue.nvNothing.asNode().equals(node)) {
-				    result = null;
-				} else {
-					throw 'Unsupported node type';
-				}
+			    
+			    if(retainRdfNodes) {
+			        result = node;
+			    } else {
+			    
+    				if(node.isUri()) {
+    					result = node.toString();
+    				} else if (node.isLiteral()) {
+    					result = node.getLiteralValue();
+    					
+    					if(result instanceof rdf.TypedValue) {
+    					    result = result.getLexicalValue();
+    					}
+    					
+    				} else if(sparql.NodeValue.nvNothing.asNode().equals(node)) {
+    				    result = null;
+    				} else {
+    				    console.log('[ERROR] Unsupported node types: ', node)
+    					throw 'Unsupported node type';
+    				}
+			    }
 			}
 
 			return result;
@@ -880,11 +887,11 @@
 			
 		},
 		
-		getJson: function() {
+		getJson: function(retainRdfNodes) {
 			var result = {};
 			
 			_(this.attrToAggr).each(function(aggr, attr) {
-	    		var json = aggr.getJson();
+	    		var json = aggr.getJson(retainRdfNodes);
 	    		result[attr] = json;
 		    });
 
@@ -936,32 +943,32 @@
 			aggr.process(binding, context);
 		},
 		
-		getJson: function() {
+		getJson: function(retainRdfNodes) {
 			var result;
 
 			var isArray = this.patternMap.isArray();
 			if(isArray) {
-				result = this.getJsonArray();
+				result = this.getJsonArray(retainRdfNodes);
 			} else {
-				result = this.getJsonMap();
+				result = this.getJsonMap(retainRdfNodes);
 			}
 
 			return result;
 		},
 		
-		getJsonArray: function() {
+		getJsonArray: function(retainRdfNodes) {
 			var result = [];
 
 			var aggrs = this.keyToAggr.getItems();
 			var result = aggrs.map(function(aggr) {
-				var data = aggr.getJson();
+				var data = aggr.getJson(retainRdfNodes);
 				return data;
 			});
 				
 			return result;
 		},
 		
-		getJsonMap: function() {
+		getJsonMap: function(retainRdfNodes) {
 			var result = {};
 			
 			var aggrs = this.keyToAggr.getItems();
@@ -969,7 +976,7 @@
 			
 			_(keyToIndex).each(function(index, aggr) {
 		    	var aggr = items[index];
-		    	var data = aggr.getJson();
+		    	var data = aggr.getJson(retainRdfNodes);
 		    	result[key] = data;
 			});
 			
@@ -1025,7 +1032,7 @@
 			//context.registryRef.addRef(this, binding)
 		},
 		
-		getJson: function() {
+		getJson: function(retainRdfNodes) {
 			return this.json;
 		},
 		
@@ -1150,8 +1157,8 @@
 		},
 		
 		
-		getJson: function() {
-			var result = this.rootAggregator.getJson();
+		getJson: function(retainRdfNodes) {
+			var result = this.rootAggregator.getJson(retainRdfNodes);
 			
 			return result;
 		}
