@@ -307,6 +307,13 @@
 		}
 	});
 	
+	
+	   ns.FacetFetchingWorkflow = Class.create({
+	        execute: function(sparqlService, labelMap) {
+	            
+	        }
+	    });
+
 
 	ns.FacetServiceImpl = Class.create(ns.FacetService, {
 		initialize: function(queryExecutionFactory, facetConceptGenerator, labelStore) {

@@ -170,32 +170,16 @@
     <script type="text/javascript" src="resources/libs/open-layers/2.12/OpenLayers.js"></script>
     <script type="text/javascript" src="resources/js/geo/jquery.ssb.map.js"></script>
 	
+	
+	
+	
 	<script type="text/javascript">
 	_.mixin(_.str.exports());
 
 	
 	var prefLabelPropertyUris = [
-//    		'http://www.w3.org/2004/02/skos/core#prefLabel',
-//    	    'http://purl.org/dc/elements/1.1/title',
-//    	    'http://purl.org/dc/terms/title',
-
-//    	    'http://swrc.ontoware.org/ontology#title',
-//    	    'http://xmlns.com/foaf/0.1/name',
-//    	    'http://usefulinc.com/ns/doap#name',
-//    	    'http://rdfs.org/sioc/ns#name',
-//    	    'http://www.holygoat.co.uk/owl/redwood/0.1/tags/name',
-//    	    'http://linkedgeodata.org/vocabulary#name',
-//    	    'http://www.geonames.org/ontology#name',
-//    	    'http://www.geneontology.org/dtds/go.dtd#name',
-
    	    'http://www.w3.org/2000/01/rdf-schema#label',
-
-//    	    'http://xmlns.com/foaf/0.1/accountName',
-//    	    'http://xmlns.com/foaf/0.1/nick',
-//    	    'http://xmlns.com/foaf/0.1/surname',
-   	    
-    	    'http://www.w3.org/2004/02/skos/core#altLabel',
-    	    'http://geoknow.eu/geodata#name'
+    	'http://geoknow.eu/geodata#name'
 	];
 
 	var prefLangs = ['de', 'en', ''];
@@ -222,56 +206,30 @@
 	
 	var facete = Jassa.facete;
 	
+	</script>
 	
-    var ns = {};
+	<script src="resources/js/unsorted.js"></script>
+
+	<script>
 	
-	//var sparqlEndpointUrl = 'http://localhost/sparql';
-	//var sparqlEndpointUrl = 'http://cstadler.aksw.org/vos-freebase/sparql';	
-	
-// 	var sparqlEndpointUrl = 'http://dbpedia.org/sparql';
-// 	var defaultGraphUris = ['http://dbpedia.org'];
 
-// 	var sparqlEndpointUrl = 'http://fp7-pp.publicdata.eu/sparql';
-// 	var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
-	
-	var sparqlEndpointUrl = 'http://localhost/fts-sparql';
-// 	var defaultGraphUris = ['http://fts.publicdata.eu/'];
-	//var defaultGraphUris = ['http://fp7-pp.publicdata.eu/'];
-	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
-	//var defaultGraphUris = ['http://wikimapia.org/hotels/athens/'];
-
-	
-// 	var sparqlEndpointUrl = 'http://localhost:8080/sparqlify/services/lgd/sparql';
- 	var defaultGraphUris = [];
-
- 	
-// 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
-// 	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
-
-//  	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/world/sparql';
-//  	var defaultGraphUris = ['http://freebase.com/2013-09-22/all'];
-
-//  	var sparqlEndpointUrl = 'http://linkedgeodata.org/sparql';
-//  	var defaultGraphUris = ['http://linkedgeodata.org'];
+    var sparqlServiceIri = 'http://localhost/fts-sparql';
+ 	var defaultGraphIris = [];
 
 
-// 	var sparqlEndpointUrl = 'http://cstadler.aksw.org/conti/freebase/germany/sparql';
-// 	var defaultGraphUris = ['http://freebase.com/2013-09-22/data/'];
-
-	var qef = new service.SparqlServiceHttp(sparqlEndpointUrl, defaultGraphUris);
-	qef = new service.SparqlServiceCache(qef);
-	
 	/**
 	 * Sponate (labels)
 	 */
-	var store = new sponate.StoreFacade(qef, prefixes);//, cacheFactory);
+	//var store = new sponate.StoreFacade(qef, prefixes);//, cacheFactory);
 
+	var mapParser = new sponate.MapParser();
+	
 	var labelUtilFactory = new sponate.LabelUtilFactory(prefLabelPropertyUris, prefLangs);
 		
  	// A label util can be created based on var names and holds an element and an aggregator factory.
  	var labelUtil = labelUtilFactory.createLabelUtil('o', 's', 'p');
 
-	store.addMap({
+ 	var labelMap = mapParser.parseMap({
 		name: 'labels',
 		template: [{
 			id: '?s',
@@ -279,34 +237,18 @@
 			hiddenLabels: [{id: '?o'}]
 		}],
 		from: labelUtil.getElement()
-//		new sparql.ElementGroup([
-//          new sparql.ElementString(sparql.SparqlString.create('?s a <http://dbpedia.org/ontology/Castle>')),
-//            sparql.ElementString.create('Filter(?s = <http://dbpedia.org/resource/Citadel_of_Damascus>)'),
-//            labelUtil.getElement()
-//        ])
-	});
-	
-	var labelStore = store.labels;
-	
-	var concept = new facete.Concept(sparql.ElementString.create('?s a <http://purl.org/acco/ns#Hotel>'), rdf.NodeFactory.createVar('s'));
-	labelStore.find().concept(concept).skip(10).limit(10).asList(true).done(function(docs) {
-	   console.log('doc', docs); 
-	});
-	
+ 	});
+
 	
 	var conceptPathFinderApiUrl = 'http://localhost:8080/jassa/api/path-finding';
 
 	
 	var conceptWgs84 = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), rdf.NodeFactory.createVar('s'));
 	var conceptGeoVocab = new facete.Concept(sparql.ElementString.create('?s <http://www.opengis.net/ont/geosparql#asWKT> ?w'), rdf.NodeFactory.createVar('s'));
-	//var conceptGeoFreebaseVocab = new facete.Concept(sparql.ElementString.create('?s <http://rdf.freebase.com/ns/location.location.geolocation..location.geocode.longitude> ?x ;  <http://rdf.freebase.com/ns/location.location.geolocation..location.geocode.latitude> ?y'), rdf.NodeFactory.createVar('s'));
-	//var conceptWgs84 = conceptGeoFreebaseVocab;
-	//conceptWgs84 = conceptGeoVocab;
 	
 	var geoConcepts = [conceptWgs84, conceptGeoVocab];
 	
 	
-	var mapParser = new sponate.MapParser();
 
 	var vs = rdf.NodeFactory.createVar('s');
 	var vx = rdf.NodeFactory.createVar('x');
@@ -334,52 +276,7 @@
 		}],
 		from: conceptGeoVocab.getElement()
 	});
-	
-	
-    ns.GeoMapFactory = Class.create({
-	    initialize: function(baseSponateView, bboxExprFactory) {
-	        //this.template = template;
-	        //this.baseElement = baseElement;
-	        this.baseSponateView = baseSponateView;
-	        this.bboxExprFactory = bboxExprFactory;
-	    },
-
-	    createMapForGlobal: function() {
-	        var result = this.createMapForBounds(null);
-	        return result;
-	    },
-	    
-	    createMapForBounds: function(bounds) {
-	        var baseSponateView = this.baseSponateView;
-	        var bboxExprFactory = this.bboxExprFactory;
-	        
-	        var pattern = baseSponateView.getPattern();
-		    var baseElementFactory = baseSponateView.getElementFactory();
-		    
-		    var baseElement = baseElementFactory.createElement();
-			var element = baseElement;	       
-		    if(bounds) {
-				var filterExpr = bboxExprFactory.createExpr(bounds);
-				var filterElement = new sparql.ElementFilter(filterExpr);
-		       
-		       	element = new sparql.ElementGroup([baseElement, filterElement]);
-		    }
-		       
-			var result = new sponate.Mapping(null, pattern, new sparql.ElementFactoryConst(element));
-			return result;
-		}
-	});
     
-    
-    
-    var wkt = "POLYGON((1 2 3 4 5 6 7 8))";
-    wkt = 'GEOMETRYCOLLECTION(POINT(10 10), POINT(30 30), LINESTRING(15 15, 20 20))';
-    var points = geo.WktUtils.extractPointsFromWkt(wkt);
-    console.log('points: ' + JSON.stringify(points));
-
-    var bbox = geo.WktUtils.createBBoxFromPoints(points);
-    console.log('bbox: ' + bbox);
-
     
 	var intersectsFnName = 'bif:st_intersects';
 	var geomFromTextFnName = 'bif:st_geomFromText';
@@ -389,418 +286,72 @@
 	//var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
 	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw, intersectsFnName, geomFromTextFnName));
 
-	var bounds = {left: 0, bottom: 0, right: 10, top: 10};
-	
-	var wgs84Map = wgs84MapFactory.createMapForBounds(bounds);
-	
-	store.addMap(wgs84Map, 'wgs84');
-	store.wgs84.find().limit(10).asList().done(function(docs) {
-	   console.log('docs: ', docs); 
-	});
-	
-	
-	//var qtc = new geo.QuadTreeCache(qef, wgs84MapFactory);
-	var qtc = new geo.QuadTreeCache(qef, ogcMapFactory);
 
-	var b = new geo.Bounds.createFromJson(bounds);
-	var promise = qtc.fetchData(b);
-	promise.done(function(data) {
-	    console.log('yay:', data);
-	}).fail(function(data) {
-	   console.log('nay:', data); 
-	});
-
-	/*
-	var flow = sponateBuilder.create(startMap).
-	
-	*/
-	
-	
-	
-	
-	/* 
-	var pathToElement = function(path) {
-
-	    var concept = fctService.createConceptFacetValues(path);			
-		
-		var baseConcept = configModel.get('concept');				
-		var tmpConcept = hack.createConcept();
-
-		
-		var concept = baseConcept.combineWith(tmpConcept);
-
-		var pathConstraintFactory = new facets.PathConstraintWgs84.Factory.create(geoPath);
-		var geoConceptFactoryBase = new facets.GeoConceptFactory(rootFacetNode, pathConstraintFactory);
-		
-		
-		var geoConceptFactory = new facets.GeoConceptFactoryCombine(concept, geoConceptFactoryBase);
-			    
-	};
-	*/
-	
-// 	store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).limit(10).asList().done(function(items) {
+	var ConceptSpaceFactory = Class.create({
 	    
-// 	});
-	
-	
-	/**
-	 * Facete
-	 */
-	var constraintManager = new facete.ConstraintManager();
-	
-	var baseVar = rdf.NodeFactory.createVar("s");
-	var baseConcept = facete.ConceptUtils.createSubjectConcept(baseVar);
-	//var sparqlStr = sparql.SparqlString.create("?s a ?t");
-	//var baseConcept = new facete.Concept(new sparql.ElementString(sparqlStr));
-	var rootFacetNode = facete.FacetNode.createRoot(baseVar);
-	
-	// Based on above objects, create a provider for the configuration
-	// which the facet service can build upon
-	var facetConfigProvider = new facete.FacetGeneratorConfigProviderIndirect(
-		new facete.ConceptFactoryConst(baseConcept),
-		new facete.FacetNodeFactoryConst(rootFacetNode),
-		constraintManager
-	);
-	
-	var fcgf = new facete.FacetConceptGeneratorFactoryImpl(facetConfigProvider);
-	var facetConceptGenerator = fcgf.createFacetConceptGenerator();
+	    initialize: function() {
+	        
+	    },
+	    
+	    	
+	    createConceptSpace: function() {
 
 
-	// The FacetStateProvider keeps track of limit and offsets for the nodes of the facet tree
-	// By default, a limit of 10 is used
-	var facetStateProvider = new facete.FacetStateProviderImpl(10);
 
-	// A map from path to search string
-	var pathToFilterString = new util.HashMap();
+
+	    	// The FacetStateProvider keeps track of limit and offsets for the nodes of the facet tree
+	    	// By default, a limit of 10 is used
+	    	var facetStateProvider = new facete.FacetStateProviderImpl(10);
+
+	    	// A map from path to search string
+	    	var pathToFilterString = new util.HashMap();
+	    	
+	    	var expansionSet = new util.HashSet();
+	    	expansionSet.add(new facete.Path());
+	    	
+	    	//facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
+	    	
+	    	//var facetService = new facete.FacetServiceImpl(qef, facetConceptGenerator, labelStore);
+			var facetService = new facete.FacetServiceImpl(facetConceptGenerator, labelMap);
+	    	
+
+	    	var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet, facetStateProvider, pathToFilterString);
+
+
+	        var constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);	   
+	        
+	        
+	        var faceteConceptFactory = new ns.ConceptFactoryFacetService(fctService);
+	        
+	        
+	        var result = new ns.ConceptSpace(facetTreeService);
+	        
+	        return result;
+	    }
+	    
+	    
+	});
+
 	
-	var expansionSet = new util.HashSet();
-	expansionSet.add(new facete.Path());
 	
-	//facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
-	
-	var fctService = new facete.FacetServiceImpl(qef, facetConceptGenerator, labelStore);
-
-	
-
-	var fctTreeService = new facete.FacetTreeServiceImpl(fctService, expansionSet, facetStateProvider, pathToFilterString);
-
-
-    var constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);
-
     
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
     
     
 
-    ns.flattenTree = function(node, childPropertyName, result) {
-        if(result == null) {
-            result = [];
-        }
-        
-        if(node) {
-            result.push(node);
-        }
-        
-        var children = node[childPropertyName];
-        if(children) {
-            _(children).each(function(childNode) {
-                ns.flattenTree(childNode, childPropertyName, result);
-            });
-        }
-        
-        return result;
-    };
 
-    
-    ns.ConceptFactoryFacetService = Class.create(facete.ConceptFactory, {
-        initialize: function(facetService) {
-            this.facetService = facetService;
-        },
-        
-        createConcept: function() {
-            var result = this.facetService.createConceptFacetValues(new facete.Path());
-            return result;
-        }
-    });
-    
 
-    var faceteConceptFactory = new ns.ConceptFactoryFacetService(fctService);
-// 	var FaceteConceptFactory = Class.create(facete.ConceptFactory, {
-// 	    initialize: function(facetService) {
-// 	        this.facetService = facetService;
-// 	    },
-	    
-// 	    createConcept: function() {
-// 		    var result = this.facetService.createConceptFacetValues(new facete.Path());
-// 		    return result;
-// 	    }
-// 	});
-	
-    //var viewStateFetcher = new geo.ViewStateFetcher(qef, ogcMapFactory, faceteConceptFactory);
-    var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
+    /////var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
 
-    
-    ns.ViewStateCtrlOpenLayers = Class.create({
-        initialize: function(mapWidget) {
-            this.mapWidget = mapWidget;
-            
-            this.oldViewState = null;
-        },
-        
-        showNode: function(node) {
-            var mapWidget = this.mapWidget;
-            
-	        if(!node.isLoaded) {
-	            //console.log('box: ' + node.getBounds());
-	            mapWidget.addBox('' + node.getBounds(), node.getBounds());
-	        }
-	        
-	        var data = node.data || {};
-    	    var docs = data.docs || [];
-
-    	    _(docs).each(function(doc) {
-    	        mapWidget.addWkt(doc.id, doc.wkt);
-    	    });        	                        
-        },
-        
-        hideNode: function(node) {
-            var mapWidget = this.mapWidget;
-            
-	        var data = node.data || {};
-    	    var docs = data.docs || [];
-
-	        //console.log('box: ' + node.getBounds());
-	        mapWidget.removeBox('' + node.getBounds());//, node.getBounds());
-    	    
-    	    _(docs).each(function(doc) {
-    	        mapWidget.removeItem(doc.id);
-    	    });
-        },
-
-        
-        updateView: function(newViewState) {
-            var mapWidget = this.mapWidget;
-            var oldViewState = this.oldViewState;
-            
-            var diff = geo.ViewStateUtils.diffViewStates(newViewState, oldViewState);
-            
-            console.log('ViewStateDiff: ', diff);
-            
-            
-            
-            mapWidget.clearItems();
-            
-            var self = this;
-            //_(diff.removed).each(this.hideNode);
-            _(diff.retained).each(function(node) { self.showNode(node); });
-            _(diff.added).each(function(node) { self.showNode(node); });
-            
-            
-            
-    		this.oldViewState = newViewState;
-            /*            
-        	var promise = qtc.fetchData(bounds);
-        	promise.done(function(nodes) {
-                $scope.map.widget.clearItems();
-        	    console.log('nodes', nodes);
-
-        	    _(nodes).each(function(node) {
-        	        
-        	        if(!node.isLoaded) {
-        	            console.log('box: ' + node.getBounds());
-        	            $scope.map.widget.addBox('' + node.getBounds(), node.getBounds());
-        	        }
-        	        
-        	        var data = node.data || {};
-            	    var docs = data.docs || [];
-
-            	    _(docs).each(function(doc) {
- 
-            	        $scope.map.widget.addWkt(doc.id, doc.wkt);
-            	        
-            	        //var wktParser = new OpenLayers.Format.WKT();
-                 	    //var polygonFeature = wktParser.read(wkt);
-            	        //console.log('wkt: ', polygonFeature);
-                 	    //polygonFeature.geometry.transform(map.displayProjection, map.getProjectionObject());         
-            	    });        	        
-        	    });
-        	    
-//         	    vectors.addFeatures([polygonFeature]);
-        	});
-*/          
-        }
-    });
-    
+  
     var viewStateCtrl = null;    
 
-
  
     
-    var tableMod = new facete.FaceteTableMod(); 
-    tableMod.togglePath(new facete.Path());
-    
-
-    /**
-     * Interface for retrieval of tags for a given object
-     *
-     */
-    ns.ItemTagger = Class.create({
-        createTags: function(item) {
-            throw 'Not overidden';
-        } 
-    });
-    
-    ns.ItemTaggerTablePath = Class.create(ns.ItemTagger, {
-        initialize: function(tableMod) {
-            this.tableMod = tableMod;
-        },
-        
-        createTags: function(path) {
-            var paths = this.tableMod.getPaths();
-            var isContained = paths.contains(path);
-            
-            var result = { isContained: isContained };
-            //console.log('table: ' + path, isContained);
-            return result;
-        }
-    });
-
-    
-    ns.ItemTaggerFilterString = Class.create(ns.ItemTagger, {
-        initialize: function(pathToFilterString) {
-            this.pathToFilterString = pathToFilterString;
-        },
-        
-        createTags: function(path) {
-            var filterString = this.pathToFilterString.get(path);
-            //var isContained = paths.contains(path);
-            
-            var result = { filterString: filterString };
-            //console.log('table: ' + path, isContained);
-            return result;
-        }
-    });
-
-
-    ns.ItemTaggerManager = Class.create(ns.ItemTagger, {
-       initialize: function() {
-           this.taggerMap = {}
-       },
-       
-       getTaggerMap: function() {
-           return this.taggerMap;
-       },
-       
-       /**
-        * @param item The object for which to create the tags
-        */
-       createTags: function(item) {
-           var result = {};
-           _(this.taggerMap).each(function(tagger, key) {
-               var tags = tagger.createTags(item);
-               
-               result[key] = tags;
-           });
-           
-           return result;
-       }
-    });
-
-    
-    var pathTagger = new ns.ItemTaggerManager();
-    pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableMod);
-    pathTagger.getTaggerMap()['filter'] = new ns.ItemTaggerFilterString(pathToFilterString);
-    
-    ns.FacetTreeTagger = Class.create({
-        initialize: function(itemTagger) {
-            this.itemTagger = itemTagger;
-        },
-        
-        applyTags: function(facetNode) {
-            var itemTagger = this.itemTagger;
-            
-            var facetNodes = ns.flattenTree(facetNode, 'children');
-            
-            _(facetNodes).each(function(node) {
-                var path = node.item.getPath();
-                var tags = itemTagger.createTags(path);
-                _(node).extend(tags);
-                
-                //console.log('tagging: ' + path, tags, node);
-            });
-        }
-    });
     
     
-    var facetTreeTagger = new ns.FacetTreeTagger(pathTagger);
     
     
-	ns.FacetValueService = Class.create({
-	    initialize: function(facetService, constraintTaggerFactory) {
-	        this.facetService = facetService; 
-	        this.constraintTaggerFactory = constraintTaggerFactory;
-	    },
-	   
-	    fetchFacetValues: function(path) {
-            var facetService = this.facetService;
-            var constraintTaggerFactory = this.constraintTaggerFactory;
-
-
-			var concept = facetService.createConceptFacetValues(path, true);
-			var countVar = rdf.NodeFactory.createVar("_c_");
-			var queryCount = facete.ConceptUtils.createQueryCount(concept, countVar);
-			var qeCount = qef.createQueryExecution(queryCount);
-			var countPromise = service.ServiceUtils.fetchInt(qeCount, countVar);
-			
-			var query = facete.ConceptUtils.createQueryList(concept);			
-			
-			
-
-			
-			var pageSize = 10;
-			
-			query.setLimit(pageSize);
-			query.setOffset(($scope.currentPage - 1) * pageSize);
-			
-				var qe = qef.createQueryExecution(query);
-			var dataPromise = service.ServiceUtils.fetchList(qe, concept.getVar()).pipe(function(nodes) {
-
-			    var tagger = constraintTaggerFactory.createConstraintTagger(path);
-			    
-			    var r = _(nodes).map(function(node) {
-			        var tmp = {
-						path: path,
-						node: node,
-						tags: tagger.getTags(node)
-			        };
-
-			        return tmp;
-			    });
-
-			    return r;
-			});
-			
-			var result = {
-			    countPromise: countPromise,
-			    dataPromise: dataPromise
-			};
-			
-			return result;
-	    }
-	});
-
-	
-	ns.MapUtils = {
-	    getExtent: function(map) {
-	        var olRawExtent = map.getExtent();
-	        var e = olRawExtent.transform(map.projection, map.displayProjection);
-	        
-	        var result = new geo.Bounds(e.left, e.bottom, e.right, e.top);
-	        
-	        return result;
-	    }
-	              
-	};
 
 
 	/**
@@ -809,6 +360,19 @@
 	var myModule = angular.module('FaceteDBpediaExample', ['ui.bootstrap']);
 
 	
+    /**
+     * Custom directive for visibility
+     * Source: https://gist.github.com/c0bra/5859295
+     */
+    myModule.directive('ngVisible', function () {
+        return function (scope, element, attrs) {
+            scope.$watch(attrs.ngVisible, function (visible) {
+                element.css('visibility', visible ? 'visible' : 'hidden');
+            });
+        };
+    });
+    
+
 	myModule.directive('ssbMap', function($timeout, $parse) {
         //console.log('starting map');
         
@@ -923,6 +487,8 @@
 //         };
 	});
 	
+	
+/* TODO Not sure if we are going to use it - maybe yes for the info and minimize buttons in the portlet headings
 	myModule.directive('portletheading', function() {
 	    return {
 	        restrict: "EA",
@@ -940,7 +506,65 @@
                     + '</div>'
 	    };	    
 	});
+*/
+
 	
+	myModule.factory('sparqlServiceFactory', function() {
+
+	    return new ns.SparqlServiceFactoryDefault();
+
+	});
+	
+	myModule.service('appContextService', function() {
+	    return new ns.AppContext();
+	});
+	
+	myModule.factory('activeWorkSpaceService', function() {
+	    return {
+	        workSpace: null,
+	
+	        getWorkSpace: function() {
+	            return this.workSpace;
+	        },
+	        
+	        setWorkSpace: function(workSpace) {
+			    if(this.workSpace) {
+			        this.workSpace.setActive(false);
+			    }
+			    
+				this.workSpace = workSpace;
+				
+				if(this.workSpace) {
+					this.workSpace.setActive(true);
+				}            
+	        }
+	    };
+	});
+	
+	myModule.factory('activeConceptSpaceService', function() {
+		return {
+			conceptSpace: null,
+
+			getConceptSpace: function() {
+				return this.conceptSpace;
+			},
+	        
+			setConceptSpace: function(conceptSpace) {
+			    if(this.conceptSpace) {
+			        this.conceptSpace.setActive(false);
+			    }
+			    
+				this.conceptSpace = conceptSpace;
+				
+				if(this.conceptSpace) {
+					this.conceptSpace.setActive(true);
+				}
+	    	}
+		};
+	    
+	});
+	
+	/* TODO Reenable
 	myModule.factory('facetService', function($rootScope, $q) {
 		return {
 			fetchFacets: function(startPath) {
@@ -950,7 +574,8 @@
 			}
 	   };
 	});
-
+*/
+	/* TODO Reenable
 	myModule.controller('FavFacetsCtrl', function($scope, $rootScope, $q, facetService) {
 	    
 		$scope.$on('facete:refresh', function() {
@@ -975,7 +600,7 @@
 			});
 		};
 	});
-	
+	*/
 	
 	
 // 	myModule.controller('Foobar', function($scope, $compile) {
@@ -992,31 +617,20 @@
 // 	});
 
 
-	myModule.controller('WorkSpaceListCtrl', function($scope) {
+
+	/**
+	 * WorkSpaceListCtrl - Controller for adding/removing work spaces
+	 */
+	myModule.controller('WorkSpaceListCtrl', function($rootScope, $scope, appContextService, activeWorkSpaceService) {
 	   
-	    $scope.workSpaces = [];
+	    $scope.workSpaces = appContextService.getWorkSpaces();
 	    
 	    $scope.addWorkSpace = function() {
-	        var id = 'workSpace' + ($scope.workSpaces.length + 1);
-	        
-	        var workSpace = {
-	            id: id,
-	            name: id,
-	            sparqlServiceIri: null,
-	            graphConfig: null
-	        };
-	        
-	        $scope.workSpaces.push(workSpace);
+	        appContextService.addWorkSpace();
 	    };
 	    
 	    $scope.removeWorkSpace = function(index) {
-	        var workSpace = $scope.workSpaces[index];
-
-	        if(workSpace.isActive) {
-	            $scope.selectWorkSpace(null);
-	        }
-
-	        $scope.workSpaces.splice(index, 1);
+	        appContextService.removeWorkSpace(index);
 	    };
 	    
 	    $scope.selectWorkSpace = function(index) {
@@ -1024,103 +638,65 @@
 
 	        if(index != null) {
 	        	workSpace = $scope.workSpaces[index];
-	        	workSpace.isActive = true;
 	        }
 
-	        $scope.$emit('facete:workSpaceSelected', workSpace);
-	    }
-	    
-	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
-	        if(workSpace) {
-		        _($scope.workSpaces).each(function(ws) {
-		            if(ws.id != workSpace.id) {
-		                ws.isActive = false;
-		            }
-		        });
-	        }
-		});
+	        activeWorkSpaceService.setWorkSpace(workSpace);
+	    }	    
 	});
 	
 
+	/**
+	 * WorkSpaceConfigCtrl - Controller for configuring a work space
+	 */
 	myModule.controller('WorkSpaceConfigCtrl', function($scope) {
-		$scope.activeWorkSpace = null;
+// 		$scope.activeWorkSpace = null;
 
-	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
-	        console.log('Active workSpace: ', workSpace);
-	        $scope.activeWorkSpace = workSpace;
-		});
+// 	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
+// 	        console.log('Active workSpace: ', workSpace);
+// 	        $scope.activeWorkSpace = workSpace;
+// 		});
 	});
-	
-	myModule.controller('ConceptSpaceListCtrl', function($scope) {
-	    $scope.activeWorkSpace = null;
-	    
-	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
-	        if(workSpace) {
-		        if(!workSpace.conceptSpaces) {
-		            workSpace.conceptSpaces = [];
-		        }
-	        }
-	        $scope.activeWorkSpace = workSpace;
-		});
-	    
-	    
-	    $scope.addConceptSpace = function() {
-	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
 
-	        var id = 'conceptSpace' + (conceptSpaces.length + 1);
-	        
-	        var conceptSpace = {
-	            id: id,
-	            name: id,
-	            // Facet tree stuff, (Does GeoLink stuff go here, or is it external?)
-	            // Maybe rename concept to conceptSpace
-	        };
-	        
-	        conceptSpaces.push(conceptSpace);
+	
+	/**
+	 * ConceptSpaceListCtrl - Controller for configuring config spaces
+	 */
+	myModule.controller('ConceptSpaceListCtrl', function($scope, activeWorkSpaceService, activeConceptSpaceService) {
+
+	    $scope.activeWorkSpaceService = activeWorkSpaceService;
+	    
+	    $scope.$watch('activeWorkSpaceService.getWorkSpace()', function(workSpace) {
+	        $scope.workSpace = workSpace;
+	    });
+
+	    $scope.addConceptSpace = function() {
+	        $scope.workSpace.addConceptSpace();
 	    };
 	    
 	    $scope.removeConceptSpace = function(index) {
-	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
-	        var conceptSpace = conceptSpaces[index];
-
-	        if(conceptSpace.isActive) {
-	            $scope.selectConceptSpace(null);
-	        }
-
-	        conceptSpaces.splice(index, 1);
+	        $scope.workSpace.removeConceptSpace(index);
 	    };
 	    
 	    $scope.selectConceptSpace = function(index) {
-	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
 	        var conceptSpace = null;
 
 	        if(index != null) {
-	        	conceptSpace = conceptSpaces[index];
-	        	conceptSpace.isActive = true;
+	        	conceptSpace = $scope.workSpace.getConceptSpaces()[index];
 	        }
-
-	        $scope.$emit('facete:conceptSelected', conceptSpace);
-	    }
-	    
-	    $scope.$on('facete:conceptSelected', function(ev, conceptSpace) {
-	        var conceptSpaces = $scope.activeWorkSpace.conceptSpaces;
 	        
-	        if(conceptSpace) {
-		        _(conceptSpaces).each(function(c) {
-		            if(c.id != conceptSpace.id) {
-		                c.isActive = false;
-		            }
-		        });
-	        }
-		});
+	        activeConceptSpaceService.setConceptSpace(conceptSpace);
+	    }
 	});
 	
 	
 
-	myModule.controller('ShowQueryCtrl', function($rootScope, $scope, facetService, $compile) {
+/* TODO RE-ENABLE
+	myModule.controller('ShowQueryCtrl', function($rootScope, $scope, conceptSpaceProvider) {
 	    
 	    
 	    $scope.updateQuery = function() {
+	        var facetService = conceptSpaceProvider.getFacetService();
+	        
 		    var concept = fctService.createConceptFacetValues(new facete.Path());			
 			var query = facete.ConceptUtils.createQueryList(concept);			
 
@@ -1131,8 +707,9 @@
 			$scope.updateQuery();
 		});
 	});
-	
-	myModule.controller('ConstraintCtrl', function($scope, facetService, $rootScope) {
+*/
+
+	myModule.controller('ConstraintCtrl', function($scope, $rootScope, activeConceptSpaceService) {
 		$scope.$on('facete:refresh', function() {
 		    $scope.refresh();
 		});
@@ -1142,23 +719,39 @@
 		};
 		
 	    $scope.refreshConstraints = function() {
-	        var constraints = constraintManager.getConstraints();
+	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
 	        
-	        var items =_(constraints).map(function(constraint) {
-				var r = {
-					constraint: constraint,
-					label: '' + constraint
-				};
-				
-				return r;
-	        });
+	        var items;
+	        if(conceptSpace) {
+		        
+		        var constraintManager = conceptSpace.getConstraintManager();
+		        
+		        var constraints = constraintManager.getConstraints();
+		        
+		        items =_(constraints).map(function(constraint) {
+					var r = {
+						constraint: constraint,
+						label: '' + constraint
+					};
+					
+					return r;
+		        });
+	        }
+	        else {
+	            items = [];
+	        }
 
 	        $scope.constraints = items;
 	    };
 	    
 	    $scope.removeConstraint = function(item) {
-	        constraintManager.removeConstraint(item.constraint);
-			$rootScope.$broadcast('facete:constraintsChanged');
+	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
+			if(conceptSpace) {	
+		        var constraintManager = conceptSpace.getConstraintManager();
+	
+		        constraintManager.removeConstraint(item.constraint);
+				$scope.$emit('facete:constraintsChanged');
+			}
 	    };
 	    
 		$scope.$on("facete:constraintsChanged", function() {
@@ -1166,7 +759,7 @@
 		});
 	});
 	
-	myModule.controller('MyCtrl2', function($scope, $q, $rootScope) {
+	myModule.controller('FacetValueListCtrl', function($scope, $q, $rootScope, activeConceptSpaceService) {
 		
 	    $scope.filterText = '';
 		$scope.totalItems = 64;
@@ -1179,6 +772,10 @@
 // 		$scope.lastText = '>>';
 
 		$scope.toggleConstraint = function(item) {
+	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
+	        var constraintManager = conceptSpace.getConstraintManager();
+
+		    
 			var constraint = new facete.ConstraintSpecPathValue(
 					'equal',
 					item.path,
@@ -1198,12 +795,19 @@
 		
 		var updateItems = function() {
 
+	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
+	        var facetService = conceptSpace.getFacetService();
+	        
+	        var constraintTaggerFactory = conceptSpace.getContraintTaggerFactory();
+	        //var constraintManager = conceptSpace.getConstraintManager();
+
+		    
 			var path = $scope.path;
 			if(path == null) {
 				return;
 			}
 
-			var concept = fctService.createConceptFacetValues(path, true);
+			var concept = facetService.createConceptFacetValues(path, true);
 			
 			var text = $scope.filterText;
 			console.log('FilterText: ' + text);
@@ -1324,26 +928,9 @@
 	    var events = ['facete:facetSelected', 'facete:constraintsChanged', 'facete:refresh', 'facete:workSpaceSelected', 'facete:conceptSelected'];
 	    
 	    _(events).each(function(event) { forwardEvent(event); });
-	    
-	    /*
-	    $scope.$on('facete:facetSelected', function(ev, path) {
-	        if(ev.targetScope.$id != ev.currentScope.$id) {
-	            $scope.$broadcast('facete:facetSelected', path);
-	        }	        
-	    });
-
-	    $scope.$on('facete:constraintsChanged', function(ev, path) {
-	        if(ev.targetScope.$id != ev.currentScope.$id) {
-	            $scope.$broadcast('facete:constraintsChanged', path);
-	        }	        
-	    });
-	    */
 	});
 				
 	 
-//      myModule.controller('ModalInstanceCtrl', function($scope) {
-        
-//      });
 	var ModalInstanceCtrl = function($scope, $modalInstance, aggs, selected) {	    
 	    $scope.aggs = aggs;
 	    
@@ -1476,19 +1063,7 @@
     });
 	 
     
-    /**
-     * Custom directive for visibility
-     * Source: https://gist.github.com/c0bra/5859295
-     */
-    myModule.directive('ngVisible', function () {
-        return function (scope, element, attrs) {
-            scope.$watch(attrs.ngVisible, function (visible) {
-                element.css('visibility', visible ? 'visible' : 'hidden');
-            });
-        };
-    });
-    
-    
+/* TODO REENABLE    
     myModule.controller('FacetTreeSearchCtrl', function($rootScope, $scope, $q, facetService) {
         $scope.items = [{name: 'foo'}];
         
@@ -1498,7 +1073,7 @@
 		        return;
 		    }
 		    
-		    var conceptPathFinder = new client.ConceptPathFinderApi(conceptPathFinderApiUrl, sparqlEndpointUrl, defaultGraphUris);
+		    var conceptPathFinder = new client.ConceptPathFinderApi(conceptPathFinderApiUrl, sparqlServiceIri, defaultGraphIris);
 		    
 		    var sourceConcept = fctService.createConceptFacetValues(new facete.Path());			
 
@@ -1527,7 +1102,7 @@
 		});
 
     });
-    
+*/    
     
     myModule.controller('MapCtrl', function($scope) {
         $scope.boxes = {foo: {left: -10, bottom: -10, right: 10, top: 10}};
@@ -1588,7 +1163,9 @@
         });
     });
     
-	myModule.controller('MyCtrl', function($rootScope, $scope, facetService) {
+	myModule.controller('FacetTreeCtrl', function($rootScope, $scope) { //, facetService) {
+
+		$scope.pathToFilterString = new util.HashMap();
 
 		//$scope.maxSize = 5;
 
@@ -1596,15 +1173,14 @@
 // 			$rootScope.$broadcast('facetSelected', path);
 // 	    });
 
-		$scope.doFilter = function(path, filterString) {
 
-		    pathToFilterString.put(path, filterString);
-		    //alert(JSON.stringify(pathToFilterString));
-// 		    var concept = ;
+		$scope.doFilter = function(path, filterString) {
+		    //var conceptSpace = conceptSpaceProvider.getConceptSpace();
+		    //var facetService = conceptSpace.ge
+		    //var pathToFilterString = conceptSpaceProvider.getPathToFilterString();
 		    
-// 		    var foo = store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: text}}}}).concept(concept, true);
-		    
-		    //console.log(text);
+
+		    $scope.pathToFilterString.put(path, filterString);
 		    $scope.refresh();
 		};
 
@@ -1613,6 +1189,8 @@
 		});
 	    
 	    $scope.refresh = function() {
+return;	        
+	        
 	        var facet = $scope.facet;
 	        var startPath = facet ? facet.item.getPath() : new facete.Path();
 	        
@@ -1622,11 +1200,7 @@
 				$scope.facet = data;
 			});
 		};
-		
-// 		$scope.init = function() {
-// 			$scope.refreshFacets();
-// 		};
-		
+				
 		$scope.toggleCollapsed = function(path) {
 			util.CollectionUtils.toggleItem(expansionSet, path);
 			
@@ -1649,7 +1223,6 @@
 		};
 		
 		$scope.toggleSelected = function(path) {
-			//$rootScope.$broadcast("facetSelected", path);
 		    $scope.$emit('facete:facetSelected', path);
 		};
 		
@@ -1774,9 +1347,9 @@
 							<h4>WorkSpaces</h4>
 						    <span ng-show="workSpaces.length == 0" class="inactive">(no work spaces)</span>
 							<ul>
-							    <li ng-repeat="workSpace in workSpaces" ng-class="{'highlite': workSpace.isActive}">
+							    <li ng-repeat="workSpace in workSpaces" ng-class="{'highlite': workSpace.isActive()}">
 							    	<a href="" ng-click="removeWorkSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
-							    	<a href="" ng-click="selectWorkSpace($index)">{{workSpace.name}}</a>
+							    	<a href="" ng-click="selectWorkSpace($index)">{{workSpace.getName()}}</a>
 							   	</li>
 							</ul>
 							
@@ -1795,34 +1368,34 @@
 						
 						<h4>Concepts</h4>
 						<div class="portlet" ng-controller="ConceptSpaceListCtrl">
-							<span ng-show="!activeWorkSpace" class="inactive">(no active work space)</span>
-							<div ng-show="activeWorkSpace">
-								<div ng-hide="activeWorkSpace.conceptSpaces.length" class="inactive">(no concept spaces)</div>
+							<div ng-show="!workSpace" class="inactive">(no active work space)</div>
+							<div ng-show="workSpace">
+								<div ng-hide="workSpace.getConceptSpaces().length" class="inactive">(no concept spaces)</div>
 								<ul>
-									<li ng-repeat="conceptSpace in activeWorkSpace.conceptSpaces" ng-class="{'highlite': conceptSpace.isActive}">
+									<li ng-repeat="conceptSpace in workSpace.getConceptSpaces()" ng-class="{'highlite': conceptSpace.isActive()}">
 										<a href="" ng-click="removeConceptSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
-							    		<a href="" ng-click="selectConceptSpace($index)">{{conceptSpace.name}}</a>
+							    		<a href="" ng-click="selectConceptSpace($index)">{{conceptSpace.getName()}}</a>
 									</li>
 								</ul>
 							</div>
-							<button ng-show="activeWorkSpace" class="btn btn-primary" ng-click="addConceptSpace()">New Concept Space</button>							
+							<button ng-show="workSpace" class="btn btn-primary" ng-click="addConceptSpace()">New Concept Space</button>							
 						</div>
 						
 <!--						
 					    <div class="portlet" ng-controller="FavFacetsCtrl" data-ng-init="refresh()">
 					        <span ng-show="favFacets.length == 0">No favourited facets</span> 
 					        <ul ng-repeat="facet in favFacets">
-								<li ng-controller="MyCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
+								<li ng-controller="FacetTreeCtrl"><div ng-include="'facet-tree-item.html'"></div></li>
 							</ul>
 					    </div>
 -->
   
 						<h3>FacetTree</h3>
-						<div class="portlet" ng-controller="MyCtrl" data-ng-init="refresh()">
+						<div class="portlet" ng-controller="FacetTreeCtrl" data-ng-init="refresh()">
 							<div ng-include="'facet-tree-item.html'"></div>
 						</div>
 					
-						<div class="portlet" ng-controller="MyCtrl2">
+						<div class="portlet" ng-controller="FacetValueListCtrl">
 							<div ng-include="'result-set-browser.html'"></div>	
 						</div>
 						
@@ -1833,19 +1406,19 @@
 							</ul>
 						</div>
 						
-						<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()">
-							<span>Query = {{queryString}}</span>	
-						</div>						
+<!-- 						<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()"> -->
+<!-- 							<span>Query = {{queryString}}</span>	 -->
+<!-- 						</div>						 -->
 		</div>			
 
 		<div style="position: absolute; top: 0px; left: 30%; width: 20%; height: 10%;">
 			
-			        	<div ng-controller="FacetTreeSearchCtrl">
-			        		<input type="search" ng-model="searchText" /><button>Search</button>
-			        		<ul>
-			        			<li ng-repeat="item in items">{{item.name}} --- {{item.geoConcept}}</li>
-			        		</ul>
-			        	</div>
+<!-- 			        	<div ng-controller="FacetTreeSearchCtrl"> -->
+<!-- 			        		<input type="search" ng-model="searchText" /><button>Search</button> -->
+<!-- 			        		<ul> -->
+<!-- 			        			<li ng-repeat="item in items">{{item.name}} --- {{item.geoConcept}}</li> -->
+<!-- 			        		</ul> -->
+<!-- 			        	</div> -->
 			        
 						<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
 						    <table>
