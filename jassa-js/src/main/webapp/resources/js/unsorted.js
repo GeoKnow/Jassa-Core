@@ -202,7 +202,9 @@
             var pathTagger = new ns.ItemTaggerManager();
             pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableMod);
             pathTagger.getTaggerMap()['filter'] = new ns.ItemTaggerFilterString(pathToFilterString);
-            var facetTreeTagger = new ns.FacetTreeTagger(pathTagger);            
+            var facetTreeTagger = new ns.FacetTreeTagger(pathTagger);
+            
+            return facetTreeTagger;
         }
 
     };

@@ -1205,7 +1205,7 @@
 	        }
 	        
 	        //$scope.pathToFilterString = conceptSpace.getFacetConfig().getPathToFilterString();
-	        
+	        $scope.refresh();
 	    });
 
 	    
@@ -1240,7 +1240,7 @@
 	        if(facetTreeService) {
 	        
 		        //console.log('scopefacets', $scope.facet);
-				facetTreeService.fetchFacets(startPath).then(function(data) {			    
+				facetTreeService.fetchFacetTree(startPath).then(function(data) {			    
 				    facetTreeTagger.applyTags(data);
 					$scope.facet = data;
 				});
@@ -1249,7 +1249,7 @@
 		};
 				
 		$scope.toggleCollapsed = function(path) {
-			util.CollectionUtils.toggleItem(expansionSet, path);
+			util.CollectionUtils.toggleItem(facetTreeConfig.getExpansionSet(), path);
 			
 			$scope.refresh();
 		};

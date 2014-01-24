@@ -330,8 +330,8 @@
 	
 		createFlow: function(path, isInverse, filterString) {
 
-		    var labelStore = new sponate.StoreFacade(sparqlService, {});//, cacheFactory);
-		    labelStore.addMap(this.labelMap);
+		    var labelStore = new sponate.StoreFacade(this.sparqlService, {});//, cacheFactory);
+		    labelStore.addMap(this.labelMap, 'labels');
 
 		    
 		    var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
@@ -345,7 +345,7 @@
             }
 
 		    
-		    var result = labelStore.find(criteria).concept(concept, true);
+		    var result = labelStore.labels.find(criteria).concept(concept, true);
 		    return result;
 		},
 		
