@@ -13,8 +13,7 @@
 			this.facetService = facetService;
 			this.expansionSet = expansionSet;
 			this.facetStateProvider = facetStateProvider;
-			
-			this.labelStore = labelStore;
+
 			this.pathToFilterString = pathToFilterString;
 		},
 		
@@ -316,12 +315,10 @@
 
 
 	ns.FacetServiceImpl = Class.create(ns.FacetService, {
-		initialize: function(queryExecutionFactory, facetConceptGenerator, labelStore) {
-			this.qef = queryExecutionFactory;
+		initialize: function(sparqlService, facetConceptGenerator, labelMap) {
+			this.sparqlService = sparqlService;
 			this.facetConceptGenerator = facetConceptGenerator;
-			
-			// TODO This is a hack - Somehow Sponate should abstract away the qef as a store object....
-			this.labelStore = labelStore;
+			this.labelMap = labelMap;
 		},
 
 		
@@ -333,6 +330,10 @@
 	
 		createFlow: function(path, isInverse, filterString) {
 
+		    var labelStore = new sponate.StoreFacade(sparqlService, {});//, cacheFactory);
+		    labelStore.addMap(this.labelMap);
+
+		    
 		    var concept = this.facetConceptGenerator.createConceptFacets(path, isInverse);
 		    
             var criteria = {};
@@ -344,7 +345,7 @@
             }
 
 		    
-		    var result = this.labelStore.find(criteria).concept(concept, true);
+		    var result = labelStore.find(criteria).concept(concept, true);
 		    return result;
 		},
 		
@@ -360,7 +361,7 @@
 
             var query = ns.ConceptUtils.createQueryCount(concept, outputVar);
 
-            var qe = this.qef.createQueryExecution(query);
+            var qe = this.sparqlService.createQueryExecution(query);
             
             var promise = service.ServiceUtils.fetchInt(qe, outputVar);
 
@@ -392,7 +393,7 @@
             //console.log('All facet query: ' + query);
             
             //query.getOrderBys().add(new sparql.SortCondition(countVar))
-            var promise = this.qef.createQueryExecution(query).execSelect();
+            var promise = this.sparqlService.createQueryExecution(query).execSelect();
             
             var result = promise.pipe(function(rs) {
                 var r = [];
@@ -474,7 +475,7 @@
 			
 			//var query = this.facetQueryGenerator.createQueryFacets();
 			
-			var qe = this.qef.createQueryExecution(query);
+			var qe = this.sparqlService.createQueryExecution(query);
 			
 			var promise = service.ServiceUtils.fetchList(qe, concept.getVar());
 
@@ -540,7 +541,7 @@
 			
 				var query = ns.QueryUtils.createQueryCount(elements, null, countVar, outputVar, [groupVar], true); 
 				
-				var qe = self.qef.createQueryExecution(query);
+				var qe = self.sparqlService.createQueryExecution(query);
 				
 				//qe.setTimeout()
 				

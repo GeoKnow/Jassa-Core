@@ -4,12 +4,12 @@
     
     ns.SparqlServiceFactoryDefault = Class.create({
         initialize: function() {
-            var hashToCache = {};
+            this.hashToCache = {};
         },
         
         createSparqlService: function(sparqlServiceIri, defaultGraphIris) {
             var tmp = new service.SparqlServiceHttp(sparqlServiceIri, defaultGraphIris);
-            tmp = new service.SparqlServiceCache(qef);
+            tmp = new service.SparqlServiceCache(tmp);
             
             var hash = tmp.getStateHash();
             
@@ -19,7 +19,7 @@
             if(cacheEntry) {
                 result = cacheEntry;                
             } else {
-                cacheEntry[hash] = tmp;
+                this.hashToCache[hash] = tmp;
                 result = tmp;
             }
             
@@ -104,6 +104,8 @@
         //var baseConcept = new facete.Concept(new sparql.ElementString(sparqlStr));
         var rootFacetNode = facete.FacetNode.createRoot(baseVar);
 
+        var constraintManager = new facete.ConstraintManager();
+        
         var result = new ns.FacetConfig(baseConcept, rootFacetNode, constraintManager);
         return result;
     };
@@ -115,21 +117,41 @@
             this.expansionSet = expansionSet || new util.HashSet();
             this.facetStateProvider = facetStateProvider || new facete.FacetStateProviderImpl(10);
             this.pathToFilterString = pathToFilterString || new util.HashMap();
+        },
+        
+        getFacetConfig: function() {
+            return this.facetConfig;
+        },
+        
+        getLabelMap: function() {
+            return this.labelMap;
+        },
+        
+        getExpansionSet: function() {
+            return this.expansionSet;
+        },
+        
+        getFacetStateProvider: function() {
+            return this.facetStateProvider;
+        },
+        
+        getPathToFilterString: function() {
+            return this.pathToFilterString;
         }
     });
     
     
-    ns.FaceteUtils = Class.create({
-        createFacetConfigGenerator: function(facetConfig) {
+    ns.FaceteUtils = {
+        createFacetConceptGenerator: function(facetConfig) {
             var baseConcept = facetConfig.getBaseConcept();
             var rootFacetNode = facetConfig.getRootFacetNode();
             var constraintManager = facetConfig.getConstraintManager();
             
-            var result = this.createFacetConfigGenerator2(baseConcept, rootFacetNode, constraintManager);
+            var result = this.createFacetConceptGenerator2(baseConcept, rootFacetNode, constraintManager);
             return result;
         },
         
-        createFacetConfigGenerator2: function(baseConcept, rootFacetNode, constraintManager) {
+        createFacetConceptGenerator2: function(baseConcept, rootFacetNode, constraintManager) {
             // Based on above objects, create a provider for the configuration
             // which the facet service can build upon
             var facetConfigProvider = new facete.FacetGeneratorConfigProviderIndirect(
@@ -142,8 +164,48 @@
             var result = fcgf.createFacetConceptGenerator();
             
             return result;
+        },
+        
+        createFacetTreeService: function(sparqlService, facetTreeConfig, labelMap) {
+
+            var facetConfig = facetTreeConfig.getFacetConfig();
+            var facetConceptGenerator = this.createFacetConceptGenerator(facetConfig);
+
+            var facetService = new facete.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap);
+
+            
+            var expansionSet = facetTreeConfig.getExpansionSet();
+            var facetStateProvider = facetTreeConfig.getFacetStateProvider();
+            var pathToFilterString = facetTreeConfig.getPathToFilterString();
+            
+
+            var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet, facetStateProvider, pathToFilterString);
+
+            return facetTreeService;
+
+            //var constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);       
+            
+            
+            //var faceteConceptFactory = new ns.ConceptFactoryFacetService(facetService);
+            
+            
+            //var result = new ns.ConceptSpace(facetTreeService);
+            
+            //return result;            
+        },
+        
+        createFacetTreeTagger: function(pathToFilterString) {
+            var tableMod = new facete.FaceteTableMod(); 
+            tableMod.togglePath(new facete.Path());
+            
+            
+            var pathTagger = new ns.ItemTaggerManager();
+            pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableMod);
+            pathTagger.getTaggerMap()['filter'] = new ns.ItemTaggerFilterString(pathToFilterString);
+            var facetTreeTagger = new ns.FacetTreeTagger(pathTagger);            
         }
-    });
+
+    };
     
     
 
@@ -407,6 +469,14 @@
             var id = 'workSpace' + (this.workSpaces.length + 1);
             
             var workSpace = new ns.WorkSpaceContext(id, id);
+            
+            workSpace.setData({
+                config: {
+                    sparqlServiceIri: sparqlServiceIri,
+                    defaultGraphIris: defaultGraphIris 
+                }
+            });
+            
             /*
             var workSpace = {
                 id: id,
@@ -457,6 +527,8 @@
             this.name = name;
             this.active = false;
             this.conceptSpaces = [];
+            
+            this.data = null;
         },
         
         isActive: function() {
@@ -486,6 +558,10 @@
         addConceptSpace: function() {
             var id = 'conceptSpace' + (this.conceptSpaces.length + 1);            
             var conceptSpace = new ns.ConceptSpaceContext(this, id, id);
+            
+            var facetTreeConfig = new ns.FacetTreeConfig();
+            conceptSpace.setFacetTreeConfig(facetTreeConfig);
+            
             this.conceptSpaces.push(conceptSpace);
         },
         
@@ -499,6 +575,14 @@
 
             this.conceptSpaces.splice(index, 1);
         },
+        
+        setData: function(data) {
+            this.data = data;
+        },
+        
+        getData: function() {
+            return this.data;
+        }
     });
 
     
@@ -509,8 +593,14 @@
             this.name = name;
             this.active = false;
             //this.facetTreeService = facetTreeService;
+            
+            this.facetTreeConfig = null;
         },
 
+        getWorkSpace: function() {
+            return this.workSpaceContext;
+        },
+        
         getId: function() {
             return this.id;
         },
@@ -531,33 +621,26 @@
             return this.workSpaceContext;
         },
 
-        getFacetTreeService: function() {
-            return this.facetTreeService;
+        getFacetTreeConfig: function() {
+            return this.facetTreeConfig;
+        },
+        
+        setFacetTreeConfig: function(facetTreeConfig) {
+            this.facetTreeConfig = facetTreeConfig;
         },
     
         getConstraintManager: function() {
-            var result = this.facetTreeConfig().getFacetConfig().getConstraintManager(); 
+            var result = this.facetTreeConfig.getFacetConfig().getConstraintManager(); 
             return result;
         },
         
         // Tag node objects at a given path using .createConstraintTagger(path).getTags(node)
         createContraintTaggerFactory: function() {
             var constraintManager = this.getConstraintManager();
-            var result = constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);       
-
+            var result = new facete.ConstraintTaggerFactory(constraintManager);       
+//constraintTaggerFactory
+            
             return result;
-        },
-        
-        createFacetTreeTagger: function() {
-            var tableMod = new facete.FaceteTableMod(); 
-            tableMod.togglePath(new facete.Path());
-            
-            
-            var pathTagger = new ns.ItemTaggerManager();
-            pathTagger.getTaggerMap()['table'] = new ns.ItemTaggerTablePath(tableMod);
-            pathTagger.getTaggerMap()['filter'] = new ns.ItemTaggerFilterString(pathToFilterString);
-            var facetTreeTagger = new ns.FacetTreeTagger(pathTagger);
-            
-        }
+        }        
     });
     

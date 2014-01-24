@@ -220,7 +220,6 @@
 	/**
 	 * Sponate (labels)
 	 */
-	//var store = new sponate.StoreFacade(qef, prefixes);//, cacheFactory);
 
 	var mapParser = new sponate.MapParser();
 	
@@ -507,7 +506,6 @@
 	    };	    
 	});
 */
-
 	
 	myModule.factory('sparqlServiceFactory', function() {
 
@@ -630,6 +628,13 @@
 	    };
 	    
 	    $scope.removeWorkSpace = function(index) {
+	        var w = appContextService.getWorkSpaces()[index];
+	        
+	        // TODO Also deactivate the conceptSpace
+	        if(w == activeWorkSpaceService.getWorkSpace()) {
+	            activeWorkSpaceService.setWorkSpace(null);
+	        }
+
 	        appContextService.removeWorkSpace(index);
 	    };
 	    
@@ -648,13 +653,12 @@
 	/**
 	 * WorkSpaceConfigCtrl - Controller for configuring a work space
 	 */
-	myModule.controller('WorkSpaceConfigCtrl', function($scope) {
-// 		$scope.activeWorkSpace = null;
-
-// 	    $scope.$on('facete:workSpaceSelected', function(ev, workSpace) {
-// 	        console.log('Active workSpace: ', workSpace);
-// 	        $scope.activeWorkSpace = workSpace;
-// 		});
+	myModule.controller('WorkSpaceConfigCtrl', function($scope, activeWorkSpaceService) {
+	    $scope.activeWorkSpaceService = activeWorkSpaceService;
+	    
+	    $scope.$watch('activeWorkSpaceService.getWorkSpace()', function(workSpace) {
+	        $scope.workSpace = workSpace;
+	    });
 	});
 
 	
@@ -674,6 +678,14 @@
 	    };
 	    
 	    $scope.removeConceptSpace = function(index) {
+	        
+	        var c = $scope.workSpace.getConceptSpaces()[index];
+	        
+	        if(c == activeConceptSpaceService.getConceptSpace()) {
+	            activeConceptSpaceService.setConceptSpace(null);
+	        }
+
+	        
 	        $scope.workSpace.removeConceptSpace(index);
 	    };
 	    
@@ -760,7 +772,7 @@
 	});
 	
 	myModule.controller('FacetValueListCtrl', function($scope, $q, $rootScope, activeConceptSpaceService) {
-		
+		/*
 	    $scope.filterText = '';
 		$scope.totalItems = 64;
 		$scope.currentPage = 1;
@@ -893,6 +905,7 @@
 		$scope.$on('facete:constraintsChanged', function() {
 		    updateItems(); 
 		});
+		*/
 	});
 				
 	
@@ -950,6 +963,7 @@
 	};
 	    
     myModule.controller('CreateTableCtrl', function($scope, $modal, $log) {
+        /*
         $scope.columns = [];
         //$scope.sortDirections = [];
 
@@ -1059,7 +1073,7 @@
 		$scope.$on('facete:refresh', function() {
 		    $scope.refresh();
 		});
-
+*/
     });
 	 
     
@@ -1122,14 +1136,15 @@
                 viewStateCtrl = new ns.ViewStateCtrlOpenLayers($scope.map.widget);
             }
             
-		    //var concept = fctService.createConceptFacetValues(new facete.Path());			
+		    //var concept = fctService.createConceptFacetValues(new facete.Path());
+/* TODO RE-ENABLE		    
 			viewStateFetcher.fetchViewState(bounds).done(function(viewState) {
 			   //var nodes = viewState.getNodes();
 			   //console.log('viewStateNodes', nodes);
 			   
-			   viewStateCtrl.updateView(viewState);
-			   
+			   viewStateCtrl.updateView(viewState);			   
 			});
+*/
 /*            
         	var promise = qtc.fetchData(bounds);
         	promise.done(function(nodes) {
@@ -1163,9 +1178,38 @@
         });
     });
     
-	myModule.controller('FacetTreeCtrl', function($rootScope, $scope) { //, facetService) {
+	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
 
-		$scope.pathToFilterString = new util.HashMap();
+	    $scope.activeConceptSpaceService = activeConceptSpaceService;
+	    
+	    var sparqlService;
+	    var facetTreeConfig;
+	    var facetTreeService;
+	    var facetTreeTagger;
+	   
+	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
+	        //$scope.conceptSpace = conceptSpace;
+
+	        if(conceptSpace) {
+	            
+	            var wsConf = conceptSpace.getWorkSpace().getData().config;
+
+	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
+				facetTreeConfig = conceptSpace.getFacetTreeConfig();
+				facetTreeService = ns.FaceteUtils.createFacetTreeService(sparqlService, facetTreeConfig, labelMap);
+				facetTreeTagger = ns.FaceteUtils.createFacetTreeTagger(facetTreeConfig.getPathToFilterString());
+				$scope.pathToFilterString = facetTreeConfig.getPathToFilterString();
+	        } else {
+				facetTreeConfig = null;
+				$scope.pathToFilterString = null;
+	        }
+	        
+	        //$scope.pathToFilterString = conceptSpace.getFacetConfig().getPathToFilterString();
+	        
+	    });
+
+	    
+		//$scope.pathToFilterString = new util.HashMap();
 
 		//$scope.maxSize = 5;
 
@@ -1188,17 +1232,20 @@
 		    $scope.refresh();
 		});
 	    
-	    $scope.refresh = function() {
-return;	        
+	    $scope.refresh = function() {	        
 	        
 	        var facet = $scope.facet;
 	        var startPath = facet ? facet.item.getPath() : new facete.Path();
 	        
-	        //console.log('scopefacets', $scope.facet);
-			facetService.fetchFacets(startPath).then(function(data) {			    
-			    facetTreeTagger.applyTags(data);
-				$scope.facet = data;
-			});
+	        if(facetTreeService) {
+	        
+		        //console.log('scopefacets', $scope.facet);
+				facetTreeService.fetchFacets(startPath).then(function(data) {			    
+				    facetTreeTagger.applyTags(data);
+					$scope.facet = data;
+				});
+
+	        }
 		};
 				
 		$scope.toggleCollapsed = function(path) {
@@ -1359,9 +1406,9 @@ return;
 						
 						<h4>WorkSpace Settings</h4>
 						<div class="portlet" ng-controller="WorkSpaceConfigCtrl">
-							<div ng-show="!activeWorkSpace" class="inactive">(no active work space)</div>
-							<div ng-show="activeWorkSpace">
-								Sparql Endpoint: <input type="search" ng-model="sparqlEndpointIri" /><button>Set</button> <br />
+							<div ng-show="!workSpace" class="inactive">(no active work space)</div>
+							<div ng-show="workSpace">
+								Sparql Endpoint: <input type="search" ng-model="workSpace.getData().config.sparqlServiceIri" /><button>Set</button> <br />
 							</div>
 						</div>
 						
