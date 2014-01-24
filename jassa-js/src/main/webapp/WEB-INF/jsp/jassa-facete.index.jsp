@@ -1164,9 +1164,12 @@
 	    var facetTreeConfig;
 	    var facetTreeService;
 	    var facetTreeTagger;
+	    var pathToFilterString;
 	   
+	    $scope.conceptSpace = null;
+	    
 	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
-	        //$scope.conceptSpace = conceptSpace;
+	        $scope.conceptSpace = conceptSpace;
 
 	        if(conceptSpace) {
 	            
@@ -1176,37 +1179,20 @@
 				facetTreeConfig = conceptSpace.getFacetTreeConfig();
 				facetTreeService = ns.FaceteUtils.createFacetTreeService(sparqlService, facetTreeConfig, labelMap);
 				facetTreeTagger = ns.FaceteUtils.createFacetTreeTagger(facetTreeConfig.getPathToFilterString());
-				$scope.pathToFilterString = facetTreeConfig.getPathToFilterString();
+				pathToFilterString = facetTreeConfig.getPathToFilterString();
 	        } else {
 				facetTreeConfig = null;
-				$scope.pathToFilterString = null;
+				$scope.facet = null;
 	        }
+	        
 	        
 	        //$scope.pathToFilterString = conceptSpace.getFacetConfig().getPathToFilterString();
 	        $scope.refresh();
 	    });
 
-	    
-	    
-	    
-	    
-	    
-		//$scope.pathToFilterString = new util.HashMap();
-
-		//$scope.maxSize = 5;
-
-// 	    $rootScope.$on('facetSelected', function(path) {
-// 			$rootScope.$broadcast('facetSelected', path);
-// 	    });
-
 
 		$scope.doFilter = function(path, filterString) {
-		    //var conceptSpace = conceptSpaceProvider.getConceptSpace();
-		    //var facetService = conceptSpace.ge
-		    //var pathToFilterString = conceptSpaceProvider.getPathToFilterString();
-		    
-
-		    $scope.pathToFilterString.put(path, filterString);
+		    pathToFilterString.put(path, filterString);
 		    $scope.refresh();
 		};
 
@@ -1219,7 +1205,7 @@
 	        var facet = $scope.facet;
 	        var startPath = facet ? facet.item.getPath() : new facete.Path();
 	        
-	        if(facetTreeService) {
+	        if($scope.conceptSpace) {
 	        
 		        //console.log('scopefacets', $scope.facet);
 				facetTreeService.fetchFacetTree(startPath).then(function(data) {			    
@@ -1227,6 +1213,8 @@
 					$scope.facet = data;
 				});
 
+	        } else {
+	            $scope.facet = null;
 	        }
 		};
 				
