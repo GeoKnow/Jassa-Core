@@ -385,7 +385,7 @@
 	ns.PatternObject = Class.create(ns.Pattern, {
 		initialize: function(attrToPattern) {
 
-		    console.log('attrToPattern', attrToPattern);
+		    //console.log('attrToPattern', attrToPattern);
 		    
 		    
 			this.attrToPattern = attrToPattern;

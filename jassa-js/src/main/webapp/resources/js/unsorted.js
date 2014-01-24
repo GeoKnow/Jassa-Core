@@ -487,7 +487,6 @@
             var id = 'conceptSpace' + (this.conceptSpaces.length + 1);            
             var conceptSpace = new ns.ConceptSpaceContext(this, id, id);
             this.conceptSpaces.push(conceptSpace);
-            console.log('conceptSpaces', this.conceptSpaces);
         },
         
         removeConceptSpace: function(index) {

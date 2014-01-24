@@ -415,7 +415,7 @@
                     }
                 });
                 
-	                console.log('rendering map');
+	                //console.log('rendering map');
 	                /* set text from attribute of custom tag*/
 	                //element.text(attrs.text).button();
 	                var $el = jQuery(element).ssbMap();
@@ -426,7 +426,7 @@
 
 	    	      	map.widget = widget;
 	                var model = $parse(attrs.ssbMap);
-	                console.log('model', model);
+	                //console.log('model', model);
 	                //Set scope variable for the map
 	                //if(model && !_(model).isFunction()) {
 	                if(model) {
@@ -878,7 +878,7 @@
 		};
 
 		$scope.$watch('currentPage', function() {			
-			console.log("Change");
+			//console.log("Change");
 			updateItems();
 		});
 		
@@ -1107,7 +1107,7 @@
     myModule.controller('MapCtrl', function($scope) {
         $scope.boxes = {foo: {left: -10, bottom: -10, right: 10, top: 10}};
         
-        console.log('MapScope is ', $scope);
+        //console.log('MapScope is ', $scope);
         
 //         $scope.$watch('nodes', function(newNodes, oldNodes) {
             
@@ -1116,7 +1116,7 @@
         $scope.$watch('map.center', function(center) {
         
             var bounds = ns.MapUtils.getExtent($scope.map)
-            console.log('extent', bounds);
+            //console.log('extent', bounds);
             
             if(viewStateCtrl == null) {
                 viewStateCtrl = new ns.ViewStateCtrlOpenLayers($scope.map.widget);
