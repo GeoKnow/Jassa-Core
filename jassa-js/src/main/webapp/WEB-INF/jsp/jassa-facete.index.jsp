@@ -178,8 +178,8 @@
 
 	
 	var prefLabelPropertyUris = [
-   	    'http://www.w3.org/2000/01/rdf-schema#label',
-    	'http://geoknow.eu/geodata#name'
+   	    'http://www.w3.org/2000/01/rdf-schema#label'
+    	//'http://geoknow.eu/geodata#name'
 	];
 
 	var prefLangs = ['de', 'en', ''];
@@ -285,71 +285,13 @@
 	//var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
 	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw, intersectsFnName, geomFromTextFnName));
 
-
-	var ConceptSpaceFactory = Class.create({
-	    
-	    initialize: function() {
-	        
-	    },
-	    
-	    	
-	    createConceptSpace: function() {
-
-
-
-
-	    	// The FacetStateProvider keeps track of limit and offsets for the nodes of the facet tree
-	    	// By default, a limit of 10 is used
-	    	var facetStateProvider = new facete.FacetStateProviderImpl(10);
-
-	    	// A map from path to search string
-	    	var pathToFilterString = new util.HashMap();
-	    	
-	    	var expansionSet = new util.HashSet();
-	    	expansionSet.add(new facete.Path());
-	    	
-	    	//facetStateProvider.getMap().put(new facete.Path(), new facete.FacetStateImpl(true, null, null))
-	    	
-	    	//var facetService = new facete.FacetServiceImpl(qef, facetConceptGenerator, labelStore);
-			var facetService = new facete.FacetServiceImpl(facetConceptGenerator, labelMap);
-	    	
-
-	    	var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet, facetStateProvider, pathToFilterString);
-
-
-	        var constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);	   
-	        
-	        
-	        var faceteConceptFactory = new ns.ConceptFactoryFacetService(fctService);
-	        
-	        
-	        var result = new ns.ConceptSpace(facetTreeService);
-	        
-	        return result;
-	    }
-	    
-	    
-	});
-
-	
-	
-    
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
-    
-    
-
-
 
     /////var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
 
   
     var viewStateCtrl = null;    
 
- 
-    
-    
-    
-    
     
 
 
@@ -601,19 +543,6 @@
 	*/
 	
 	
-// 	myModule.controller('Foobar', function($scope, $compile) {
-//         $scope.alert = function() { alert('hi'); };
-	    
-// // 	    $k = $rootScope.$new();
-	    
-// //         $k.total = 1000;
-        
-// //         var xxx = $compile('<div ng-controller="Foobar"><p ng-click="alert()">{{total}}</p></div>')($k);
-// //         console.log('Hooray', xxx);
-// //         jQuery('#foobar2').replaceWith(xxx);
-// //         return {};
-// 	});
-
 
 
 	/**
@@ -1256,7 +1185,7 @@
 		
 		$scope.selectFacetPage = function(page, facet) {
 			var path = facet.item.getPath();
-            var state = facetStateProvider.getFacetState(path);
+            var state = facetTreeConfig.getFacetStateProvider().getFacetState(path);
             var resultRange = state.getResultRange();
             
             console.log('Facet state for path ' + path + ': ' + state);
