@@ -166,13 +166,24 @@
             return result;
         },
         
-        createFacetTreeService: function(sparqlService, facetTreeConfig, labelMap) {
-
-            var facetConfig = facetTreeConfig.getFacetConfig();
+//        createFacetService: function(facetConfig) {
+//            var result = this.createFacetService2(facetConfig.);
+//        },
+//        
+        createFacetService: function(sparqlService, facetConfig, labelMap) {
             var facetConceptGenerator = this.createFacetConceptGenerator(facetConfig);
 
             var facetService = new facete.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap);
 
+            return facetService;
+        },
+        
+        
+        
+        createFacetTreeService: function(sparqlService, facetTreeConfig, labelMap) {
+
+
+            var facetService = this.createFacetService(sparqlService, facetTreeConfig.getFacetConfig(), labelMap);
             
             var expansionSet = facetTreeConfig.getExpansionSet();
             var facetStateProvider = facetTreeConfig.getFacetStateProvider();
@@ -392,10 +403,11 @@
     });
     
     
-    
+    // TODO This class is NOT used yet - its purpose is to make the FacetValueListCtrl simpler 
     ns.FacetValueService = Class.create({
-        initialize: function(facetService, constraintTaggerFactory) {
-            this.facetService = facetService; 
+        initialize: function(facetService, facetConceptGenerator, constraintTaggerFactory) {
+            this.sparqlService = sparqlService;
+            this.facetService = facetService;
             this.constraintTaggerFactory = constraintTaggerFactory;
         },
        
@@ -403,6 +415,8 @@
             var facetService = this.facetService;
             var constraintTaggerFactory = this.constraintTaggerFactory;
 
+
+            var concept = facetConceptGenerator.createConceptResources(path, excludeSelfConstraints);
 
             var concept = facetService.createConceptFacetValues(path, true);
             var countVar = rdf.NodeFactory.createVar("_c_");

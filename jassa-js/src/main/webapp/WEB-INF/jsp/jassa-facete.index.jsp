@@ -700,8 +700,49 @@
 		});
 	});
 	
-	myModule.controller('FacetValueListCtrl', function($scope, $q, $rootScope, activeConceptSpaceService) {
-		/*
+	myModule.controller('FacetValueListCtrl', function($scope, $q, $rootScope, activeConceptSpaceService, sparqlServiceFactory) {
+
+	    $scope.activeConceptSpaceService = activeConceptSpaceService;
+	    $scope.conceptSpace = null;
+	    
+	    var sparqlService;
+	    var facetConfig;
+        var facetConceptGenerator;
+
+        var facetService;
+
+	    var facetService;
+	    var constraintTaggerFactory;
+	   
+	    var labelsStore;
+	    
+	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
+	        $scope.conceptSpace = conceptSpace;
+
+	        if(conceptSpace) {
+	            
+	            var wsConf = conceptSpace.getWorkSpace().getData().config;
+
+	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
+				facetConfig = conceptSpace.getFacetTreeConfig().getFacetConfig();
+				facetConceptGenerator = ns.FaceteUtils.createFacetConceptGenerator(facetConfig);
+				facetService = new facete.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap);
+				constraintTaggerFactory = new facete.ConstraintTaggerFactory(facetConfig.getConstraintManager());
+				
+				var store = new sponate.StoreFacade(sparqlService);
+				store.addMap(labelMap, 'labels');
+				labelsStore = store.labels;
+				
+	        } else {
+// 				facetTreeConfig = null;
+// 				$scope.pathToFilterString = null;
+	        }
+	        
+	        //$scope.pathToFilterString = conceptSpace.getFacetConfig().getPathToFilterString();
+	        $scope.refresh();	        
+	    });
+
+	    
 	    $scope.filterText = '';
 		$scope.totalItems = 64;
 		$scope.currentPage = 1;
@@ -713,8 +754,7 @@
 // 		$scope.lastText = '>>';
 
 		$scope.toggleConstraint = function(item) {
-	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
-	        var constraintManager = conceptSpace.getConstraintManager();
+	        var constraintManager = facetConfig.getConstraintManager();
 
 		    
 			var constraint = new facete.ConstraintSpecPathValue(
@@ -735,11 +775,12 @@
 		
 		
 		var updateItems = function() {
-
-	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
-	        var facetService = conceptSpace.getFacetService();
+			if(!$scope.conceptSpace) {
+			    console.log('No concept space');
+			    return;
+			}
 	        
-	        var constraintTaggerFactory = conceptSpace.getContraintTaggerFactory();
+	        //var constraintTaggerFactory = conceptSpace.getContraintTaggerFactory();
 	        //var constraintManager = conceptSpace.getConstraintManager();
 
 		    
@@ -748,7 +789,7 @@
 				return;
 			}
 
-			var concept = facetService.createConceptFacetValues(path, true);
+			var concept = facetConceptGenerator.createConceptResources(path, true);
 			
 			var text = $scope.filterText;
 			console.log('FilterText: ' + text);
@@ -759,7 +800,7 @@
 			        {id: {$regex: text, $options: 'i'}}
 			    ]};
 			}
-			var baseFlow = store.labels.find(criteria).concept(concept, true);
+			var baseFlow = labelsStore.find(criteria).concept(concept, true);
 			    
 
 			var countPromise = baseFlow.count();
@@ -834,7 +875,7 @@
 		$scope.$on('facete:constraintsChanged', function() {
 		    updateItems(); 
 		});
-		*/
+
 	});
 				
 	
@@ -1109,6 +1150,7 @@
     
 	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
 
+	    // TODO Get rid of the service boilerplate
 	    $scope.activeConceptSpaceService = activeConceptSpaceService;
 	    
 	    var sparqlService;
@@ -1137,6 +1179,10 @@
 	        $scope.refresh();
 	    });
 
+	    
+	    
+	    
+	    
 	    
 		//$scope.pathToFilterString = new util.HashMap();
 

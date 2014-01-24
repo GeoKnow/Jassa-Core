@@ -321,12 +321,12 @@
 			this.labelMap = labelMap;
 		},
 
-		
+/*		
 		createConceptFacetValues: function(path, excludeSelfConstraints) {
 			var concept = this.facetConceptGenerator.createConceptResources(path, excludeSelfConstraints);
 			return concept;
 		},
-		
+*/
 	
 		createFlow: function(path, isInverse, filterString) {
 
