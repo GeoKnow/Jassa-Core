@@ -542,7 +542,7 @@
 //                var r = _(memo).union(evs);
 //                return r;
 //            }, result);
-		    console.log('filter expr ', this.expr);
+		    //console.log('filter expr ', this.expr);
 			return this.expr.getVarsMentioned();
 		},
 	

@@ -564,9 +564,12 @@
 				genericElements.push(filterElement);
 			}
 			
-			var genericConceptItem = new ns.FacetConceptItem(null, genericFacetConcept);
+			// Important: If there are no properties to include, we can drop the genericConcept
+			if(includeProperties.length > 0) {
+			    var genericConceptItem = new ns.FacetConceptItem(null, genericFacetConcept);
 			
-			result.push(genericConceptItem);
+			    result.push(genericConceptItem);
+			}
 			
 			return result;
 		},

@@ -287,6 +287,8 @@
 
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
 
+    var mapLinkFactories = [wgs84MapFactory, ogcMapFactory];
+    
     /////var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
 
   
@@ -826,7 +828,7 @@
 			        var node = doc.id;
 			        
 			        var label = doc.displayLabel ? doc.displayLabel : '' + doc.id;
-			        console.log('displayLabel', label);
+			        //console.log('displayLabel', label);
 			        var tmp = {
 			            displayLabel: label,
 						path: path,
@@ -1155,7 +1157,7 @@
         });
     });
     
-	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
+	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, $q, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
 
 	    // TODO Get rid of the service boilerplate
 	    $scope.activeConceptSpaceService = activeConceptSpaceService;
@@ -1205,10 +1207,15 @@
 	        var facet = $scope.facet;
 	        var startPath = facet ? facet.item.getPath() : new facete.Path();
 	        
+	        console.log('StartPath', startPath);
+	        
 	        if($scope.conceptSpace) {
 	        
 		        //console.log('scopefacets', $scope.facet);
-				facetTreeService.fetchFacetTree(startPath).then(function(data) {			    
+		        
+				var promise = facetTreeService.fetchFacetTree(startPath);
+		        
+				sponate.angular.bridgePromise(promise, $q.defer(), $rootScope).then(function(data) {			    
 				    facetTreeTagger.applyTags(data);
 					$scope.facet = data;
 				});
@@ -1266,6 +1273,83 @@
 		});
 	});
 		
+	
+	myModule.controller('MapLinkCandidateCtrl', function($scope, $rootScope, $q, sparqlServiceFactory, activeConceptSpaceService) {
+
+	    $scope.mapLinks = [];
+	    
+	    // TODO Get rid of the service boilerplate
+	    $scope.activeConceptSpaceService = activeConceptSpaceService;
+	    
+	    var sparqlService;
+	    var facetConfig;
+	    var facetConceptGenerator;
+	   
+	    $scope.conceptSpace = null;
+	    
+	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
+	        $scope.conceptSpace = conceptSpace;
+
+	        if(conceptSpace) {
+	            
+	            var wsConf = conceptSpace.getWorkSpace().getData().config;
+
+	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
+				facetConfig = conceptSpace.getFacetTreeConfig().getFacetConfig();
+				facetConceptGenerator = ns.FaceteUtils.createFacetConceptGenerator(facetConfig);
+	        }
+
+	        $scope.refresh();
+	    });
+
+	    
+	    
+		$scope.$on('facete:constraintsChanged', function() {
+		    $scope.refresh();
+		});
+		
+		$scope.refresh = function() {
+		    if(!$scope.conceptSpace) {
+		        return;
+		    }
+		    
+		    var conceptPathFinder = new client.ConceptPathFinderApi(conceptPathFinderApiUrl, sparqlServiceIri, defaultGraphIris);
+		    
+		    // For each vocab, get the candidates
+			var sourceConcept = facetConceptGenerator.createConceptResources(new facete.Path());
+
+		    
+			//_(mapLinkFactories).each(function(mapLinkFactory) {
+			    var mapLinkFactory = mapLinkFactories[0];
+			    
+				// TODO HACK Get the concept (id) from the map
+			    var targetVar = rdf.NodeFactory.createVar('s');
+				var element = mapLinkFactory.createMapForGlobal().getElementFactory().createElement();
+				
+				var targetConcept = new facete.Concept(element, targetVar);
+
+				console.log('[DEBUG] ConceptPathFinder: Search paths between ' + sourceConcept + ' and ' + targetConcept);
+				
+			    var promise = conceptPathFinder.findPaths(sourceConcept, targetConcept);
+				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
+
+				result.then(function(paths) {
+				    var tmp = _(paths).map(function(path) {
+				        
+				        //var geoConcept = fctService.createConceptFacetValues(path);
+				        
+				        return {name: path.toString(), path: path};//, geoConcept: geoConcept.toString() };
+				    });
+				   
+				    $scope.mapLinks = tmp;
+				}, function(err) {
+				    alert(err.responseText);
+				});
+			//});
+
+		};
+	});
+	
 	</script>
 
 	<script type="text/ng-template" id="facet-tree-item.html">
@@ -1360,7 +1444,8 @@
 <!-- 	<div style="position:fixed; width:100%; height: 100%"> -->
 		 
 		 
-	 	<div style="position: absolute; top: 0px; left: 0px; width: 30%; height: 100%">
+	 	<div style="position: absolute; top: 0px; left: 0px; width: 470px; height: 100%; overflow: auto;">
+
 						<div class="portlet" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
 							<h4>WorkSpaces</h4>
 						    <span ng-show="workSpaces.length == 0" class="inactive">(no work spaces)</span>
@@ -1427,9 +1512,10 @@
 <!-- 						<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()"> -->
 <!-- 							<span>Query = {{queryString}}</span>	 -->
 <!-- 						</div>						 -->
+
 		</div>			
 
-		<div style="position: absolute; top: 0px; left: 30%; width: 20%; height: 10%;">
+		<div style="display: none; position: absolute; top: 0px; left: 30%; width: 20%; height: 10%;">
 			
 <!-- 			        	<div ng-controller="FacetTreeSearchCtrl"> -->
 <!-- 			        		<input type="search" ng-model="searchText" /><button>Search</button> -->
@@ -1455,6 +1541,20 @@
 		</div>
 
 <!-- 		<div ssb-map style="position: absolute; z-index:-9999; top: 0px; left: 0px; width: 100%; height: 100%;" ng-controller="MapCtrl"></div> -->
+
+		<div style="position: absolute; top: 0px; left: 550px; height: 200px">
+		  <tabset style="width: 100%">
+		    <tab heading="Active">
+		    	<div ng-controller="MapLinkCandidateCtrl">
+		    		<ul>
+		    			<li ng-repeat="mapLink in mapLinks">{{mapLink.name}}</li>
+		    		</ul>
+		    	</div>
+		    </tab>
+		    <tab heading="Candidates"></tab>
+		  </tabset>
+  		</div>
+
 
 		<div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index:-9999" ng-controller="MapCtrl">
 			<div ssb-map="map" style="width: 100%; height: 100%"></div>

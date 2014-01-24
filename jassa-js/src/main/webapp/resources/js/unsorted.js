@@ -411,7 +411,7 @@
             this.constraintTaggerFactory = constraintTaggerFactory;
         },
        
-        fetchFacetValues: function(path) {
+        fetchFacetValues: function(path, excludeSelfConstraints) {
             var facetService = this.facetService;
             var constraintTaggerFactory = this.constraintTaggerFactory;
 

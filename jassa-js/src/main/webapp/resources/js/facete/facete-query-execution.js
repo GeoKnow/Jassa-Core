@@ -421,21 +421,24 @@
 		},
 		
 		fetchFacetsFromFlow: function(flow, path, isInverse) {
-            var promise = flow.asList();
+            var promise = flow.asList(true); // Retains RDF nodes
 		    
             var deferred = $.Deferred();
 
             var self = this;
 	        promise.done(function(docs) {
+	            /*
 	            var properties = _(docs).map(function(doc) {
 	                return rdf.NodeFactory.parseRdfTerm(doc.id);
 	            });
+	            */
+	            var properties = _(docs).pluck('id');
 
 	            if(properties.length === 0) {
                     deferred.resolve([]);
                     return;
 	            }
-	            
+
                 var promise = self.fetchFacetValueCounts(path, isInverse, properties, false);
 
                 promise.done(function(r) {
@@ -511,7 +514,7 @@
 		fetchFacetValueCounts: function(path, isInverse, properties, isNegated) {
 			var facetConceptItems = this.facetConceptGenerator.createConceptFacetValues(path, isInverse, properties, isNegated);
 			
-			
+
 			var outputVar = rdf.NodeFactory.createVar("_c_");
 			
 						
