@@ -139,9 +139,9 @@
 		},
 
 		toggleConstraint: function(constraint) {
-		    var wasRemoved = constraintManager.removeConstraint(constraint);
+		    var wasRemoved = this.removeConstraint(constraint);
 		    if(!wasRemoved) {
-		        constraintManager.addConstraint(constraint);
+		        this.addConstraint(constraint);
 		    }
 		},
 

@@ -651,7 +651,24 @@
 */
 
 	myModule.controller('ConstraintCtrl', function($scope, $rootScope, activeConceptSpaceService) {
-		$scope.$on('facete:refresh', function() {
+	    
+	    var constraintManager;
+	    
+	    // TODO Get rid of the service boilerplate
+	    $scope.activeConceptSpaceService = activeConceptSpaceService;
+
+	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
+	        $scope.conceptSpace = conceptSpace;
+	        
+	        if(conceptSpace) {
+	        	constraintManager = conceptSpace.getFacetTreeConfig().getFacetConfig().getConstraintManager();
+	        }
+	        
+	        $scope.refresh();
+	    });
+
+	    
+	    $scope.$on('facete:refresh', function() {
 		    $scope.refresh();
 		});
 	    
@@ -659,14 +676,9 @@
 		    $scope.refreshConstraints();
 		};
 		
-	    $scope.refreshConstraints = function() {
-	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
-	        
+	    $scope.refreshConstraints = function() {	        
 	        var items;
-	        if(conceptSpace) {
-		        
-		        var constraintManager = conceptSpace.getConstraintManager();
-		        
+	        if($scope.conceptSpace) {
 		        var constraints = constraintManager.getConstraints();
 		        
 		        items =_(constraints).map(function(constraint) {
@@ -685,14 +697,9 @@
 	        $scope.constraints = items;
 	    };
 	    
-	    $scope.removeConstraint = function(item) {
-	        var conceptSpace = activeConceptSpaceService.getConceptSpace();
-			if(conceptSpace) {	
-		        var constraintManager = conceptSpace.getConstraintManager();
-	
-		        constraintManager.removeConstraint(item.constraint);
-				$scope.$emit('facete:constraintsChanged');
-			}
+	    $scope.removeConstraint = function(item) {	
+	        constraintManager.removeConstraint(item.constraint);
+			$scope.$emit('facete:constraintsChanged');
 	    };
 	    
 		$scope.$on("facete:constraintsChanged", function() {
@@ -1324,10 +1331,11 @@
 				<input class="btn-primary" type="submit" value="Filter" />
 			</form>
 			<table>
-                <tr><th>Value</th><th>Count</th><th>Constrained</th></tr>
+                <tr><th>Value</th><th>Constrained</th></tr>
+<!-- <th>Count</th> -->
 			    <tr ng-repeat="item in facetValues">
                     <td>{{item.displayLabel}}</td>
-                    <td>todo</td>
+<!--                    <td>todo</td> -->
                     <td><input type="checkbox" ng-model="item.tags.isConstrainedEqual" ng-change="toggleConstraint(item)"</td>
                 </tr>
         	</table>
