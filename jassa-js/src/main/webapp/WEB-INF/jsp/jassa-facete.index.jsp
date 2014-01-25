@@ -521,7 +521,7 @@
 	myModule.factory('activeMapLinkList', function(appContext) {
 		return {
 		    getMapLinks: function() {
-		        //console.log('Called service getMapLinks');
+		        console.log('Called service getMapLinks');
 				return ns.AppContextUtils.getMapLinks(appContext);
 		    }
 		};	    
@@ -1336,6 +1336,12 @@
 	        $scope.refresh();
 	    });
 	    
+	    
+	    $scope.activeMapLinkList = activeMapLinkList;
+	    $scope.$watch('activeMapLinkList.getMapLinks()', function(mapLinks) {
+            $scope.refresh(); 
+	    }, true);
+	    
 	    $scope.toggleMapLink = function(index) {
 	        // Check the conceptSpace for whether the mapLink is active
 	        var item = $scope.mapLinks[index];
@@ -1347,7 +1353,7 @@
 
 			item.isActive = paths.contains(path);
 			
-			console.log('Map Links after activation:', activeMapLinkList.getMapLinks());
+			//console.log('Map Links after activation:', activeMapLinkList.getMapLinks());
 	    };
 	    
 		$scope.$on('facete:constraintsChanged', function() {
@@ -1402,16 +1408,29 @@
 		};
 	});
 	
-    myModule.controller('ActiveMapLinkListCtrl', function($scope, activeMapLinkList) {
+    myModule.controller('ActiveMapLinkListCtrl', function($scope, activeMapLinkList, activeConceptSpaceService) {
         
+	    
+	    // TODO Get rid of the service boilerplate
         $scope.activeMapLinkList = activeMapLinkList;
-        
-        //$scope.mapLinks = []; //[{path: 'foo'}];
+	    $scope.activeConceptSpaceService = activeConceptSpaceService;
         
         $scope.$watch('activeMapLinkList.getMapLinks()', function(mapLinks) {
-            //console.log('handled change getMapLinks()');
            	$scope.mapLinks = mapLinks;
         }, true);
+        
+	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
+	        $scope.conceptSpace = conceptSpace;	        
+	    });
+
+        
+        $scope.removeMapLink = function(index) {
+            var mapLink = $scope.mapLinks[index];
+            $scope.conceptSpace.getData().activeMapLinkPaths.remove(mapLink.path);
+//             $scope.$apply(function() {
+//             	$scope.conceptSpace.getData().activeMapLinkPaths.remove(mapLink.path);
+//             });
+        };
     });
 
 	</script>
