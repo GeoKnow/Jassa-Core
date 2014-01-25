@@ -296,7 +296,6 @@
 
     
 
-
 	/**
 	 * Angular
 	 */	
@@ -457,8 +456,15 @@
 
 	});
 	
-	myModule.service('appContextService', function() {
+// 	myModule.provider('appContext', function() {
+// 	    this.$get = function() { return new ns.AppContext() };
+// 	});
+
+	//var ffsAppContext = new ns.AppContext();
+
+	myModule.service('appContext', function() {
 	    return new ns.AppContext();
+	    //return ffsAppContext;
 	});
 	
 	myModule.factory('activeWorkSpaceService', function() {
@@ -506,6 +512,23 @@
 	    
 	});
 	
+// 	myModule.run(function($rootScope) {
+// 	    $rootScope.appContext = new ns.AppContext();
+// 	});
+	
+	// contextCandidateMapList
+	// globalActiveMapList -> grey out entries if they are not in the contextCandidate 
+	myModule.factory('activeMapLinkList', function(appContext) {
+		return {
+		    getMapLinks: function() {
+		        //console.log('Called service getMapLinks');
+				return ns.AppContextUtils.getMapLinks(appContext);
+		    }
+		};	    
+	});
+	
+	
+	
 	/* TODO Reenable
 	myModule.factory('facetService', function($rootScope, $q) {
 		return {
@@ -550,23 +573,23 @@
 	/**
 	 * WorkSpaceListCtrl - Controller for adding/removing work spaces
 	 */
-	myModule.controller('WorkSpaceListCtrl', function($rootScope, $scope, appContextService, activeWorkSpaceService) {
+	myModule.controller('WorkSpaceListCtrl', function($rootScope, $scope, appContext, activeWorkSpaceService) {
 	   
-	    $scope.workSpaces = appContextService.getWorkSpaces();
+	    $scope.workSpaces = appContext.getWorkSpaces();
 	    
 	    $scope.addWorkSpace = function() {
-	        appContextService.addWorkSpace();
+	        appContext.addWorkSpace();
 	    };
 	    
 	    $scope.removeWorkSpace = function(index) {
-	        var w = appContextService.getWorkSpaces()[index];
+	        var w = appContext.getWorkSpaces()[index];
 	        
 	        // TODO Also deactivate the conceptSpace
 	        if(w == activeWorkSpaceService.getWorkSpace()) {
 	            activeWorkSpaceService.setWorkSpace(null);
 	        }
 
-	        appContextService.removeWorkSpace(index);
+	        appContext.removeWorkSpace(index);
 	    };
 	    
 	    $scope.selectWorkSpace = function(index) {
@@ -785,7 +808,7 @@
 		
 		var updateItems = function() {
 			if(!$scope.conceptSpace) {
-			    console.log('No concept space');
+			    //console.log('No concept space');
 			    return;
 			}
 	        
@@ -899,8 +922,13 @@
 	 * used so that sibling elements can react to the events.
 	 *
 	 */
-	myModule.controller('FaceteContextCtrl', function($scope) {
+	myModule.controller('FaceteContextCtrl', function($scope, activeMapLinkList) {
 
+	    $scope.activeMapLinkList = activeMapLinkList;
+	    $scope.$watch('activeMapLinkList.getMapLinks()', function(mapLinks) {
+            //console.log('handled change getMapLinks()'); 
+	    }, true);
+	    
 	    var broadcast = function(eventName, args) {
 	        var ev = args[0];
 	        var remainingArgs = Array.prototype.slice.call(args, 1);	        
@@ -1207,7 +1235,7 @@
 	        var facet = $scope.facet;
 	        var startPath = facet ? facet.item.getPath() : new facete.Path();
 	        
-	        console.log('StartPath', startPath);
+	        //console.log('StartPath', startPath);
 	        
 	        if($scope.conceptSpace) {
 	        
@@ -1274,7 +1302,7 @@
 	});
 		
 	
-	myModule.controller('MapLinkCandidateCtrl', function($scope, $rootScope, $q, sparqlServiceFactory, activeConceptSpaceService) {
+	myModule.controller('CandidateMapLinkListCtrl', function($scope, $rootScope, $q, sparqlServiceFactory, activeConceptSpaceService, activeMapLinkList) {
 
 	    $scope.mapLinks = [];
 	    
@@ -1297,12 +1325,30 @@
 	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
 				facetConfig = conceptSpace.getFacetTreeConfig().getFacetConfig();
 				facetConceptGenerator = ns.FaceteUtils.createFacetConceptGenerator(facetConfig);
+				
+				
+		    	var data = conceptSpace.getData();
+		        if(!data.activeMapLinkPaths) { data.activeMapLinkPaths = new util.ArrayList(); }				
+	        } else {
+	            $scope.mapLinks = [];
 	        }
 
 	        $scope.refresh();
 	    });
-
 	    
+	    $scope.toggleMapLink = function(index) {
+	        // Check the conceptSpace for whether the mapLink is active
+	        var item = $scope.mapLinks[index];
+	        
+
+	        var path = item.path;
+			var paths = $scope.conceptSpace.getData().activeMapLinkPaths;
+			util.CollectionUtils.toggleItem(paths, path);
+
+			item.isActive = paths.contains(path);
+			
+			console.log('Map Links after activation:', activeMapLinkList.getMapLinks());
+	    };
 	    
 		$scope.$on('facete:constraintsChanged', function() {
 		    $scope.refresh();
@@ -1333,12 +1379,18 @@
 			    var promise = conceptPathFinder.findPaths(sourceConcept, targetConcept);
 				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
 
+				var activeMapLinkPaths = $scope.conceptSpace.getData().activeMapLinkPaths;
+				//console.log('Paths:', paths);
+				
 				result.then(function(paths) {
 				    var tmp = _(paths).map(function(path) {
 				        
 				        //var geoConcept = fctService.createConceptFacetValues(path);
+
+						var isActive = activeMapLinkPaths.contains(path);
 				        
-				        return {name: path.toString(), path: path};//, geoConcept: geoConcept.toString() };
+				        //isActive: true, 
+				        return {isActive: isActive, name: path.toString(), path: path};//, geoConcept: geoConcept.toString() };
 				    });
 				   
 				    $scope.mapLinks = tmp;
@@ -1350,6 +1402,18 @@
 		};
 	});
 	
+    myModule.controller('ActiveMapLinkListCtrl', function($scope, activeMapLinkList) {
+        
+        $scope.activeMapLinkList = activeMapLinkList;
+        
+        //$scope.mapLinks = []; //[{path: 'foo'}];
+        
+        $scope.$watch('activeMapLinkList.getMapLinks()', function(mapLinks) {
+            //console.log('handled change getMapLinks()');
+           	$scope.mapLinks = mapLinks;
+        }, true);
+    });
+
 	</script>
 
 	<script type="text/ng-template" id="facet-tree-item.html">
@@ -1408,7 +1472,7 @@
 			    <tr ng-repeat="item in facetValues">
                     <td>{{item.displayLabel}}</td>
 <!--                    <td>todo</td> -->
-                    <td><input type="checkbox" ng-model="item.tags.isConstrainedEqual" ng-change="toggleConstraint(item)"</td>
+                    <td><input type="checkbox" ng-model="item.tags.isConstrainedEqual" ng-change="toggleConstraint(item)" /></td>
                 </tr>
         	</table>
     		<pagination class="pagination-small" total-items="totalItems" page="$parent.currentPage" max-size="maxSize" boundary-links="true" rotate="false" num-pages="numPages"></pagination>
@@ -1542,16 +1606,28 @@
 
 <!-- 		<div ssb-map style="position: absolute; z-index:-9999; top: 0px; left: 0px; width: 100%; height: 100%;" ng-controller="MapCtrl"></div> -->
 
-		<div style="position: absolute; top: 0px; left: 550px; height: 200px">
+		<div class="portlet" style="position: absolute; top: 0px; left: 550px;">
 		  <tabset style="width: 100%">
-		    <tab heading="Active">
-		    	<div ng-controller="MapLinkCandidateCtrl">
+		    <tab heading="Candidate Map Links">
+		    	<div ng-controller="CandidateMapLinkListCtrl">
+		    		<div ng-hide="mapLinks.length > 0" class="disabled">(no map link candidates)</div>
 		    		<ul>
-		    			<li ng-repeat="mapLink in mapLinks">{{mapLink.name}}</li>
+		    			<li ng-repeat="mapLink in mapLinks">
+							<input type="checkbox" ng-model="mapLink.isActive" ng-change="toggleMapLink($index)" />
+		    				{{mapLink.name}}
+		    			</li>
 		    		</ul>
 		    	</div>
 		    </tab>
-		    <tab heading="Candidates"></tab>
+		    <tab heading="Active Map Links">
+		    	<div ng-controller="ActiveMapLinkListCtrl">
+		    		<ul>
+		    			<li ng-repeat="mapLink in mapLinks">
+							<a href="" ng-click="removeMapLink($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>{{mapLink.path}}
+						</li>
+		    		</ul>
+		    	</div>
+		    </tab>
 		  </tabset>
   		</div>
 

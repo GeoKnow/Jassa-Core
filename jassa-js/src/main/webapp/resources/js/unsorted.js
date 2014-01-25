@@ -340,6 +340,66 @@
             return result;
         }
     });
+    
+    
+    
+    /**
+     * Returns all paths and their contexts in an appContext
+     * 
+     */
+    ns.AppContextUtils = { // These are domain specific utils - not generic ones - for the app context
+        getMapLinks: function(appContext) {
+            //console.log('inside getMapLinks()');
+            
+            var workSpaces = appContext.getWorkSpaces();
+            var conceptSpaces = _(workSpaces).chain().map(function(workSpace) {
+                return workSpace.getConceptSpaces();
+            }).flatten().value();
+
+            var result = _(conceptSpaces).chain()
+                .map(function(conceptSpace) {
+
+                    var data = conceptSpace.getData();
+
+                    var activeMapLinkPaths = data.activeMapLinkPaths ? data.activeMapLinkPaths.getArray() : [];
+                    
+                    var r = _(activeMapLinkPaths).map(function(path) {
+                        return {
+                            conceptSpace: conceptSpace.getId(),
+                            path: path
+                        }
+                    })
+                    
+                    return r;
+                })
+                .flatten().value();
+            
+            //result = [];
+//            console.log('mapLinks returned:', result);
+//            if(result.length !== 0) {
+//                debugger;
+//            }
+            return result;
+        }
+    };
+    
+    
+    
+    /**
+     * Tags paths as active when they are in the collection of
+     * active map links
+     */
+    ns.ItemTaggerMapLinkPath = Class.create(ns.ItemTagger, {
+        initialize: function(mapLinkManager, conceptSpace) {
+            this.mapLinkManager = mapLinkManager;
+            this.conceptSpace = conceptSpace;
+        },
+        
+        createTags: function(path) {
+            var result = { isActive: isContained };
+            return result;
+        }
+    });
 
     
     ns.ItemTaggerFilterString = Class.create(ns.ItemTagger, {
@@ -611,6 +671,8 @@
             //this.facetTreeService = facetTreeService;
             
             this.facetTreeConfig = null;
+            
+            this.data = {};
         },
 
         getWorkSpace: function() {
@@ -657,6 +719,15 @@
 //constraintTaggerFactory
             
             return result;
-        }        
+        },
+
+        setData: function(data) {
+            this.data = data;
+        },
+        
+        getData: function() {
+            return this.data;
+        }
+
     });
     

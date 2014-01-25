@@ -558,7 +558,7 @@
 	ns.ArrayList = Class.create({
 	   initialize: function(fnEquals) {
 	       this.items = [];
-	       this.fnEquals = fnEquals ? fnEquals : ns.defaultEquals;
+	       this.fnEquals = fnEquals || ns.defaultEquals;
 	   },
 	   
 	   setItems: function(items) {
