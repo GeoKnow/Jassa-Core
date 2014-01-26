@@ -171,7 +171,7 @@ var appvocab = Namespace("org.aksw.ssb.vocabs.appvocab");
 	        // TODO Make this configurable
 			var quadTreeConfig = {
                     maxTileItemCount: 150,
-                    maxGlobalItemCount: 750
+                    maxGlobalItemCount: 50000//750
 	        };
 
 			//var promise = fetchNodesGeo(queryGeneratorGeo, olBounds);

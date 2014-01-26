@@ -36,6 +36,16 @@
 	input[type=text] .btn-xs, input[type=password] .btn-xs {
         height: 14px !important;
     }
+
+	.portlet-frame {
+		border: 1px;
+		border-collapse: true;
+		border-style: solid;
+		border-color: #cccccc;
+		padding-right: 0px;
+		margin: 3px;
+		padding: 3px;	
+	}	
 	
 	.frame {
 		border: 1px;
@@ -61,10 +71,14 @@
 /*  		margin-top: 3px; */
  		margin: 5px;
 /*  		margin-bottom: 3px; */
- 		background-color: #EFEFEF;
+/*  		background-color: #EFEFEF; */
+ 		background-color: rgba(239, 239, 239, 0.7);
+ 		
+/*  		background : url("resources/images/facete-ui/background.png") repeat scroll 0 0 rgba(0, 0, 0, 0); */
 /*  		background-color: #eeeeee; */
 /* 		background-color: #EEEEEE; */
 	}
+
 
 	a {
 	    cursor: pointer
@@ -287,7 +301,8 @@
 
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
 
-    var mapLinkFactories = [wgs84MapFactory]; //, ogcMapFactory];
+    //var mapLinkFactories = [wgs84MapFactory]; //, ogcMapFactory];
+    var mapLinkFactories = [ ogcMapFactory ];
     
     /////var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
 
@@ -1604,44 +1619,59 @@
 <!-- 	<div style="position:fixed; width:100%; height: 100%"> -->
 		 
 		 
-	 	<div style="position: absolute; top: 0px; left: 0px; width: 470px; height: 100%; overflow: auto;">
+	 	<div style="position: absolute; top: 0px; left: 0px; width: 470px; max-height: 100%; overflow: auto;">
 
-						<div class="portlet" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
-							<h4>WorkSpaces</h4>
-						    <span ng-show="workSpaces.length == 0" class="inactive">(no work spaces)</span>
-							<ul>
-							    <li ng-repeat="workSpace in workSpaces" ng-class="{'highlite': workSpace.isActive()}">
-							    	<a href="" ng-click="removeWorkSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
-							    	<a href="" ng-click="selectWorkSpace($index)">{{workSpace.getName()}}</a>
-							   	</li>
-							</ul>
+						<div class="panel panel-primary" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
+							<div class="panel-heading">
+    							<h4 class="panel-title">Work Spaces</h4>
+  							</div>
+  							<div class="panel-body">
 							
-							<button class="btn btn-primary" ng-click="addWorkSpace()">New Work Space</button>
-						</div>
-						
-						
-						<h4>WorkSpace Settings</h4>
-						<div class="portlet" ng-controller="WorkSpaceConfigCtrl">
-							<div ng-show="!workSpace" class="inactive">(no active work space)</div>
-							<div ng-show="workSpace">
-								Sparql Endpoint: <input type="search" ng-model="workSpace.getData().config.sparqlServiceIri" /><button>Set</button> <br />
-							</div>
-						</div>
-						
-						
-						<h4>Concepts</h4>
-						<div class="portlet" ng-controller="ConceptSpaceListCtrl">
-							<div ng-show="!workSpace" class="inactive">(no active work space)</div>
-							<div ng-show="workSpace">
-								<div ng-hide="workSpace.getConceptSpaces().length" class="inactive">(no concept spaces)</div>
 								<ul>
-									<li ng-repeat="conceptSpace in workSpace.getConceptSpaces()" ng-class="{'highlite': conceptSpace.isActive()}">
-										<a href="" ng-click="removeConceptSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
-							    		<a href="" ng-click="selectConceptSpace($index)">{{conceptSpace.getName()}}</a>
-									</li>
+							    	<li ng-show="workSpaces.length == 0" class="inactive">(no work spaces)</li>
+								    <li ng-repeat="workSpace in workSpaces" ng-class="{'highlite': workSpace.isActive()}">
+								    	<a href="" ng-click="removeWorkSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
+								    	<a href="" ng-click="selectWorkSpace($index)">{{workSpace.getName()}}</a>
+								   	</li>
 								</ul>
+								
+								<button class="btn btn-primary" ng-click="addWorkSpace()">New Work Space</button>
 							</div>
-							<button ng-show="workSpace" class="btn btn-primary" ng-click="addConceptSpace()">New Concept Space</button>							
+						</div>
+						
+						
+						<div class="panel panel-primary" ng-controller="WorkSpaceConfigCtrl">
+							<div class="panel-heading">
+    							<h4 class="panel-title">Work Space Settings</h4>
+  							</div>
+  							<div class="panel-body">
+
+								<div ng-show="!workSpace" class="inactive">(no active work space)</div>
+								<div ng-show="workSpace">
+									Sparql Endpoint: <input type="search" ng-model="workSpace.getData().config.sparqlServiceIri" /><button>Set</button> <br />
+								</div>
+							</div>
+						</div>						
+						
+
+						<div class="panel panel-primary" ng-controller="ConceptSpaceListCtrl">
+							<div class="panel-heading">
+    							<h4 class="panel-title">Concepts</h4>
+  							</div>
+  							<div class="panel-body">
+							
+								<div ng-show="!workSpace" class="inactive">(no active work space)</div>
+								<div ng-show="workSpace">
+									<ul>
+										<li ng-hide="workSpace.getConceptSpaces().length" class="inactive">(no concept spaces)</li>
+										<li ng-repeat="conceptSpace in workSpace.getConceptSpaces()" ng-class="{'highlite': conceptSpace.isActive()}">
+											<a href="" ng-click="removeConceptSpace($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>
+								    		<a href="" ng-click="selectConceptSpace($index)">{{conceptSpace.getName()}}</a>
+										</li>
+									</ul>
+								</div>
+								<button ng-show="workSpace" class="btn btn-primary" ng-click="addConceptSpace()">New Concept Space</button>							
+							</div>
 						</div>
 						
 <!--						
@@ -1653,20 +1683,34 @@
 					    </div>
 -->
   
-						<h3>FacetTree</h3>
-						<div class="portlet" ng-controller="FacetTreeCtrl" data-ng-init="refresh()">
-							<div ng-include="'facet-tree-item.html'"></div>
+						<div class="panel panel-primary" ng-controller="FacetTreeCtrl" data-ng-init="refresh()">
+							<div class="panel-heading">
+    							<h4 class="panel-title">Facet Tree</h4>
+  							</div>
+  							<div class="panel-body">
+								<div ng-include="'facet-tree-item.html'"></div>
+							</div>
 						</div>
 					
-						<div class="portlet" ng-controller="FacetValueListCtrl">
-							<div ng-include="'result-set-browser.html'"></div>	
+						<div class="panel panel-primary" ng-controller="FacetValueListCtrl">
+							<div class="panel-heading">
+    							<h4 class="panel-title">Facet Values</h4>
+  							</div>
+  							<div class="panel-body">
+								<div ng-include="'result-set-browser.html'"></div>
+							</div>	
 						</div>
 						
-						<div class="portlet" ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
-						    <span ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</span>
-							<ul>
-							    <li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
-							</ul>
+						<div class="panel panel-primary" ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
+							<div class="panel-heading">
+    							<h4 class="panel-title">Constraints</h4>
+  							</div>
+  							<div class="panel-body">						
+								<ul>
+						    		<li ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</li>
+							    	<li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
+								</ul>
+							</div>
 						</div>
 						
 <!-- 						<div ng-controller="ShowQueryCtrl" data-ng-init="updateQuery()"> -->

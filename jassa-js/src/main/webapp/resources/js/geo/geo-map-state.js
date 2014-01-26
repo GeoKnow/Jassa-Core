@@ -170,7 +170,7 @@
             // TODO Make this configurable
             var quadTreeConfig = {
                     maxItemsPerTileCount: 150,
-                    maxGlobalItemCount: 750
+                    maxGlobalItemCount: 5000
             };
 
             var geoMap = geoMapFactory.createMapForGlobal();
