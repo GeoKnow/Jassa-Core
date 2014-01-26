@@ -287,12 +287,14 @@
 
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
 
-    var mapLinkFactories = [wgs84MapFactory, ogcMapFactory];
+    var mapLinkFactories = [wgs84MapFactory]; //, ogcMapFactory];
     
     /////var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
 
   
-    var viewStateCtrl = null;    
+    //var viewStateCtrl = null;    
+
+    var viewStateFetcher = new geo.ViewStateFetcher();
 
     
 
@@ -1125,23 +1127,71 @@
     });
 */    
     
-    myModule.controller('MapCtrl', function($scope) {
+    myModule.controller('MapCtrl', function($scope, appContext, sparqlServiceFactory) {
         $scope.boxes = {foo: {left: -10, bottom: -10, right: 10, top: 10}};
         
-        //console.log('MapScope is ', $scope);
         
-//         $scope.$watch('nodes', function(newNodes, oldNodes) {
-            
-//         });
+        
         
         $scope.$watch('map.center', function(center) {
         
             var bounds = ns.MapUtils.getExtent($scope.map)
             //console.log('extent', bounds);
             
-            if(viewStateCtrl == null) {
-                viewStateCtrl = new ns.ViewStateCtrlOpenLayers($scope.map.widget);
-            }
+//             if(viewStateCtrl == null) {
+//                 viewStateCtrl = new ns.ViewStateCtrlOpenLayers($scope.map.widget);
+//             }
+
+
+            $scope.map.widget.clearItems();
+
+            
+            _(appContext.getWorkSpaces()).each(function(workSpace) {
+                
+	            var wsConf = workSpace.getData().config;
+                
+                _(workSpace.getConceptSpaces()).each(function(conceptSpace) {
+        
+                    var sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
+            		var facetConfig = conceptSpace.getFacetTreeConfig().getFacetConfig();
+            		var facetConceptGenerator = ns.FaceteUtils.createFacetConceptGenerator(facetConfig);
+
+                    var paths = conceptSpace.getData().activeMapLinkPaths.getArray();
+                    
+
+            		_(paths).each(function(path) {
+        				var concept = facetConceptGenerator.createConceptResources(path); 
+        				
+                        //console.log('PAAAAA ' + geoConcept);
+                        
+                        
+                        var mapLinkFactory = mapLinkFactories[0];
+                        var promise = viewStateFetcher.fetchViewState(sparqlService, mapLinkFactory, concept, bounds);
+                        
+                        promise.done(function(viewState) {
+                            var nodes = viewState.getNodes();
+                            
+	                	    _(nodes).each(function(node) {
+	                	        //console.log('booooo', node);
+	                	        if(!node.isLoaded) {
+	                	            //console.log('box: ' + node.getBounds());
+	                	            $scope.map.widget.addBox('' + node.getBounds(), node.getBounds());
+	                	        }
+	                	        
+	                	        var data = node.data || {};
+	                    	    var docs = data.docs || [];
+	
+	                    	    _(docs).each(function(doc) {
+	         
+	                    	        $scope.map.widget.addWkt(doc.id, doc.wkt);
+	                    	    });        	        
+	                	    });
+                        });
+                        
+            		});
+                                        
+                });
+            });
             
 		    //var concept = fctService.createConceptFacetValues(new facete.Path());
 /* TODO RE-ENABLE		    
@@ -1371,8 +1421,8 @@
 			var sourceConcept = facetConceptGenerator.createConceptResources(new facete.Path());
 
 		    
-			//_(mapLinkFactories).each(function(mapLinkFactory) {
-			    var mapLinkFactory = mapLinkFactories[0];
+			var promises = _(mapLinkFactories).map(function(mapLinkFactory) {
+			    //var mapLinkFactory = mapLinkFactories[0];
 			    
 				// TODO HACK Get the concept (id) from the map
 			    var targetVar = rdf.NodeFactory.createVar('s');
@@ -1382,28 +1432,55 @@
 
 				console.log('[DEBUG] ConceptPathFinder: Search paths between ' + sourceConcept + ' and ' + targetConcept);
 				
-			    var promise = conceptPathFinder.findPaths(sourceConcept, targetConcept);
-				var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
+			    var p = conceptPathFinder.findPaths(sourceConcept, targetConcept).pipe(function(paths) {
+			        var items = _(paths).map(function(path) {
+			            var r = {
+			            	path: path,
+			            	mapLinkFactory: mapLinkFactory
+			            };
+			            
+			            return r;
+			        });
+			        
+			        return items;
+			    });
 
-				var activeMapLinkPaths = $scope.conceptSpace.getData().activeMapLinkPaths;
-				//console.log('Paths:', paths);
+			    
+			    return p;
+			});
+			
+			var promise = jQuery.when.apply(window, promises).pipe(function() {
+			    var flatten = _(arguments).flatten();
+// 			    console.log('ARGS', arguments);
+// 			    console.log('ARGS2', flatten);
+			    return flatten;
+			});
+
+			var result = sponate.angular.bridgePromise(promise, $q.defer(), $rootScope);
+
+			//console.log('Paths:', paths);
 				
-				result.then(function(paths) {
-				    var tmp = _(paths).map(function(path) {
-				        
-				        //var geoConcept = fctService.createConceptFacetValues(path);
+			result.then(function(items) {
+				var activeMapLinkPaths = $scope.conceptSpace.getData().activeMapLinkPaths;
 
-						var isActive = activeMapLinkPaths.contains(path);
-				        
-				        //isActive: true, 
-				        return {isActive: isActive, name: path.toString(), path: path};//, geoConcept: geoConcept.toString() };
-				    });
-				   
-				    $scope.mapLinks = tmp;
-				}, function(err) {
-				    alert(err.responseText);
+			    var tmp = _(items).map(function(item) {
+		        	console.log('ITEM', item);
+			        item.name = item.path.toString();
+			        item.isActive = activeMapLinkPaths.contains(item.path);
+
+			        return item;
+// 			        return {
+// 			            isActive: isActive,
+// 			            name: path.toString(),
+// 			            path: path,
+// 			            mapLinkFactory: mapLinkFactory
+// 			        };//, geoConcept: geoConcept.toString() };
 				});
-			//});
+				
+			    $scope.mapLinks = tmp;
+			}, function(err) {
+			    alert(err.responseText);
+			});
 
 		};
 	});

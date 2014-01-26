@@ -58,6 +58,12 @@
     };
     
     
+    ns.QuadTreeCacheService = Class.create({
+       
+        
+    });
+    
+    
     /**
      * 
      * fetchData
@@ -251,7 +257,7 @@
             //console.log('Done aquiring');
             
             // Init the data attribute if needed
-            _.each(nodes, function(node) {
+            _(nodes).each(function(node) {
                 if(!node.data) {
                     node.data = {};
                 }
@@ -259,14 +265,14 @@
             
     
             // Mark empty nodes as loaded
-            _.each(nodes, function(node) {
+            _(nodes).each(function(node) {
                 if(node.isCountComplete() && node.infMinItemCount === 0) {
                     node.isLoaded = true;
                 }
             });
     
             
-            var uncountedNodes = _.filter(nodes, function(node) { return self.isCountingNeeded(node); });
+            var uncountedNodes = _(nodes).filter(function(node) { return self.isCountingNeeded(node); });
             //console.log("# uncounted nodes", uncountedNodes.length);
     
             // The deferred is only resolved once the whole workflow completed
@@ -275,12 +281,12 @@
             
             var countTasks = this.createCountTasks(uncountedNodes);
             
-            $.when.apply(window, countTasks).then(function() {
-                nonLoadedNodes = _.filter(nodes, function(node) { return self.isLoadingNeeded(node); });
+            $.when.apply(window, countTasks).done(function() {
+                nonLoadedNodes = _(nodes).filter(function(node) { return self.isLoadingNeeded(node); });
                 //console.log("# non loaded nodes", nonLoadedNodes.length, nonLoadedNodes);
                 
                 var loadTasks = self.createLoadTasks(nonLoadedNodes);
-                $.when.apply(window, loadTasks).then(function() {
+                $.when.apply(window, loadTasks).done(function() {
                     //ns.QuadTreeCache.finalizeLoading(nodes);
                     
                     $.when(self.postProcess(nodes)).then(function() {
@@ -289,6 +295,8 @@
                         result.resolve(nodes);
                     });
                 });
+            }).fail(function() {
+                result.fail();
             });
             
             return result;

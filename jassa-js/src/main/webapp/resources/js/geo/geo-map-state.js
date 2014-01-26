@@ -148,22 +148,24 @@
      * 
      */
     ns.ViewStateFetcher = Class.create({
-        initialize: function(sparqlService, geoMapFactory, conceptFactory) {
-            this.sparqlService = sparqlService;
-            this.geoMapFactory = geoMapFactory;
-            this.conceptFactory = conceptFactory;
+        //initialize: function(sparqlService, geoMapFactory, conceptFactory) {
+        initialize: function() {
+//            this.sparqlService = sparqlService;
+//            this.geoMapFactory = geoMapFactory;
+//            this.conceptFactory = conceptFactory;
 
             //this.conceptToService = {};
             this.hashToCache = {};
         },
         
-        fetchViewState: function(bounds) {
-            var sparqlService = this.sparqlService;
-            var geoMapFactory = this.geoMapFactory;
-            var conceptFactory = this.conceptFactory;
+        //fetchViewState: function(bounds) {
+        fetchViewState: function(sparqlService, geoMapFactory, concept, bounds) {
+//            var sparqlService = this.sparqlService;
+//            var geoMapFactory = this.geoMapFactory;
+//            var conceptFactory = this.conceptFactory;
             
             
-            var concept = conceptFactory.createConcept();
+            //var concept = conceptFactory.createConcept();
             
             // TODO Make this configurable
             var quadTreeConfig = {
