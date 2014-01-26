@@ -1619,9 +1619,9 @@
 <!-- 	<div style="position:fixed; width:100%; height: 100%"> -->
 		 
 		 
-	 	<div style="position: absolute; top: 0px; left: 0px; width: 470px; max-height: 100%; overflow: auto;">
+	 	<div style="position: absolute; top: 0px; left: 0px; width: 470px; max-height: 100%; overflow: auto; margin: 5px;">
 
-						<div class="panel panel-primary" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
+						<div class="panel panel-info" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
 							<div class="panel-heading">
     							<h4 class="panel-title">Work Spaces</h4>
   							</div>
@@ -1640,7 +1640,7 @@
 						</div>
 						
 						
-						<div class="panel panel-primary" ng-controller="WorkSpaceConfigCtrl">
+						<div class="panel panel-info" ng-controller="WorkSpaceConfigCtrl">
 							<div class="panel-heading">
     							<h4 class="panel-title">Work Space Settings</h4>
   							</div>
@@ -1654,7 +1654,7 @@
 						</div>						
 						
 
-						<div class="panel panel-primary" ng-controller="ConceptSpaceListCtrl">
+						<div class="panel panel-info" ng-controller="ConceptSpaceListCtrl">
 							<div class="panel-heading">
     							<h4 class="panel-title">Concepts</h4>
   							</div>
@@ -1683,7 +1683,7 @@
 					    </div>
 -->
   
-						<div class="panel panel-primary" ng-controller="FacetTreeCtrl" data-ng-init="refresh()">
+						<div class="panel panel-info" ng-controller="FacetTreeCtrl" data-ng-init="refresh()">
 							<div class="panel-heading">
     							<h4 class="panel-title">Facet Tree</h4>
   							</div>
@@ -1692,7 +1692,7 @@
 							</div>
 						</div>
 					
-						<div class="panel panel-primary" ng-controller="FacetValueListCtrl">
+						<div class="panel panel-info" ng-controller="FacetValueListCtrl">
 							<div class="panel-heading">
     							<h4 class="panel-title">Facet Values</h4>
   							</div>
@@ -1701,7 +1701,7 @@
 							</div>	
 						</div>
 						
-						<div class="panel panel-primary" ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
+						<div class="panel panel-info" ng-controller="ConstraintCtrl" data-ng-init="refreshConstraints()">
 							<div class="panel-heading">
     							<h4 class="panel-title">Constraints</h4>
   							</div>
@@ -1746,29 +1746,35 @@
 
 <!-- 		<div ssb-map style="position: absolute; z-index:-9999; top: 0px; left: 0px; width: 100%; height: 100%;" ng-controller="MapCtrl"></div> -->
 
-		<div class="portlet" style="position: absolute; top: 0px; left: 550px;">
-		  <tabset style="width: 100%">
-		    <tab heading="Candidate Map Links">
-		    	<div ng-controller="CandidateMapLinkListCtrl">
-		    		<div ng-hide="mapLinks.length > 0" class="disabled">(no map link candidates)</div>
-		    		<ul>
-		    			<li ng-repeat="mapLink in mapLinks">
-							<input type="checkbox" ng-model="mapLink.isActive" ng-change="toggleMapLink($index)" />
-		    				{{mapLink.name}}
-		    			</li>
-		    		</ul>
-		    	</div>
-		    </tab>
-		    <tab heading="Active Map Links">
-		    	<div ng-controller="ActiveMapLinkListCtrl">
-		    		<ul>
-		    			<li ng-repeat="mapLink in mapLinks">
-							<a href="" ng-click="removeMapLink($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>{{mapLink.path}}
-						</li>
-		    		</ul>
-		    	</div>
-		    </tab>
-		  </tabset>
+		<div class="panel panel-info" style="position: absolute; top: 0px; left: 550px; margin: 5px;"> 
+			<div class="panel-heading">
+				<h4 class="panel-title">Work Spaces</h4>
+			</div>
+			<div class="panel-body">
+				<tabset>
+					<tab heading="Candidate Map Links">
+						<div ng-controller="CandidateMapLinkListCtrl">
+							<ul>
+								<li ng-hide="mapLinks.length" class="inactive">(no map link candidates)</li>
+								<li ng-repeat="mapLink in mapLinks">
+									<input type="checkbox" ng-model="mapLink.isActive" ng-change="toggleMapLink($index)" />
+									{{mapLink.name}}
+								</li>
+				  			</ul>
+				  		</div>
+				  	</tab>
+					<tab heading="Active Map Links">
+						<div ng-controller="ActiveMapLinkListCtrl">
+							<ul>
+								<li ng-hide="mapLinks.length" class="inactive">(no map links)</li>
+								<li ng-repeat="mapLink in mapLinks">
+									<a href="" ng-click="removeMapLink($index)"><span class="glyphicon glyphicon-remove-circle"></span></a>{{mapLink.path}}
+								</li>
+							</ul>
+						</div>
+					</tab>
+				</tabset>
+			</div>
   		</div>
 
 
