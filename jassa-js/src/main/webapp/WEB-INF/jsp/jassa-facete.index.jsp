@@ -713,6 +713,24 @@
 	        $scope.refresh();
 	    });
 
+	    var renderConstraint = function(constraint) {
+	        var type = constraint.getName();
+
+	        var result;
+	        switch(type) {
+	        case 'equal':
+	            var pathStr = ''  + constraint.getDeclaredPath();
+	            if(pathStr === '') {
+	                pathStr = '()'
+	            }
+	        	result = pathStr + ' = ' + constraint.getValue();
+	        break;
+	        default:
+	            result = constraint;
+	        }
+	        
+	        return result;
+	    };
 	    
 	    $scope.$on('facete:refresh', function() {
 		    $scope.refresh();
@@ -730,7 +748,7 @@
 		        items =_(constraints).map(function(constraint) {
 					var r = {
 						constraint: constraint,
-						label: '' + constraint
+						label: '' + renderConstraint(constraint)
 					};
 					
 					return r;
@@ -1195,6 +1213,7 @@
             		_(paths).each(function(path) {
             		    
             		    var markerFillColor = markerFillColors[mapLinkIndex];
+            		    var markerStrokeColor = markerStrokeColors[mapLinkIndex];
             		    
         				var concept = facetConceptGenerator.createConceptResources(path); 
         				
@@ -1219,7 +1238,7 @@
 	
 	                    	    _(docs).each(function(doc) {
 	         
-	                    	        $scope.map.widget.addWkt(doc.id, doc.wkt, {fillColor: markerFillColor});
+	                    	        $scope.map.widget.addWkt(doc.id, doc.wkt, {fillColor: markerFillColor, strokeColor: markerStrokeColor});
 	                    	    });        	        
 	                	    });
                         });
@@ -1505,6 +1524,11 @@
 			    var tmp = _(items).map(function(item) {
 		        	console.log('ITEM', item);
 			        item.name = item.path.toString();
+			        
+			        if(item.name == '') {
+			            item.name = '(empty property path)';
+			        }
+			        
 			        item.isActive = activeMapLinkPaths.contains(item.path);
 
 			        return item;
@@ -1732,7 +1756,7 @@
   							<div class="panel-body">						
 								<ul>
 						    		<li ng-show="constraints.length == 0" style="color: #aaaaaa;">(no constraints)</li>
-							    	<li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint}}</a></li>
+							    	<li ng-repeat="constraint in constraints"><a href="" ng-click="removeConstraint(constraint)">{{constraint.label}}</a></li>
 								</ul>
 							</div>
 						</div>

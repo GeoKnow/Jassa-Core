@@ -146,6 +146,7 @@ $.widget("custom.ssbMap", {
 	        	graphicXOffset: -16,
 
 	        	fillColor: '${fillColor}',
+	        	strokeColor: '${strokeColor}',
 
 	        	
 //                stroke: true,
@@ -564,6 +565,9 @@ $.widget("custom.ssbMap", {
 		//this.removeItems(_.keys(this.idToFeature.entries));
 		this.removeItems(_(this.idToFeature).keys());
 	    this.removeBoxes(_(this.idToBox).keys());
+	    
+	    this.featureLayer.destroyFeatures();
+	    this.boxLayer.destroyFeatures();
 	},
 
 	removeItem : function(id) {
