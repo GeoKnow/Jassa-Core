@@ -226,8 +226,12 @@
 
 	<script>
 	
+	
+	var markerFillColors = ['#ff0000', '#0000ff', '00ff00'];
+	var markerStrokeColors = ['#ff8080', '#8080ff', '80ff80'];
 
     var sparqlServiceIri = 'http://localhost/fts-sparql';
+ 	//var defaultGraphIris = ['http://dbpedia.org/museums-in-england'];
  	var defaultGraphIris = [];
 
 
@@ -301,8 +305,8 @@
 
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
 
-    //var mapLinkFactories = [wgs84MapFactory]; //, ogcMapFactory];
-    var mapLinkFactories = [ ogcMapFactory ];
+    var mapLinkFactories = [wgs84MapFactory]; //, ogcMapFactory];
+    //var mapLinkFactories = [ ogcMapFactory ];
     
     /////var viewStateFetcher = new geo.ViewStateFetcher(qef, wgs84MapFactory, faceteConceptFactory);
 
@@ -538,7 +542,7 @@
 	myModule.factory('activeMapLinkList', function(appContext) {
 		return {
 		    getMapLinks: function() {
-		        console.log('Called service getMapLinks');
+		        //console.log('Called service getMapLinks');
 				return ns.AppContextUtils.getMapLinks(appContext);
 		    }
 		};	    
@@ -1146,10 +1150,22 @@
         $scope.boxes = {foo: {left: -10, bottom: -10, right: 10, top: 10}};
         
         
-        
+        var refresh;
         
         $scope.$watch('map.center', function(center) {
+            refresh();
+        });
         
+        $scope.$on('facete:refresh', function() {
+            refresh();
+        });
+
+        $scope.$on('facete:constraintsChanged', function() {
+            refresh();
+        });
+
+        
+        refresh = function() {
             var bounds = ns.MapUtils.getExtent($scope.map)
             //console.log('extent', bounds);
             
@@ -1160,6 +1176,8 @@
 
             $scope.map.widget.clearItems();
 
+            
+            var mapLinkIndex = 0;
             
             _(appContext.getWorkSpaces()).each(function(workSpace) {
                 
@@ -1175,6 +1193,9 @@
                     
 
             		_(paths).each(function(path) {
+            		    
+            		    var markerFillColor = markerFillColors[mapLinkIndex];
+            		    
         				var concept = facetConceptGenerator.createConceptResources(path); 
         				
                         //console.log('PAAAAA ' + geoConcept);
@@ -1198,11 +1219,12 @@
 	
 	                    	    _(docs).each(function(doc) {
 	         
-	                    	        $scope.map.widget.addWkt(doc.id, doc.wkt);
+	                    	        $scope.map.widget.addWkt(doc.id, doc.wkt, {fillColor: markerFillColor});
 	                    	    });        	        
 	                	    });
                         });
                         
+                        ++mapLinkIndex;
             		});
                                         
                 });
@@ -1247,7 +1269,7 @@
 //         	    vectors.addFeatures([polygonFeature]);
         	});
 */          
-        });
+        };
     });
     
 	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, $q, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
@@ -1291,9 +1313,9 @@
 		    $scope.refresh();
 		};
 
-		$scope.$on('facete:constraintsChanged', function() {
-		    $scope.refresh();
-		});
+// 		$scope.$on('facete:constraintsChanged', function() {
+// 		    $scope.refresh();
+// 		});
 	    
 	    $scope.refresh = function() {	        
 	        
@@ -1418,6 +1440,8 @@
 
 			item.isActive = paths.contains(path);
 			
+			
+			$scope.$emit('facete:refresh');
 			//console.log('Map Links after activation:', activeMapLinkList.getMapLinks());
 	    };
 	    
@@ -1748,7 +1772,7 @@
 
 		<div class="panel panel-info" style="position: absolute; top: 0px; left: 550px; margin: 5px;"> 
 			<div class="panel-heading">
-				<h4 class="panel-title">Work Spaces</h4>
+				<h4 class="panel-title">Map Links</h4>
 			</div>
 			<div class="panel-body">
 				<tabset>

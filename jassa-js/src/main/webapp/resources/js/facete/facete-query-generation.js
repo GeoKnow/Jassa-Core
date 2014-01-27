@@ -423,16 +423,40 @@
 			var triple; 
 			
 			if(enableOptimization && !hasConstraints && path.isEmpty()) {
-				triple = new rdf.Triple(propertyVar, vocab.rdf.type, vocab.rdf.Property);
+				//triple = new rdf.Triple(propertyVar, vocab.rdf.type, vocab.rdf.Property);
+				
+				var types = [vocab.rdf.Property, vocab.owl.AnnotationProperty, vocab.owl.DatatypeProperty, vocab.owl.ObjectProperty];
+				
+                var v = rdf.NodeFactory.createVar('_x_');
+                var exprVar = new sparql.ExprVar(v);
+				var typeExprs = _(types).map(function(node) {
+				   var nodeValue = sparql.NodeValue.makeNode(node);
+				   var expr = new sparql.E_Equals(exprVar, nodeValue);
+				   return expr;
+				});
+				
+				var filterExpr = sparql.orify(typeExprs); 
+				
+				var triple = new rdf.Triple(propertyVar, vocab.rdf.type, v);
+
+				var element = new sparql.ElementGroup([
+                    new sparql.ElementTriplesBlock([triple]),
+                    new sparql.ElementFilter(filterExpr)
+                ]);
+				
+				//console.log('ELEMENTE' + element);
+				
+                facetElements.push(element);
+				
 			} else {
 				if(!isInverse) {
 					triple = new rdf.Triple(facetVar, propertyVar, objectVar);
 				} else {
 					triple = new rdf.Triple(objectVar, propertyVar, facetVar);
 				}
+	            facetElements.push(new sparql.ElementTriplesBlock([triple]));
 			}
 			
-			facetElements.push(new sparql.ElementTriplesBlock([triple]));
 			
 			
 			if(singleStep) {

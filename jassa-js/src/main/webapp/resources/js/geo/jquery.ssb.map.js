@@ -144,7 +144,10 @@ $.widget("custom.ssbMap", {
 	        	graphicHeight: 31,
 	        	graphicYOffset: -31,
 	        	graphicXOffset: -16,
-	
+
+	        	fillColor: '${fillColor}',
+
+	        	
 //                stroke: true,
 //	            strokeColor: "#0000FF",
 //	            strokeOpacity: 0.8,
@@ -160,7 +163,7 @@ $.widget("custom.ssbMap", {
                 fontWeight: "bold",
                 //labelAlign: "cm",
 //                
-	        	label: "${label}",
+	        	label: '', //"${label}",
 	            //labelXOffset: 0,
 	            labelYOffset: 21
 //	            labelOutlineColor: "#0080FF",
@@ -451,7 +454,24 @@ $.widget("custom.ssbMap", {
 	    
         var feature = this.wktParser.read(wktStr);
         feature.geometry.transform(this.map.displayProjection, this.map.projection);
+        //var geometry = feature.geometry; 
+        //feature.geometry.transform(this.map.displayProjection, this.map.projection);
 
+        /*
+            var newAttrs = OpenLayers.Util.extend(
+                    OpenLayers.Util.extend({}, attrs), {
+                        point: point,
+                        nodeId: id,
+                        label: attrs.abbr,
+                        radius: 12
+                    }
+                );
+
+            var green = OpenLayers.Util.applyDefaults(green, OpenLayers.Feature.Vector.style['default']);
+
+            feature.attributes = newAttrs
+          */
+        feature.attributes = attrs;
         //feature.geometry = g;
                 
         /*
