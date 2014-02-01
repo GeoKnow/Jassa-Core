@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.aksw.jassa</groupId>
+		<artifactId>jassa-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>jassa-core</artifactId>
+	<name>Jassa - Server core</name>
+	<!-- <packaging>js</packaging> -->
+	<description>A JavaScript library for Sparql access</description>
+	<packaging>jar</packaging>
+
+	<build>
+		<plugins>
+<!-- 			<plugin> -->
+<!-- 				Any eclipse problem with the plugin should disappear with m2e 1.1 -->
+<!-- 				<groupId>org.jvnet.jaxb2.maven2</groupId> -->
+<!-- 				<artifactId>maven-jaxb2-plugin</artifactId> -->
+<!-- 				<version>0.8.3</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<goals> -->
+<!-- 							<goal>generate</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 				<configuration> -->
+<!-- 					<source>${maven.compiler.source}</source> -->
+<!-- 					<target>${maven.compiler.target}</target> -->
+<!-- 					<generatePackage>org.aksw.facete.domains.minify_maven_plugin</generatePackage> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+
+		</plugins>
+	</build>
+
+
+	<dependencies>
+ 		<dependency>
+ 			<groupId>org.aksw.jena-sparql-api</groupId>
+ 			<artifactId>jena-sparql-api-core</artifactId>
+ 		</dependency>
+
+
+<!--
+		<dependency>
+			<groupId>org.aksw.jena-sparql-api</groupId>
+			<artifactId>jena-sparql-api-server</artifactId>
+		</dependency>
+-->
+			<dependency>
+				<groupId>org.jgrapht</groupId>
+				<artifactId>jgrapht-core</artifactId>
+			</dependency>
+
+
+
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.aksw.sparqlify</groupId> -->
+<!-- 			<artifactId>sparqlify-core</artifactId> -->
+<!-- 		</dependency> -->
+		
+<!--
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+		</dependency>		
+-->
+	</dependencies>
+
+</project>

@@ -1,4 +1,4 @@
-package org.aksw.jassa.sparql_path.core;
+package org.aksw.jassa.main;
 
 import java.io.IOException;
 import java.sql.SQLException;

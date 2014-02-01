@@ -1,33 +1,5 @@
 package org.aksw.jassa.sparql_path.core;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.Set;
-
-import javax.sql.DataSource;
-
-import org.aksw.commons.util.StreamUtils;
-import org.aksw.jassa.sparql_path.core.algorithm.PathFinderConfig;
-import org.aksw.jassa.sparql_path.core.domain.Step;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-
-import com.google.common.base.Function;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 
 // TODO: Maybe define a path as a sequence of edges?

@@ -30,6 +30,7 @@
 
 	<modules>
 		<!-- <module>jassa-js</module> -->
+		<module>jassa-core</module>
 		<module>jassa-server</module>
 		<module>jassa-debian-tomcat-common</module>
 		<module>jassa-debian-tomcat7</module>
@@ -39,8 +40,8 @@
 	<properties>
 
 		<!-- Dependency Versions -->
-		<!-- Jassa only works with jena-sparql-api version 2.10.0-26 and onwards -->
-		<jena-sparql-api.version>2.10.0-26</jena-sparql-api.version>
+		<!-- Jassa only works with jena-sparql-api version 2.10.0-27 and onwards -->
+		<jena-sparql-api.version>2.10.0-27</jena-sparql-api.version>
 
 		<slf4j.version>1.6.0</slf4j.version>
 		<log4j.version>1.2.14</log4j.version>
@@ -66,6 +67,13 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Self dependencies -->
+			<dependency>
+				<groupId>org.aksw.jassa</groupId>
+				<artifactId>jassa-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.aksw.jassa</groupId>
 				<artifactId>jassa-server</artifactId>
@@ -76,11 +84,11 @@
 
 
 			<!-- Jena SPARQL API -->
-			<!-- <dependency> -->
-			<!-- <groupId>org.aksw.jena-sparql-api</groupId> -->
-			<!-- <artifactId>jena-sparql-api-core</artifactId> -->
-			<!-- <version>${jena-sparql-api.version}</version> -->
-			<!-- </dependency> -->
+			<dependency>
+				<groupId>org.aksw.jena-sparql-api</groupId>
+				<artifactId>jena-sparql-api-core</artifactId>
+				<version>${jena-sparql-api.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.aksw.jena-sparql-api</groupId>
 				<artifactId>jena-sparql-api-server</artifactId>

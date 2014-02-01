@@ -1,4 +1,4 @@
-package org.aksw.jassa.web.main;
+package org.aksw.jassa.main;
 
 import java.util.Collections;
 import java.util.List;
@@ -7,18 +7,18 @@ import java.util.Set;
 import org.aksw.jassa.sparql_path.core.algorithm.ConceptPathFinder;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
 import org.aksw.jassa.sparql_path.core.domain.Path;
-import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
+import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
 
 
 public class TestMain {
     public static void main(String[] args) {
-        CacheFrontend cacheFrontend = WebMvcConfig.createSparqlCache();
-        SparqlServiceFactory sparqlServiceFactory = new SparqlServiceFactoryImpl(cacheFrontend);
+//        CacheFrontend cacheFrontend = WebMvcConfig.createSparqlCache();
+//        SparqlServiceFactory sparqlServiceFactory = new SparqlServiceFactoryImpl(cacheFrontend);
         
         Set<String> defaultGraphs = Collections.emptySet();
-        QueryExecutionFactory qef = sparqlServiceFactory.createSparqlService("http://localhost:8801/sparql", defaultGraphs);
-        //QueryExecutionFactory qef = new QueryExecutionFactoryHttp("http://localhost:8801/sparql");
+        //QueryExecutionFactory qef = sparqlServiceFactory.createSparqlService("http://localhost:8801/sparql", defaultGraphs);
+        QueryExecutionFactory qef = new QueryExecutionFactoryHttp("http://localhost:8801/sparql");
         
         Concept sourceConcept = Concept.create("?s ?p ?o", "s");
         //Concept targetConcept = Concept.create("?x ?s ?y . Filter(regex(str(?s), 'super', 'i'))", "x");
