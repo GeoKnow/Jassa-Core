@@ -182,6 +182,7 @@ public class ConceptPathFinder {
 		
 		
 		//PathCallbackList callback = new PathCallbackList();
+        KShortestPaths<Node, DefaultEdge> kShortestPaths = new KShortestPaths<Node, DefaultEdge>(graph, startVertex, nPaths, maxHops);
 
 		List<GraphPath<Node, DefaultEdge>> candidateGraphPaths = new ArrayList<GraphPath<Node, DefaultEdge>>();
 		for(Node candidate : candidates) {
@@ -192,10 +193,11 @@ public class ConceptPathFinder {
 		        candidateGraphPaths.add(graphPath);
 		    }
 		    else {
-		        KShortestPaths<Node, DefaultEdge> kShortestPaths = new KShortestPaths<Node, DefaultEdge>(graph, startVertex, nPaths, maxHops);
 		        // This code fires an exception if start equals target
 		        List<GraphPath<Node, DefaultEdge>> tmp = kShortestPaths.getPaths(candidate);
-		        candidateGraphPaths.addAll(tmp);
+		        if(tmp != null) {
+		            candidateGraphPaths.addAll(tmp);
+		        }
 		    }
 			
 			//NeighborProvider<Resource> np = new NeighborProviderModel(joinSummaryModel);
