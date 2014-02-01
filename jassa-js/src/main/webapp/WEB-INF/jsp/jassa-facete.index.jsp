@@ -231,6 +231,7 @@
 	var markerStrokeColors = ['#ff8080', '#8080ff', '80ff80'];
 
     var sparqlServiceIri = 'http://localhost/fts-sparql';
+    //var sparqlServiceIri = 'http://dbpedia.org/sparql';
  	//var defaultGraphIris = ['http://dbpedia.org/museums-in-england'];
  	var defaultGraphIris = [];
 
@@ -257,7 +258,9 @@
  	});
 
 	
-	var conceptPathFinderApiUrl = 'http://localhost:8080/jassa/api/path-finding';
+	//var conceptPathFinderApiUrl = 'http://localhost:8080/jassa/api/path-finding';
+	var conceptPathFinderApiUrl = 'http://localhost/jassa/api/path-finding';
+	//var conceptPathFinderApiUrl = 'http://localhost/jassa/api/path-finding';
 
 	
 	var conceptWgs84 = new facete.Concept(sparql.ElementString.create('?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?x ;  <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?y'), rdf.NodeFactory.createVar('s'));

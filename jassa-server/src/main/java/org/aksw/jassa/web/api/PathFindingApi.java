@@ -48,7 +48,7 @@ public class PathFindingApi {
         
         QueryExecutionFactory sparqlService = sparqlServiceFactory.createSparqlService(serviceUri, defaultGraphUris);
 
-        List<Path> paths = ConceptPathFinder.findPaths(sparqlService, sourceConcept, targetConcept);
+        List<Path> paths = ConceptPathFinder.findPaths(sparqlService, sourceConcept, targetConcept, 10, 10);
         
         List<String> tmp = new ArrayList<String>();
         for(Path path : paths) {

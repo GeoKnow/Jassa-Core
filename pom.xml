@@ -109,6 +109,15 @@
 				<scope>runtime</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>org.jgrapht</groupId>
+				<artifactId>jgrapht-core</artifactId>
+<!-- 				<version>0.8.3</version> -->
+<!-- 0.9.0 is so far only deployed in the aksw internal repo (2014-02-01) -->
+				<version>0.9.0</version>
+			</dependency>
+
+
 			<!-- Gson: Java to Json conversion -->
 			<dependency>
 				<groupId>com.google.code.gson</groupId>

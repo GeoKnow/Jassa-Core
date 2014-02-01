@@ -1,14 +1,12 @@
 package org.aksw.jassa.sparql_path.core.algorithm;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.aksw.jassa.sparql_path.core.BreathFirstTask;
-import org.aksw.jassa.sparql_path.core.NeighborProvider;
-import org.aksw.jassa.sparql_path.core.NeighborProviderModel;
-import org.aksw.jassa.sparql_path.core.PathCallbackList;
 import org.aksw.jassa.sparql_path.core.PathConstraint;
 import org.aksw.jassa.sparql_path.core.VocabPath;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
@@ -20,6 +18,11 @@ import org.aksw.jassa.sparql_path.utils.VarUtils;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.aksw.jena_sparql_api.utils.GeneratorBlacklist;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.KShortestPaths;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.GraphPathImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +34,10 @@ import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sdb.core.Generator;
 import com.hp.hpl.jena.sdb.core.Gensym;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
@@ -41,6 +46,21 @@ import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.PatternVars;
+
+class GraphPathComparator<V, E>
+    implements Comparator<GraphPath<V, E>> {
+
+    @Override
+    public int compare(
+            GraphPath<V, E> a,
+            GraphPath<V, E> b) {
+        int x = a.getEdgeList().size();
+        int y = b.getEdgeList().size();
+        
+        return x - y;
+    }
+    
+}
 
 public class ConceptPathFinder {
  
@@ -55,7 +75,7 @@ public class ConceptPathFinder {
 		return result;
 	}
 	
-	public static List<Path> findPaths(QueryExecutionFactory qef, Concept sourceConcept, Concept tmpTargetConcept) {
+	public static List<Path> findPaths(QueryExecutionFactory qef, Concept sourceConcept, Concept tmpTargetConcept, int nPaths, int maxHops) {
 
 		
 		Concept targetConcept = tmpTargetConcept.makeDistinctFrom(sourceConcept);
@@ -137,22 +157,95 @@ public class ConceptPathFinder {
 		
 		//DataSource ds = BreathFirstTask.createDb();
 		
+
+		// Convert the join summary to a jGraphT object
+        Node startVertex = VocabPath.start.asNode();
+		DefaultDirectedGraph<Node, DefaultEdge> graph = new DefaultDirectedGraph<Node, DefaultEdge>(DefaultEdge.class);
+
 		
-		PathCallbackList callback = new PathCallbackList();
+		graph.addVertex(startVertex);
+		
+		//graph.addVertex(startVertex);
+		StmtIterator itStmt = joinSummaryModel.listStatements(null, VocabPath.joinsWith, (RDFNode)null);
+		while(itStmt.hasNext()) {
+		    Statement stmt = itStmt.next();
+		    
+		    Node s = stmt.getSubject().asNode();
+		    Node o = stmt.getObject().asNode();
+		
+		    //System.out.println(s + " --- " + s.equals(startVertex));
 
-		for(Node candidate : candidates) {
-			Resource dest = joinSummaryModel.asRDFNode(candidate).asResource();
-			
-			
-			
-			NeighborProvider<Resource> np = new NeighborProviderModel(joinSummaryModel);
-
-			BreathFirstTask.run(np, VocabPath.start, dest, new ArrayList<Step>(), callback);
-			//BreathFirstTask.runFoo(np, VocabPath.start, dest, new ArrayList<Step>(), new ArrayList<Step>(), callback);
+		    graph.addVertex(s);
+		    graph.addVertex(o);
+		    graph.addEdge(s, o);
 		}
 		
 		
-		List<Path> paths = callback.getCandidates();
+		//PathCallbackList callback = new PathCallbackList();
+
+		List<GraphPath<Node, DefaultEdge>> candidateGraphPaths = new ArrayList<GraphPath<Node, DefaultEdge>>();
+		for(Node candidate : candidates) {
+			//Resource dest = joinSummaryModel.asRDFNode(candidate).asResource();
+			
+		    if(startVertex.equals(candidate)) {
+		        GraphPath<Node, DefaultEdge> graphPath = new GraphPathImpl<Node, DefaultEdge>(graph, startVertex, candidate, new ArrayList<DefaultEdge>(), 0.0);
+		        candidateGraphPaths.add(graphPath);
+		    }
+		    else {
+		        KShortestPaths<Node, DefaultEdge> kShortestPaths = new KShortestPaths<Node, DefaultEdge>(graph, startVertex, nPaths, maxHops);
+		        // This code fires an exception if start equals target
+		        List<GraphPath<Node, DefaultEdge>> tmp = kShortestPaths.getPaths(candidate);
+		        candidateGraphPaths.addAll(tmp);
+		    }
+			
+			//NeighborProvider<Resource> np = new NeighborProviderModel(joinSummaryModel);
+
+
+			//BreathFirstTask.run(np, VocabPath.start, dest, new ArrayList<Step>(), callback);
+			//BreathFirstTask.runFoo(np, VocabPath.start, dest, new ArrayList<Step>(), new ArrayList<Step>(), callback);
+		}
+		
+		Collections.sort(candidateGraphPaths, new GraphPathComparator<Node, DefaultEdge>());
+		
+		
+		// Convert the graph paths to 'ConceptPaths'
+		List<Path> paths = new ArrayList<Path>();
+		for(GraphPath<Node, DefaultEdge> graphPath : candidateGraphPaths) {
+		    
+		    Node current = graphPath.getStartVertex();
+		    
+		    List<Step> steps = new ArrayList<Step>();
+		    
+		    for(DefaultEdge edge : graphPath.getEdgeList()) {
+		        Node source = graph.getEdgeSource(edge);
+		        Node target = graph.getEdgeTarget(edge);
+		        
+		        boolean isInverse;
+		        
+		        if(current.equals(source)) { 
+		            current = target;
+		            isInverse = false;
+		        }
+		        else if(current.equals(target)) {
+		            current = source;
+                    isInverse = true;
+                }
+		        else {
+		            throw new RuntimeException("Should not happen");
+		        }
+
+		        String propertyName = current.getURI();
+		        Step step = new Step(propertyName, isInverse);
+		        
+		        steps.add(step);		        
+		    }
+		    
+		    Path path = new Path(steps);
+		    paths.add(path);
+		}
+		
+		
+		//List<Path> paths = callback.getCandidates();
 		
 		// Cross check whether the path actually connects the source and target concepts
 		Set<String> varNames = new HashSet<String>();

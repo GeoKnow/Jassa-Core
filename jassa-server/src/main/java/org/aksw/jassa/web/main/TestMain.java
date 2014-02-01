@@ -32,7 +32,7 @@ public class TestMain {
 
         Concept targetConcept = Concept.create("?g ?y ?x . Filter(?y = <http://www.w3.org/2003/01/geo/wgs84_pos#lat> || ?y = <http://www.w3.org/2003/01/geo/wgs84_pos#long>)", "g");
         
-        List<Path> paths = ConceptPathFinder.findPaths(qef, sourceConcept, targetConcept);
+        List<Path> paths = ConceptPathFinder.findPaths(qef, sourceConcept, targetConcept, 10, 10);
         
         System.out.println("Got " + paths.size() + " results:");
         for(Path path : paths) {

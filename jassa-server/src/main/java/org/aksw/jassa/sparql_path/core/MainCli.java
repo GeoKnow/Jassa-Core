@@ -66,11 +66,13 @@ public class MainCli {
 
 		Concept tmpTargetConcept = Concept.create("?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?lon ; <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat", "s");
 	
-		ConceptPathFinder.findPaths(qef, sourceConcept, tmpTargetConcept);
+		ConceptPathFinder.findPaths(qef, sourceConcept, tmpTargetConcept, 10, 10);
 	}
 
 	public static void main(String[] args) throws IOException, SQLException {
-		QueryExecutionFactory qef = new QueryExecutionFactoryHttp("http://localhost:8810/sparql");
+	    String sparqlServiceIri = "http://fp7-pp.publicdata.eu/sparql";
+	    //String sparqlServiceIri = "http://localhost:8810/sparql";
+		QueryExecutionFactory qef = new QueryExecutionFactoryHttp(sparqlServiceIri);
 				
 
 		Concept sourceConcept = Concept.create("?s ?_p_ ?_o_", "s");
@@ -78,7 +80,7 @@ public class MainCli {
 
 		Concept tmpTargetConcept = Concept.create("?s <http://www.w3.org/2003/01/geo/wgs84_pos#long> ?lon ; <http://www.w3.org/2003/01/geo/wgs84_pos#lat> ?lat", "s");
 	
-		List<Path> paths = ConceptPathFinder.findPaths(qef, sourceConcept, tmpTargetConcept);
+		List<Path> paths = ConceptPathFinder.findPaths(qef, sourceConcept, tmpTargetConcept, 10, 10);
 		System.out.println(paths);
 	}
 
