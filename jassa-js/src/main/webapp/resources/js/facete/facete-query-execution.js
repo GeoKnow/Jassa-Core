@@ -92,7 +92,7 @@
             baseData.limit = limit;
             baseData.offset = offset;
 
-debugger;
+
             var filterString = this.pathToFilterString.get(path);
             var baseFlow = this.facetService.createFlow(path, isInverse, filterString);
 

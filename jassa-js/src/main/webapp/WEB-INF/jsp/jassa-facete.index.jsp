@@ -104,6 +104,10 @@
         background-image: linear-gradient(to bottom, #CCCCFF, #EEEEFF);
     }
     
+    .nav-tabs {
+		background-color: #eeeeff;
+    }
+    
     .modal {
     	display: block;
     	height: 0;
@@ -340,6 +344,203 @@
                 element.css('visibility', visible ? 'visible' : 'hidden');
             });
         };
+    });
+    
+    
+    
+    
+
+    //'sparqlService', 'facetTreeConfig', sparqlService, facetTreeConfig
+	myModule.controller('FacetTreeCtrl2', ['$rootScope', '$scope', '$q', function($rootScope, $scope, $q) {
+
+	    var self = this;
+	    
+	    
+	    var updateFacetTreeService = function() {
+	        var isConfigured = $scope.sparqlService && $scope.facetTreeConfig;
+	        //debugger;
+	        $scope.facetTreeService = isConfigured ? ns.FaceteUtils.createFacetTreeService($scope.sparqlService, $scope.facetTreeConfig, labelMap) : null; 
+	    };
+
+	    var update = function() {
+	      	updateFacetTreeService();
+	      	//controller.refresh();
+	      	self.refresh();
+	    };
+
+	    $scope.$watch('sparqlService', function() {
+	        console.log('args', $scope.sparqlService);
+	        update();
+	    });
+	    
+	    $scope.$watch('facetTreeConfig', function() {
+	        console.log('args', $scope.facetTreeConfig);
+	        update();
+	    });
+	    	    
+	    
+		$scope.doFilter = function(path, filterString) {
+		    $scope.facetTreeConfig.getPathToFilterString().put(path, filterString);
+		    self.refresh();
+		};
+
+	    self.refresh = function() {	        
+	    	        
+	        var facet = $scope.facet;
+	        var startPath = facet ? facet.item.getPath() : new facete.Path();
+
+	        if($scope.facetTreeService) {
+	        
+				var facetTreeTagger = ns.FaceteUtils.createFacetTreeTagger($scope.facetTreeConfig.getPathToFilterString());
+
+		        //console.log('scopefacets', $scope.facet);		        
+				var promise = $scope.facetTreeService.fetchFacetTree(startPath);
+		        
+				sponate.angular.bridgePromise(promise, $q.defer(), $rootScope).then(function(data) {			    
+				    facetTreeTagger.applyTags(data);
+					$scope.facet = data;
+				});
+
+	        } else {
+	            $scope.facet = null;
+	        }
+		};
+				
+		$scope.toggleCollapsed = function(path) {
+			util.CollectionUtils.toggleItem($scope.facetTreeConfig.getExpansionSet(), path);
+			
+			var val = $scope.facetTreeConfig.getExpansionMap().get(path);
+			if(val == null) {
+			    $scope.facetTreeConfig.getExpansionMap().put(path, 1);
+			}
+			
+			self.refresh();
+		};
+		
+		$scope.selectIncoming = function(path) {
+		    console.log('Incoming selected at path ' + path);
+		    if($scope.facetTreeConfig) {
+		        var val = $scope.facetTreeConfig.getExpansionMap().get(path);
+		        if(val != 2) {
+		        	$scope.facetTreeConfig.getExpansionMap().put(path, 2);		    
+		    		self.refresh();
+		        }
+		    }
+		};
+		
+		$scope.selectOutgoing = function(path) {
+		    console.log('Outgoing selected at path ' + path);
+		    if($scope.facetTreeConfig) {
+		        var val = $scope.facetTreeConfig.getExpansionMap().get(path);
+		        if(val != 1) {
+		        	$scope.facetTreeConfig.getExpansionMap().put(path, 1);		    
+		    		self.refresh();
+		        }
+		    }
+		};
+		
+		
+		$scope.selectFacetPage = function(page, facet) {
+			var path = facet.item.getPath();
+            var state = $scope.facetTreeConfig.getFacetStateProvider().getFacetState(path);
+            var resultRange = state.getResultRange();
+            
+            console.log('Facet state for path ' + path + ': ' + state);
+			var limit = resultRange.getLimit() || 0;
+			
+			var newOffset = limit ? (page - 1) * limit : null;
+			
+			resultRange.setOffset(newOffset);
+			
+			self.refresh();
+		};
+		
+		$scope.toggleSelected = function(path) {
+		    $scope.onSelect({path: path});
+		};
+		
+		$scope.toggleTableLink = function(path) {
+			//$scope.emit('facete:toggleTableLink');
+		    tableMod.togglePath(path);
+		    
+		    //$scope.$emit('')
+		    //alert('yay' + JSON.stringify(tableMod.getPaths()));
+		    
+		    $scope.$emit('facete:refresh');
+		    
+// 		    var columnDefs = tableMod.getColumnDefs();
+// 		    _(columnDefs).each(function(columnDef) {
+		        
+// 		    });
+		    
+// 		    tableMod.addColumnDef(null, new ns.ColumnDefPath(path));
+		    //alert('yay ' + path);
+		};
+		
+// 		$scope.$on('facete:refresh', function() {
+// 		    $scope.refresh();
+// 		});
+	}]);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /**
+     * The actual dependencies are:
+     * - sparqlServiceFactory
+     * - facetTreeConfig
+     * - labelMap (maybe this should be part of the facetTreeConfig) 
+     */    
+    myModule.directive('facetTree', function($parse) {
+	    return {
+	        restrict: 'EA',
+	        replace: true,        
+	        templateUrl: 'facet-tree-item.html',
+	        transclude: false,
+			require: 'facetTree',
+	        scope: {
+	            sparqlService: '=',
+	            facetTreeConfig: '=',
+	            onSelect: '&select'
+	        },
+	        controller: 'FacetTreeCtrl2',
+	        compile: function(elm, attrs) {
+				return function postLink(scope, elm, attrs, controller) {
+				    
+// 				    var updateFacetTreeService = function() {
+// 				        var isConfigured = scope.sparqlService && scope.facetTreeConfig;
+// 				        scope.facetTreeService = isConfigured ? ns.FaceteUtils.createFacetTreeService(scope.sparqlService, scope.facetTreeConfig, labelMap) : null; 
+// 				    };
+				    
+// 				    var update = function() {
+// 				      	updateFacetTreeService();
+// 				      	controller.refresh();
+// 				    };
+
+// 				    scope.$watch('sparqlService', function() {
+// 				        console.log('args', scope.sparqlService, arguments);
+// 				        update();
+// 				    });
+				    
+// 				    scope.$watch('facetTreeConfig', function() {
+// 				        console.log('args', scope.facetTreeConfig, arguments);
+// 				        update();
+// 				    });
+
+// 				    console.log('Parent scope:', scope.$parent);
+// 				    console.log('Parent ss:', scope.$parent.sparqlService);
+// 				    console.log('Parent ftc:', scope.$parent.facetTreeConfig);
+// 				    console.log('Child ss:', scope.sparqlService);
+// 				    console.log('Child ftc:', scope.facetTreeConfig);
+// 				    console.log('Controller:', controller);
+				};
+			}
+	    };
     });
     
 
@@ -1014,9 +1215,16 @@
 	    };
 	};
 	    
+	
+	
+	
     myModule.controller('CreateTableCtrl', function($scope, $modal, $log) {
-        /*
+
         $scope.columns = [];
+        
+        //var tableMod = new facete.T
+        
+        
         //$scope.sortDirections = [];
 
 //         $scope.columns = [{
@@ -1100,6 +1308,8 @@
 
         
         $scope.refresh = function() {
+            return; //TODO Finish
+            
             var paths = tableMod.getPaths().getArray();
             
             var columns = _(paths).map(function(path) {
@@ -1125,7 +1335,7 @@
 		$scope.$on('facete:refresh', function() {
 		    $scope.refresh();
 		});
-*/
+
     });
 	 
     
@@ -1296,7 +1506,8 @@
 */          
         };
     });
-    
+
+
 	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, $q, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
 
 	    // TODO Get rid of the service boilerplate
@@ -1607,6 +1818,24 @@
         };
     });
 
+    
+    
+    myModule.controller('TestCtrl', ['$scope', function($scope) {
+        
+// 		Alternative set up
+//         $scope.facetTree = {
+//             sparqlService = new service.SparqlServiceHttp('http://localhost/fts-sparql'),
+//             config = new ns.FacetTreeConfig()
+//         };
+        
+        $scope.sparqlService = new service.SparqlServiceHttp('http://localhost/fts-sparql');
+        $scope.facetTreeConfig = new ns.FacetTreeConfig();
+        
+        $scope.selectFacet = function(path) {
+            alert('selectFacet: ' + path);
+        };
+    }]);
+    
 	</script>
 
 
@@ -1743,6 +1972,13 @@
 		 
 	 	<div style="position: absolute; top: 0px; left: 0px; width: 470px; max-height: 100%; overflow: auto; margin: 5px;">
 
+<div class="panel panel-info">
+	<div class="panel-heading">
+		<h4 class="panel-title">Facet Tree</h4>
+	</div>
+	<facet-tree ng-controller="TestCtrl" sparql-service="sparqlService" facet-tree-config="facetTreeConfig" select="selectFacet(path)" />
+</div>
+
 						<div class="panel panel-info" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
 							<div class="panel-heading">
     							<h4 class="panel-title">Work Spaces</h4>
@@ -1841,31 +2077,6 @@
 
 		</div>			
 
-		<div style="display: none; position: absolute; top: 0px; left: 30%; width: 20%; height: 10%;">
-			
-<!-- 			        	<div ng-controller="FacetTreeSearchCtrl"> -->
-<!-- 			        		<input type="search" ng-model="searchText" /><button>Search</button> -->
-<!-- 			        		<ul> -->
-<!-- 			        			<li ng-repeat="item in items">{{item.name}} - {{item.geoConcept}}</li> -->
-<!-- 			        		</ul> -->
-<!-- 			        	</div> -->
-			        
-						<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
-						    <table>
-							    <tr><th ng-repeat="column in columns">
-								
-								    <a href="" ng-click="removeColumn($index)"><span ng-show="column.isRemoveable" class="glyphicon glyphicon-remove-circle"></span></a>
-								    {{column.displayName}}
-								    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
-					
-									<a href="" ng-visible="column.isSortable && column.sortDirection >= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? 1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-up"></span></a>
-									<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
-							    </th></tr>		
-						    </table>
-						</div>	        
-		
-		</div>
-
 <!-- 		<div ssb-map style="position: absolute; z-index:-9999; top: 0px; left: 0px; width: 100%; height: 100%;" ng-controller="MapCtrl"></div> -->
 
 		<div class="panel panel-info" style="position: absolute; top: 0px; left: 550px; margin: 5px;"> 
@@ -1898,6 +2109,35 @@
 				</tabset>
 			</div>
   		</div>
+
+
+		<div class="panel panel-info" style="position: absolute; bottom: 0px; left: 550px; margin: 5px; width: 50%; max-height: 30%;">
+			<div class="panel-heading">
+				<h4 class="panel-title">Data</h4>
+			</div>
+			
+<!-- 			        	<div ng-controller="FacetTreeSearchCtrl"> -->
+<!-- 			        		<input type="search" ng-model="searchText" /><button>Search</button> -->
+<!-- 			        		<ul> -->
+<!-- 			        			<li ng-repeat="item in items">{{item.name}} - {{item.geoConcept}}</li> -->
+<!-- 			        		</ul> -->
+<!-- 			        	</div> -->
+			        
+						<div ng-controller="CreateTableCtrl" data-ng-init="refresh()">
+						    <table>
+							    <tr><th ng-repeat="column in columns">
+								
+								    <a href="" ng-click="removeColumn($index)"><span ng-show="column.isRemoveable" class="glyphicon glyphicon-remove-circle"></span></a>
+								    {{column.displayName}}
+								    <a href="" ng-click="configureColumn($index)"><span ng-show="column.isConfigureable" class="glyphicon glyphicon-edit"></span></a>
+					
+									<a href="" ng-visible="column.isSortable && column.sortDirection >= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? 1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-up"></span></a>
+									<a href="" ng-visible="column.isSortable && column.sortDirection <= 0" ui-keydown="{shift: 'shiftPressed=true'}" ui-keyup="{shift: 'shiftPressed=false'}" ng-click="sortColumn($index, (column.sortDirection == 0 ? -1 : 0), shiftPressed)"><span ng-show="column.isSortable" class="glyphicon glyphicon-arrow-down"></span></a>
+							    </th></tr>		
+						    </table>
+						</div>	        
+		
+		</div>
 
 
 		<div style="position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index:-9999" ng-controller="MapCtrl">
