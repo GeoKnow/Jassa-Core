@@ -327,7 +327,7 @@
             if(requireSubQuery) {
 
 
-	            if(concept && !concept.isSubjectConcept()) {
+	            if(concept && (isLeftJoin || !concept.isSubjectConcept())) {
 	                var conceptElement = concept.getElement();
                     var conceptVar = concept.getVar();
 	                 
@@ -406,8 +406,6 @@
 				//var orderBys = subQuery.getOrderBy();
 				//orderBys.push.apply(orderBys, sortConditions);
 
-				//console.log('innerElement: ' + innerElement);
-				//console.log('outerElement: ' + outerElement);
 				
 				innerElement = subQuery;
 			}
@@ -423,6 +421,11 @@
                 pattern: pattern,
                 criteria: criteria
             };
+            
+            console.log('innerElement: ' + innerElement);
+            console.log('outerElement: ' + outerElement);
+            
+
             
             return result;
 		},

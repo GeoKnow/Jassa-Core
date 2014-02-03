@@ -9,9 +9,10 @@
 	
 	
 	ns.FacetTreeServiceImpl = Class.create({
-		initialize: function(facetService, expansionSet, facetStateProvider, pathToFilterString) { //facetStateProvider) {
+		initialize: function(facetService, expansionSet, expansionMap, facetStateProvider, pathToFilterString) { //facetStateProvider) {
 			this.facetService = facetService;
 			this.expansionSet = expansionSet;
+			this.expansionMap = expansionMap;
 			this.facetStateProvider = facetStateProvider;
 
 			this.pathToFilterString = pathToFilterString;
@@ -60,6 +61,95 @@
 		
 		
 		
+		/**
+		 * Returns Promise<List<FacetItem>>
+		 * 
+		 */
+		fetchFacetTreeChildren: function(path, isInverse) {
+
+		    var baseData = {
+		            path: path,
+		            children: [],
+		            limit: null,
+		            offset: null
+		    };
+		        
+            //baseData.children = [];
+            
+            var limit = null;
+            var offset = null;
+
+            var state = this.facetStateProvider.getFacetState(path);
+            
+            if(state) {
+                var resultRange = state.getResultRange();
+                
+                limit = resultRange.getLimit();
+                offset = resultRange.getOffset() || 0;
+            }
+
+
+            baseData.limit = limit;
+            baseData.offset = offset;
+
+debugger;
+            var filterString = this.pathToFilterString.get(path);
+            var baseFlow = this.facetService.createFlow(path, isInverse, filterString);
+
+            var countPromise = baseFlow.count();
+            
+            //var countPromise = this.facetService.fetchFacetCount(path, false);
+            //var childFacetsPromise = this.facetService.fetchFacets(path, false, limit, offset);
+            
+            var dataFlow = baseFlow.skip(offset).limit(limit);
+            
+            // TODO How to decide whether to fetch forward or backward facets?
+            
+            //var childFacetsPromise = this.facetService.fetchFacetsFromFlow(dataFlow, path, false);
+            //var childFacetsPromise = this.facetService.fetchFacetsFromFlow(dataFlow, pathHead.getPath(), pathHead.isInverse());
+            var childFacetsPromise = this.facetService.fetchFacetsFromFlow(dataFlow, path, isInverse);
+
+
+            var promises = [countPromise, childFacetsPromise];
+            
+             
+            var result = $.Deferred();
+            var self = this;
+            $.when.apply(window, promises).pipe(function(childFacetCount, facetItems) {
+//console.log('facetItems:', facetItems);
+                baseData.childFacetCount = childFacetCount;
+                
+                var o = limit ? Math.floor((offset || 0) / limit) : 0; 
+                
+                baseData.pageIndex = 1 + o;
+                baseData.pageCount = 1 + (limit ? Math.floor(childFacetCount / limit) : 0);
+                
+                var childPromises = _(facetItems).map(function(facetItem) {
+                    var path = facetItem.getPath();
+
+                    var childPromise = self.fetchFacetTreeRec(path, facetItem);
+                    //.pipe(function(childItem) {
+                    //});
+
+                    return childPromise;
+                });
+
+                
+                $.when.apply(window, childPromises).done(function() {
+                    _(arguments).each(function(childItem) {
+                        baseData.children.push(childItem);
+                    });
+
+                    result.resolve(baseData);
+                }).fail(function() {
+                    result.fail();
+                });
+                
+            });                
+		  
+            return result;
+		},
+		
 	    /**
          * Given a path, this method fetches all child facets at its target location.
          * 
@@ -73,96 +163,56 @@
 		fetchFacetTreeRec: function(path, parentFacetItem) {
 
 		    var isExpanded = this.expansionSet.contains(path);
-            
+		    var expansionState = this.expansionMap.get(path);
+
+		    var isOutgoingActive = (expansionState & 1) != 0;
+		    var isIncomingActive = (expansionState & 2) != 0;
 
             // This is the basic information returned for non-expanded facets
             var baseData = {
                 item: parentFacetItem,
                 isExpanded: isExpanded,
+                expansionState: expansionState,
+                isOutgoingActive: isOutgoingActive,
+                isIncomingActive: isIncomingActive, 
                 //state: facetState,
-                children: null,                    
+                incoming: null,
+                outgoing: null
             };
 
+//            if(isIncomingActive) {
+//                console.log('WHAAAAAAAAAAT?');
+//            }
             
             var self = this;
             
             
             var result = $.Deferred();
             
-            
-            // If the facet is expanded,
-            // fetch the count of sub facets together with the facets in the range of limit and offset
+            var promises = [];
+
             if(isExpanded) {
                 
-                baseData.children = [];
-            
-                var limit = null;
-                var offset = null;
-    
-                var state = this.facetStateProvider.getFacetState(path);
-                
-                if(state) {
-                    var resultRange = state.getResultRange();
+                if(isOutgoingActive) { // outgoing
+                    var promise = this.fetchFacetTreeChildren(path, false).pipe(function(childData) {
+                       baseData.outgoing = childData; 
+                    });
                     
-                    limit = resultRange.getLimit();
-                    offset = resultRange.getOffset() || 0;
+                    promises.push(promise);
                 }
-    
-
-                baseData.limit = limit;
-                baseData.offset = offset;
-
-
-                var filterString = this.pathToFilterString.get(path);
-                var baseFlow = this.facetService.createFlow(path, false, filterString);
-
-                var countPromise = baseFlow.count();
                 
-                //var countPromise = this.facetService.fetchFacetCount(path, false);
-                //var childFacetsPromise = this.facetService.fetchFacets(path, false, limit, offset);
-                
-                var dataFlow = baseFlow.skip(offset).limit(limit);
-                
-                var childFacetsPromise = this.facetService.fetchFacetsFromFlow(dataFlow, path, false);
-                
-                var promises = [countPromise, childFacetsPromise];
-                
-                $.when.apply(window, promises).done(function(childFacetCount, facetItems) {
-//console.log('facetItems:', facetItems);
-                    baseData.childFacetCount = childFacetCount;
-                    
-                    var o = limit ? Math.floor((offset || 0) / limit) : 0; 
-                    
-                    baseData.pageIndex = 1 + o;
-                    baseData.pageCount = 1 + (limit ? Math.floor(childFacetCount / limit) : 0);
-                    
-                    var childPromises = _(facetItems).map(function(facetItem) {
-                        var path = facetItem.getPath();
-
-                        var childPromise = self.fetchFacetTreeRec(path, facetItem);
-                        //.pipe(function(childItem) {
-                        //});
-
-                        return childPromise;
+                if(isIncomingActive) { // incoming
+                    var promise = this.fetchFacetTreeChildren(path, true).pipe(function(childData) {
+                       baseData.incoming = childData; 
                     });
-
-                    
-                    $.when.apply(window, childPromises).done(function() {
-                        _(arguments).each(function(childItem) {
-                            baseData.children.push(childItem);
-                        });
-
-                        result.resolve(baseData);
-                    }).fail(function() {
-                        result.fail();
-                    });
-                    
-                });                
+                    promises.push(promise);
+                }
             }
-            else {
+            
+            $.when.apply(window, promises).done(function() {
                 result.resolve(baseData);
-            }
-		    
+            });
+            
             return result.promise();
 		},
 		

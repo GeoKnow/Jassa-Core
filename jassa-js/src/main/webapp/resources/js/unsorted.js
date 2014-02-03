@@ -109,12 +109,19 @@
         var result = new ns.FacetConfig(baseConcept, rootFacetNode, constraintManager);
         return result;
     };
-    
+
+    /**
+     * 
+     * ExpansionSet: Whether a path is expanded at all
+     * ExpansionMap: If a path is expanded, whether to fetch the incoming or outgoing properties or both
+     * 
+     */
     ns.FacetTreeConfig = Class.create({
-        initialize: function(facetConfig, labelMap, expansionSet, facetStateProvider, pathToFilterString) {
+        initialize: function(facetConfig, labelMap, expansionSet, expansionMap, facetStateProvider, pathToFilterString) {
             this.facetConfig = facetConfig || ns.FacetConfig.createDefaultFacetConfig();
             this.labelMap = labelMap; // TODO Use some default
             this.expansionSet = expansionSet || new util.HashSet();
+            this.expansionMap = expansionMap || new util.HashMap();
             this.facetStateProvider = facetStateProvider || new facete.FacetStateProviderImpl(10);
             this.pathToFilterString = pathToFilterString || new util.HashMap();
         },
@@ -129,6 +136,10 @@
         
         getExpansionSet: function() {
             return this.expansionSet;
+        },
+
+        getExpansionMap: function() {
+            return this.expansionMap;
         },
         
         getFacetStateProvider: function() {
@@ -186,11 +197,12 @@
             var facetService = this.createFacetService(sparqlService, facetTreeConfig.getFacetConfig(), labelMap);
             
             var expansionSet = facetTreeConfig.getExpansionSet();
+            var expansionMap = facetTreeConfig.getExpansionMap();
             var facetStateProvider = facetTreeConfig.getFacetStateProvider();
             var pathToFilterString = facetTreeConfig.getPathToFilterString();
             
 
-            var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet, facetStateProvider, pathToFilterString);
+            var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet, expansionMap, facetStateProvider, pathToFilterString);
 
             return facetTreeService;
 

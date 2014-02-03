@@ -6,7 +6,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
 	<title>Facete Example: DBpedia</title>
-	<link rel="stylesheet" href="resources/css/bootstrap-2.3.2-pagination.css" />
+<!-- 	<link rel="stylesheet" href="resources/css/bootstrap-2.3.2-pagination.css" /> -->
 <!-- 	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/2.3.2/css/bootstrap.min.css" /> -->
 	<link rel="stylesheet" href="resources/libs/twitter-bootstrap/3.0.1/css/bootstrap.min.css" />
 	
@@ -166,8 +166,12 @@
 
 <!-- 	<script src="resources/libs/angularjs/1.0.8/angular.js"></script> -->
 <!-- 	<script src="resources/libs/angularjs/1.2.0-rc.2/angular.js"></script>	 -->
-	<script src="resources/libs/angularjs/1.2.0-rc.3/angular.js"></script>	
-	<script src="resources/libs/angular-ui/0.7.0/ui-bootstrap-tpls-0.7.0.js"></script>
+<!-- 	<script src="resources/libs/angularjs/1.2.0-rc.3/angular.js"></script> -->
+	<script src="resources/libs/angularjs/1.2.10/angular.js"></script>
+	
+		
+<!-- 	<script src="resources/libs/angular-ui/0.7.0/ui-bootstrap-tpls-0.7.0.js"></script> -->
+	<script src="resources/libs/angular-ui/0.10.0/ui-bootstrap-tpls-0.10.0.js"></script>
 	<script src="resources/libs/ui-router/0.2.0/angular-ui-router.js"></script>
 
 	<script src="resources/libs/monsur-jscache/2013-12-02/cache.js"></script>
@@ -875,7 +879,6 @@
 			    ]};
 			}
 			var baseFlow = labelsStore.find(criteria).concept(concept, true);
-			    
 
 			var countPromise = baseFlow.count();
 			
@@ -1365,8 +1368,36 @@
 		$scope.toggleCollapsed = function(path) {
 			util.CollectionUtils.toggleItem(facetTreeConfig.getExpansionSet(), path);
 			
+			var val = facetTreeConfig.getExpansionMap().get(path);
+			if(val == null) {
+			    facetTreeConfig.getExpansionMap().put(path, 1);
+			}
+			
 			$scope.refresh();
 		};
+		
+		$scope.selectIncoming = function(path) {
+		    console.log('Incoming selected at path ' + path);
+		    if(facetTreeConfig) {
+		        var val = facetTreeConfig.getExpansionMap().get(path);
+		        if(val != 2) {
+		        	facetTreeConfig.getExpansionMap().put(path, 2);		    
+		    		$scope.refresh();
+		        }
+		    }
+		};
+		
+		$scope.selectOutgoing = function(path) {
+		    console.log('Outgoing selected at path ' + path);
+		    if(facetTreeConfig) {
+		        var val = facetTreeConfig.getExpansionMap().get(path);
+		        if(val != 1) {
+		        	facetTreeConfig.getExpansionMap().put(path, 1);		    
+		    		$scope.refresh();
+		        }
+		    }
+		};
+		
 		
 		$scope.selectFacetPage = function(page, facet) {
 			var path = facet.item.getPath();
@@ -1578,6 +1609,32 @@
 
 	</script>
 
+
+	<script type="text/ng-template" id="facet-dir-content.html">
+
+		<!-- ng-show="dirset.pageCount > 1 || dirset.children.length > 5" -->
+        		        <div style="width:100%; background-color: #eeeeff;">
+				    		<div style="padding-right: 16px; padding-left: {{16 * (dirset.item.path.getLength() + 1)}}px">
+		<form ng-submit="doFilter(dirset.path, dirset.filter.filterString)">
+								<div class="input-group">
+                            		<input type="text" class="form-control" placeholder="Filter" ng-model="dirset.filter.filterString" value="{{dirset.filter.filterString}}" />
+                            		<span class="input-group-btn">
+                                <button type="submit" class="btn btn-default">Filter</button>
+                            		</span>
+								</div>			    	    
+		</form>
+				    		</div>
+                		</div>
+
+                		<div ng-show="dirset.pageCount != 1" style="width:100%; background-color: #eeeeff">
+    		         		<pagination style="padding-left: {{16 * (dirset.item.getPath().getLength() + 1)}}px" class="pagination pagination-sm" max-size="7" total-items="dirset.childFacetCount" page="dirset.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
+                		</div>
+
+			    		<span ng-show="dirset.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (dirset.path.getLength() + 1)}}px">(no entries)</span>
+
+ 			    		<div style="padding-left: {{16 * (dirset.path.getLength() + 1)}}px" ng-repeat="facet in dirset.children" ng-include="'facet-tree-item.html'"></div>
+	</script>
+
 	<script type="text/ng-template" id="facet-tree-item.html">
 		<div ng-class="{'frame': facet.isExpanded}">
 			<div class="facet-row" ng-class="{'highlite': facet.isExpanded}" ng-mouseover="facet.isHovered=true" ng-mouseleave="facet.isHovered=false">
@@ -1595,32 +1652,46 @@
 
 				<span style="float: right" class="badge">{{facet.item.getDistinctValueCount()}}</span>	
 			</div>
-			<div ng-show="facet.isExpanded" style="width:100%"> 
+			<div ng-if="facet.isExpanded" style="width:100%"> 
 
-<!-- ng-show="facet.pageCount > 1 || facet.children.length > 5" -->
-                <div style="width:100%; background-color: #eeeeff;">
-				    <div style="padding-right: 16px; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">
-<form ng-submit="doFilter(facet.item.getPath(), facet.filter.filterString)">
-						<div class="input-group">
-                            <input type="text" class="form-control" placeholder="Filter" ng-model="facet.filter.filterString" value="{{facet.filter.filterString}}" />
-                            <span class="input-group-btn">
-                                <button type="submit" class="btn btn-default">Filter</button>
-                            </span>
-						</div>			    	    
-</form>
-				    </div>
-                </div>
-
-                <div ng-show="facet.pageCount != 1" style="width:100%; background-color: #eeeeff">
-    		         <pagination style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" class="pagination-mini" max-size="7" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
-                </div>
-
-			    <span ng-show="facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span>
-
- 			    <div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></div>
+				<tabset>
+					<tab heading="Ingoing Facets" active="{{facet.isIncomingActive === true}}" select="selectIncoming(facet.item.getPath())">
+						<div ng-repeat="dirset in [facet.incoming]" ng-include="'facet-dir-content.html'"></div>
+					</tab>
+					<tab heading="Outgoing Facets" active="{{facet.isOutgoingActive === true}}" select="selectOutgoing(facet.item.getPath())">					
+						<div ng-repeat="dirset in [facet.outgoing]" ng-include="'facet-dir-content.html'"></div>
+					</tab>
+				</tabset>
            </div>
 		</div>
 	</script>
+<!-- 						Foobaz: {{foobaz}} -->
+<!-- 						WTF {{facet.item.getPath()}}: {{facet.isOutgoingActive}}, {{activeOutgoingTab}} -->
+
+<!--  active="facet.expansionState == 2" -->
+
+		<!-- ng-show="facet.pageCount > 1 || facet.children.length > 5" -->
+<!--         		        <div style="width:100%; background-color: #eeeeff;"> -->
+<!-- 				    		<div style="padding-right: 16px; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px"> -->
+<!-- 		<form ng-submit="doFilter(facet.item.getPath(), facet.filter.filterString)"> -->
+<!-- 								<div class="input-group"> -->
+<!--                             		<input type="text" class="form-control" placeholder="Filter" ng-model="facet.filter.filterString" value="{{facet.filter.filterString}}" /> -->
+<!--                             		<span class="input-group-btn"> -->
+<!--                                 <button type="submit" class="btn btn-default">Filter</button> -->
+<!--                             		</span> -->
+<!-- 								</div>			    	     -->
+<!-- 		</form> -->
+<!-- 				    		</div> -->
+<!--                 		</div> -->
+
+<!--                 		<div ng-show="facet.pageCount != 1" style="width:100%; background-color: #eeeeff"> -->
+<!--     		         		<pagination style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" class="pagination-mini" max-size="7" total-items="facet.childFacetCount" page="facet.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination> -->
+<!--                 		</div> -->
+
+<!-- 			    		<span ng-show="facet.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px">(no entries)</span> -->
+
+<!--  			    		<div style="padding-left: {{16 * (facet.item.getPath().getLength() + 1)}}px" ng-repeat="facet in facet.children" ng-include="'facet-tree-item.html'"></div> -->
+
 
 	<script type="text/ng-template" id="result-set-browser.html">
 		<div class="frame">
@@ -1775,7 +1846,7 @@
 <!-- 			        	<div ng-controller="FacetTreeSearchCtrl"> -->
 <!-- 			        		<input type="search" ng-model="searchText" /><button>Search</button> -->
 <!-- 			        		<ul> -->
-<!-- 			        			<li ng-repeat="item in items">{{item.name}} --- {{item.geoConcept}}</li> -->
+<!-- 			        			<li ng-repeat="item in items">{{item.name}} - {{item.geoConcept}}</li> -->
 <!-- 			        		</ul> -->
 <!-- 			        	</div> -->
 			        
