@@ -157,6 +157,17 @@
 		color: #aaaaaa;
 	}
 	
+	.tabset-small > .nav > li > a {
+    	display: block;
+    	padding: 3px 15px;
+    	position: relative;
+	}
+	
+	.pagination-tiny > li > a, .pagination-tiny > li > span {
+    	font-size: 10px;
+    	padding: 5px;
+	}
+	
 	</style>
 	
 	<!--  TODO PrefixMapping Object von Jena portieren ~ 9 Dec 2013 -->
@@ -1828,7 +1839,7 @@
 //             config = new ns.FacetTreeConfig()
 //         };
         
-        $scope.sparqlService = new service.SparqlServiceHttp('http://localhost/fts-sparql');
+        $scope.sparqlService = new service.SparqlServiceCache(new service.SparqlServiceHttp('http://localhost/fts-sparql'));
         $scope.facetTreeConfig = new ns.FacetTreeConfig();
         
         $scope.selectFacet = function(path) {
@@ -1840,25 +1851,33 @@
 
 
 	<script type="text/ng-template" id="facet-dir-content.html">
-
 		<!-- ng-show="dirset.pageCount > 1 || dirset.children.length > 5" -->
+
         		        <div style="width:100%; background-color: #eeeeff;">
-				    		<div style="padding-right: 16px; padding-left: {{16 * (dirset.item.path.getLength() + 1)}}px">
-		<form ng-submit="doFilter(dirset.path, dirset.filter.filterString)">
-								<div class="input-group">
-                            		<input type="text" class="form-control" placeholder="Filter" ng-model="dirset.filter.filterString" value="{{dirset.filter.filterString}}" />
-                            		<span class="input-group-btn">
-                                <button type="submit" class="btn btn-default">Filter</button>
-                            		</span>
-								</div>			    	    
-		</form>
+				    		<div style="padding-right: 16px; padding-left: {{16 * (dirset.item.path.getLength() + 1)}}px; padding-top: 5px;">
+
+								<form class="form-inline" role="form" ng-submit="doFilter(dirset.path, dirset.filter.filterString)">
+
+									<div class="form-group">
+                            			<input type="text" class="form-control input-sm" placeholder="Filter" ng-model="dirset.filter.filterString" value="{{dirset.filter.filterString}}" />
+									</div>
+									<div class="form-group">
+                                		<button type="submit" class="btn btn-default input-sm">Filter</button>
+									</div>
+
+			                		<div class="form-group" ng-show="dirset.pageCount != 1" style="background-color: #eeeeff">
+    					         		<pagination style="padding-left: {{16 * (dirset.item.getPath().getLength() + 1)}}px" class="pagination-tiny" max-size="7" total-items="dirset.childFacetCount" page="dirset.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
+                					</div>
+			    	    
+								</form>
 				    		</div>
                 		</div>
 
+<!--
                 		<div ng-show="dirset.pageCount != 1" style="width:100%; background-color: #eeeeff">
-    		         		<pagination style="padding-left: {{16 * (dirset.item.getPath().getLength() + 1)}}px" class="pagination pagination-sm" max-size="7" total-items="dirset.childFacetCount" page="dirset.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
+    		         		<pagination style="padding-left: {{16 * (dirset.item.getPath().getLength() + 1)}}px" class="pagination-tiny" max-size="7" total-items="dirset.childFacetCount" page="dirset.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
                 		</div>
-
+-->
 			    		<span ng-show="dirset.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (dirset.path.getLength() + 1)}}px">(no entries)</span>
 
  			    		<div style="padding-left: {{16 * (dirset.path.getLength() + 1)}}px" ng-repeat="facet in dirset.children" ng-include="'facet-tree-item.html'"></div>
@@ -1883,7 +1902,7 @@
 			</div>
 			<div ng-if="facet.isExpanded" style="width:100%"> 
 
-				<tabset>
+				<tabset class="tabset-small">
 					<tab heading="Ingoing Facets" active="{{facet.isIncomingActive === true}}" select="selectIncoming(facet.item.getPath())">
 						<div ng-repeat="dirset in [facet.incoming]" ng-include="'facet-dir-content.html'"></div>
 					</tab>
