@@ -1864,8 +1864,7 @@
 									<div class="form-group">
                                 		<button type="submit" class="btn btn-default input-sm">Filter</button>
 									</div>
-
-			                		<div class="form-group" ng-show="dirset.pageCount != 1" style="background-color: #eeeeff">
+			                		<div class="form-group" ng-if="dirset.pageCount > 1" style="background-color: #eeeeff">
     					         		<pagination style="padding-left: {{16 * (dirset.item.getPath().getLength() + 1)}}px" class="pagination-tiny" max-size="7" total-items="dirset.childFacetCount" page="dirset.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
                 					</div>
 			    	    
