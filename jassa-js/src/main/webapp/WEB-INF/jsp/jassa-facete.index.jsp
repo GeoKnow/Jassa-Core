@@ -203,7 +203,9 @@
     <script type="text/javascript" src="resources/libs/open-layers/2.12/OpenLayers.js"></script>
     <script type="text/javascript" src="resources/js/geo/jquery.ssb.map.js"></script>
 	
+    <script type="text/javascript" src="resources/libs/JSONCanonical/JSONCanonical.js"></script>
 	
+    <script type="text/javascript" src="resources/libs/jassa-ui-angular/jassa-ui-angular.js"></script>
 	
 	
 	<script type="text/javascript">
@@ -342,7 +344,7 @@
 	/**
 	 * Angular
 	 */	
-	var myModule = angular.module('FaceteDBpediaExample', ['ui.bootstrap']);
+	var myModule = angular.module('FaceteDBpediaExample', ['ui.bootstrap', 'ui.jassa']);
 
 	
     /**
@@ -359,201 +361,15 @@
     
     
     
+
+
+    
+    
+    
+    
+    
     
 
-    //'sparqlService', 'facetTreeConfig', sparqlService, facetTreeConfig
-	myModule.controller('FacetTreeCtrl2', ['$rootScope', '$scope', '$q', function($rootScope, $scope, $q) {
-
-	    var self = this;
-	    
-	    
-	    var updateFacetTreeService = function() {
-	        var isConfigured = $scope.sparqlService && $scope.facetTreeConfig;
-	        //debugger;
-	        $scope.facetTreeService = isConfigured ? ns.FaceteUtils.createFacetTreeService($scope.sparqlService, $scope.facetTreeConfig, labelMap) : null; 
-	    };
-
-	    var update = function() {
-	      	updateFacetTreeService();
-	      	//controller.refresh();
-	      	self.refresh();
-	    };
-
-	    $scope.$watch('sparqlService', function() {
-	        console.log('args', $scope.sparqlService);
-	        update();
-	    });
-	    
-	    $scope.$watch('facetTreeConfig', function() {
-	        console.log('args', $scope.facetTreeConfig);
-	        update();
-	    });
-	    	    
-	    
-		$scope.doFilter = function(path, filterString) {
-		    $scope.facetTreeConfig.getPathToFilterString().put(path, filterString);
-		    self.refresh();
-		};
-
-	    self.refresh = function() {	        
-	    	        
-	        var facet = $scope.facet;
-	        var startPath = facet ? facet.item.getPath() : new facete.Path();
-
-	        if($scope.facetTreeService) {
-	        
-				var facetTreeTagger = ns.FaceteUtils.createFacetTreeTagger($scope.facetTreeConfig.getPathToFilterString());
-
-		        //console.log('scopefacets', $scope.facet);		        
-				var promise = $scope.facetTreeService.fetchFacetTree(startPath);
-		        
-				sponate.angular.bridgePromise(promise, $q.defer(), $rootScope).then(function(data) {			    
-				    facetTreeTagger.applyTags(data);
-					$scope.facet = data;
-				});
-
-	        } else {
-	            $scope.facet = null;
-	        }
-		};
-				
-		$scope.toggleCollapsed = function(path) {
-			util.CollectionUtils.toggleItem($scope.facetTreeConfig.getExpansionSet(), path);
-			
-			var val = $scope.facetTreeConfig.getExpansionMap().get(path);
-			if(val == null) {
-			    $scope.facetTreeConfig.getExpansionMap().put(path, 1);
-			}
-			
-			self.refresh();
-		};
-		
-		$scope.selectIncoming = function(path) {
-		    console.log('Incoming selected at path ' + path);
-		    if($scope.facetTreeConfig) {
-		        var val = $scope.facetTreeConfig.getExpansionMap().get(path);
-		        if(val != 2) {
-		        	$scope.facetTreeConfig.getExpansionMap().put(path, 2);		    
-		    		self.refresh();
-		        }
-		    }
-		};
-		
-		$scope.selectOutgoing = function(path) {
-		    console.log('Outgoing selected at path ' + path);
-		    if($scope.facetTreeConfig) {
-		        var val = $scope.facetTreeConfig.getExpansionMap().get(path);
-		        if(val != 1) {
-		        	$scope.facetTreeConfig.getExpansionMap().put(path, 1);		    
-		    		self.refresh();
-		        }
-		    }
-		};
-		
-		
-		$scope.selectFacetPage = function(page, facet) {
-			var path = facet.item.getPath();
-            var state = $scope.facetTreeConfig.getFacetStateProvider().getFacetState(path);
-            var resultRange = state.getResultRange();
-            
-            console.log('Facet state for path ' + path + ': ' + state);
-			var limit = resultRange.getLimit() || 0;
-			
-			var newOffset = limit ? (page - 1) * limit : null;
-			
-			resultRange.setOffset(newOffset);
-			
-			self.refresh();
-		};
-		
-		$scope.toggleSelected = function(path) {
-		    $scope.onSelect({path: path});
-		};
-		
-		$scope.toggleTableLink = function(path) {
-			//$scope.emit('facete:toggleTableLink');
-		    tableMod.togglePath(path);
-		    
-		    //$scope.$emit('')
-		    //alert('yay' + JSON.stringify(tableMod.getPaths()));
-		    
-		    $scope.$emit('facete:refresh');
-		    
-// 		    var columnDefs = tableMod.getColumnDefs();
-// 		    _(columnDefs).each(function(columnDef) {
-		        
-// 		    });
-		    
-// 		    tableMod.addColumnDef(null, new ns.ColumnDefPath(path));
-		    //alert('yay ' + path);
-		};
-		
-// 		$scope.$on('facete:refresh', function() {
-// 		    $scope.refresh();
-// 		});
-	}]);
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    /**
-     * The actual dependencies are:
-     * - sparqlServiceFactory
-     * - facetTreeConfig
-     * - labelMap (maybe this should be part of the facetTreeConfig) 
-     */    
-    myModule.directive('facetTree', function($parse) {
-	    return {
-	        restrict: 'EA',
-	        replace: true,        
-	        templateUrl: 'facet-tree-item.html',
-	        transclude: false,
-			require: 'facetTree',
-	        scope: {
-	            sparqlService: '=',
-	            facetTreeConfig: '=',
-	            onSelect: '&select'
-	        },
-	        controller: 'FacetTreeCtrl2',
-	        compile: function(elm, attrs) {
-				return function postLink(scope, elm, attrs, controller) {
-				    
-// 				    var updateFacetTreeService = function() {
-// 				        var isConfigured = scope.sparqlService && scope.facetTreeConfig;
-// 				        scope.facetTreeService = isConfigured ? ns.FaceteUtils.createFacetTreeService(scope.sparqlService, scope.facetTreeConfig, labelMap) : null; 
-// 				    };
-				    
-// 				    var update = function() {
-// 				      	updateFacetTreeService();
-// 				      	controller.refresh();
-// 				    };
-
-// 				    scope.$watch('sparqlService', function() {
-// 				        console.log('args', scope.sparqlService, arguments);
-// 				        update();
-// 				    });
-				    
-// 				    scope.$watch('facetTreeConfig', function() {
-// 				        console.log('args', scope.facetTreeConfig, arguments);
-// 				        update();
-// 				    });
-
-// 				    console.log('Parent scope:', scope.$parent);
-// 				    console.log('Parent ss:', scope.$parent.sparqlService);
-// 				    console.log('Parent ftc:', scope.$parent.facetTreeConfig);
-// 				    console.log('Child ss:', scope.sparqlService);
-// 				    console.log('Child ftc:', scope.facetTreeConfig);
-// 				    console.log('Controller:', controller);
-				};
-			}
-	    };
-    });
-    
 
 	myModule.directive('ssbMap', function($timeout, $parse) {
         //console.log('starting map');
@@ -1519,150 +1335,6 @@
     });
 
 
-	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, $q, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
-
-	    // TODO Get rid of the service boilerplate
-	    $scope.activeConceptSpaceService = activeConceptSpaceService;
-	    
-	    var sparqlService;
-	    var facetTreeConfig;
-	    var facetTreeService;
-	    var facetTreeTagger;
-	    var pathToFilterString;
-	   
-	    $scope.conceptSpace = null;
-	    
-	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
-	        $scope.conceptSpace = conceptSpace;
-
-	        if(conceptSpace) {
-	            
-	            var wsConf = conceptSpace.getWorkSpace().getData().config;
-
-	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
-				facetTreeConfig = conceptSpace.getFacetTreeConfig();
-				facetTreeService = ns.FaceteUtils.createFacetTreeService(sparqlService, facetTreeConfig, labelMap);
-				facetTreeTagger = ns.FaceteUtils.createFacetTreeTagger(facetTreeConfig.getPathToFilterString());
-				pathToFilterString = facetTreeConfig.getPathToFilterString();
-	        } else {
-				facetTreeConfig = null;
-				$scope.facet = null;
-	        }
-	        
-	        
-	        //$scope.pathToFilterString = conceptSpace.getFacetConfig().getPathToFilterString();
-	        $scope.refresh();
-	    });
-
-
-		$scope.doFilter = function(path, filterString) {
-		    pathToFilterString.put(path, filterString);
-		    $scope.refresh();
-		};
-
-// 		$scope.$on('facete:constraintsChanged', function() {
-// 		    $scope.refresh();
-// 		});
-	    
-	    $scope.refresh = function() {	        
-	        
-	        var facet = $scope.facet;
-	        var startPath = facet ? facet.item.getPath() : new facete.Path();
-	        
-	        //console.log('StartPath', startPath);
-	        
-	        if($scope.conceptSpace) {
-	        
-		        //console.log('scopefacets', $scope.facet);
-		        
-				var promise = facetTreeService.fetchFacetTree(startPath);
-		        
-				sponate.angular.bridgePromise(promise, $q.defer(), $rootScope).then(function(data) {			    
-				    facetTreeTagger.applyTags(data);
-					$scope.facet = data;
-				});
-
-	        } else {
-	            $scope.facet = null;
-	        }
-		};
-				
-		$scope.toggleCollapsed = function(path) {
-			util.CollectionUtils.toggleItem(facetTreeConfig.getExpansionSet(), path);
-			
-			var val = facetTreeConfig.getExpansionMap().get(path);
-			if(val == null) {
-			    facetTreeConfig.getExpansionMap().put(path, 1);
-			}
-			
-			$scope.refresh();
-		};
-		
-		$scope.selectIncoming = function(path) {
-		    console.log('Incoming selected at path ' + path);
-		    if(facetTreeConfig) {
-		        var val = facetTreeConfig.getExpansionMap().get(path);
-		        if(val != 2) {
-		        	facetTreeConfig.getExpansionMap().put(path, 2);		    
-		    		$scope.refresh();
-		        }
-		    }
-		};
-		
-		$scope.selectOutgoing = function(path) {
-		    console.log('Outgoing selected at path ' + path);
-		    if(facetTreeConfig) {
-		        var val = facetTreeConfig.getExpansionMap().get(path);
-		        if(val != 1) {
-		        	facetTreeConfig.getExpansionMap().put(path, 1);		    
-		    		$scope.refresh();
-		        }
-		    }
-		};
-		
-		
-		$scope.selectFacetPage = function(page, facet) {
-			var path = facet.item.getPath();
-            var state = facetTreeConfig.getFacetStateProvider().getFacetState(path);
-            var resultRange = state.getResultRange();
-            
-            console.log('Facet state for path ' + path + ': ' + state);
-			var limit = resultRange.getLimit() || 0;
-			
-			var newOffset = limit ? (page - 1) * limit : null;
-			
-			resultRange.setOffset(newOffset);
-			
-			$scope.refresh();
-		};
-		
-		$scope.toggleSelected = function(path) {
-		    $scope.$emit('facete:facetSelected', path);
-		};
-		
-		$scope.toggleTableLink = function(path) {
-			//$scope.emit('facete:toggleTableLink');
-		    tableMod.togglePath(path);
-		    
-		    //$scope.$emit('')
-		    //alert('yay' + JSON.stringify(tableMod.getPaths()));
-		    
-		    $scope.$emit('facete:refresh');
-		    
-// 		    var columnDefs = tableMod.getColumnDefs();
-// 		    _(columnDefs).each(function(columnDef) {
-		        
-// 		    });
-		    
-// 		    tableMod.addColumnDef(null, new ns.ColumnDefPath(path));
-		    //alert('yay ' + path);
-		};
-		
-		$scope.$on('facete:refresh', function() {
-		    $scope.refresh();
-		});
-	});
-		
 	
 	myModule.controller('CandidateMapLinkListCtrl', function($scope, $rootScope, $q, sparqlServiceFactory, activeConceptSpaceService, activeMapLinkList) {
 
@@ -1831,87 +1503,37 @@
 
     
     
-    myModule.controller('TestCtrl', ['$scope', function($scope) {
+    myModule.controller('TestCtrl', ['$scope', 'activeConceptSpaceService', 'sparqlServiceFactory', function($scope, activeConceptSpaceService, sparqlServiceFactory) {
         
-// 		Alternative set up
-//         $scope.facetTree = {
-//             sparqlService = new service.SparqlServiceHttp('http://localhost/fts-sparql'),
-//             config = new ns.FacetTreeConfig()
-//         };
-        
-        $scope.sparqlService = new service.SparqlServiceCache(new service.SparqlServiceHttp('http://localhost/fts-sparql'));
-        $scope.facetTreeConfig = new ns.FacetTreeConfig();
+
+	    // TODO Get rid of the service boilerplate
+	    $scope.activeConceptSpaceService = activeConceptSpaceService;
+	    
+	    $scope.conceptSpace = null;
+	    
+	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
+	        $scope.conceptSpace = conceptSpace;
+
+	        var wsConf = conceptSpace ? conceptSpace.getWorkSpace().getData().config : null;
+
+	        $scope.sparqlService = conceptSpace ? sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris) : null;
+			$scope.facetTreeConfig = conceptSpace ? conceptSpace.getFacetTreeConfig() : null
+	    });
+
+
+//        $scope.sparqlService = new service.SparqlServiceCache(new service.SparqlServiceHttp('http://localhost/fts-sparql'));
+//        $scope.facetTreeConfig = new ns.FacetTreeConfig();
         
         $scope.selectFacet = function(path) {
-            alert('selectFacet: ' + path);
+            //alert('selectFacet: ' + path);
+		    $scope.$emit('facete:facetSelected', path);
         };
     }]);
     
 	</script>
 
 
-	<script type="text/ng-template" id="facet-dir-content.html">
-		<!-- ng-show="dirset.pageCount > 1 || dirset.children.length > 5" -->
 
-        		        <div style="width:100%; background-color: #eeeeff;">
-				    		<div style="padding-right: 16px; padding-left: {{16 * (dirset.item.path.getLength() + 1)}}px; padding-top: 5px;">
-
-								<form class="form-inline" role="form" ng-submit="doFilter(dirset.path, dirset.filter.filterString)">
-
-									<div class="form-group">
-                            			<input type="text" class="form-control input-sm" placeholder="Filter" ng-model="dirset.filter.filterString" value="{{dirset.filter.filterString}}" />
-									</div>
-									<div class="form-group">
-                                		<button type="submit" class="btn btn-default input-sm">Filter</button>
-									</div>
-			                		<div class="form-group" ng-if="dirset.pageCount > 1" style="background-color: #eeeeff">
-    					         		<pagination style="padding-left: {{16 * (dirset.item.getPath().getLength() + 1)}}px" class="pagination-tiny" max-size="7" total-items="dirset.childFacetCount" page="dirset.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
-                					</div>
-			    	    
-								</form>
-				    		</div>
-                		</div>
-
-<!--
-                		<div ng-show="dirset.pageCount != 1" style="width:100%; background-color: #eeeeff">
-    		         		<pagination style="padding-left: {{16 * (dirset.item.getPath().getLength() + 1)}}px" class="pagination-tiny" max-size="7" total-items="dirset.childFacetCount" page="dirset.pageIndex" boundary-links="true" rotate="false" on-select-page="selectFacetPage(page, facet)" first-text="<<" previous-text="<" next-text=">" last-text=">>"></pagination>
-                		</div>
--->
-			    		<span ng-show="dirset.children.length == 0" style="color: #aaaaaa; padding-left: {{16 * (dirset.path.getLength() + 1)}}px">(no entries)</span>
-
- 			    		<div style="padding-left: {{16 * (dirset.path.getLength() + 1)}}px" ng-repeat="facet in dirset.children" ng-include="'facet-tree-item.html'"></div>
-	</script>
-
-	<script type="text/ng-template" id="facet-tree-item.html">
-		<div ng-class="{'frame': facet.isExpanded}">
-			<div class="facet-row" ng-class="{'highlite': facet.isExpanded}" ng-mouseover="facet.isHovered=true" ng-mouseleave="facet.isHovered=false">
-				<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
-				<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
-				<a data-rdf-term="{{facet.item.getNode().toString()}}" title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
-
-
-				<a ng-visible="facet.isHovered || facet.table.isContained" href="" ng-click="toggleTableLink(facet.item.getPath())"><span class="glyphicon glyphicon-list-alt"></span></a>
-
-<!--				<ul>
-                    <li ng-repeat="action in facet.actions"></li>
-                </ul>
--->
-
-				<span style="float: right" class="badge">{{facet.item.getDistinctValueCount()}}</span>	
-			</div>
-			<div ng-if="facet.isExpanded" style="width:100%"> 
-
-				<tabset class="tabset-small">
-					<tab heading="Ingoing Facets" active="{{facet.isIncomingActive === true}}" select="selectIncoming(facet.item.getPath())">
-						<div ng-repeat="dirset in [facet.incoming]" ng-include="'facet-dir-content.html'"></div>
-					</tab>
-					<tab heading="Outgoing Facets" active="{{facet.isOutgoingActive === true}}" select="selectOutgoing(facet.item.getPath())">					
-						<div ng-repeat="dirset in [facet.outgoing]" ng-include="'facet-dir-content.html'"></div>
-					</tab>
-				</tabset>
-           </div>
-		</div>
-	</script>
 <!-- 						Foobaz: {{foobaz}} -->
 <!-- 						WTF {{facet.item.getPath()}}: {{facet.isOutgoingActive}}, {{activeOutgoingTab}} -->
 
@@ -1990,13 +1612,6 @@
 		 
 	 	<div style="position: absolute; top: 0px; left: 0px; width: 470px; max-height: 100%; overflow: auto; margin: 5px;">
 
-<div class="panel panel-info">
-	<div class="panel-heading">
-		<h4 class="panel-title">Facet Tree</h4>
-	</div>
-	<facet-tree ng-controller="TestCtrl" sparql-service="sparqlService" facet-tree-config="facetTreeConfig" select="selectFacet(path)" />
-</div>
-
 						<div class="panel panel-info" ng-controller="WorkSpaceListCtrl"> <!-- data-ng-init="refreshConstraints()" --> 
 							<div class="panel-heading">
     							<h4 class="panel-title">Work Spaces</h4>
@@ -2059,12 +1674,12 @@
 					    </div>
 -->
   
-						<div class="panel panel-info" ng-controller="FacetTreeCtrl" data-ng-init="refresh()">
+						<div class="panel panel-info">
 							<div class="panel-heading">
     							<h4 class="panel-title">Facet Tree</h4>
-  							</div>
+  							</div>  							
   							<div class="panel-body">
-								<div ng-include="'facet-tree-item.html'"></div>
+  								<facet-tree ng-controller="TestCtrl" sparql-service="sparqlService" facet-tree-config="facetTreeConfig" select="selectFacet(path)" />  							
 							</div>
 						</div>
 					

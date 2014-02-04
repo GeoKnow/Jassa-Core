@@ -40,8 +40,12 @@
 	<script src="resources/libs/underscore.string/2.3.0/underscore.string.js"></script>
 <!-- 	<script src="resources/libs/angularjs/1.0.8/angular.js"></script> -->
 	<script src="resources/libs/angularjs/1.2.0-rc.3/angular.js"></script>	
+
 	
 	${jsIncludes}
+
+
+	<script src="resources/libs/jassa-ui-angular/jassa-ui-angular.js"></script>	
 	
 	<script type="text/javascript">
 	_.mixin(_.str.exports());

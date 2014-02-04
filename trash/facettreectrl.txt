@@ -1,0 +1,145 @@
+
+	myModule.controller('FacetTreeCtrl', function($rootScope, $scope, $q, sparqlServiceFactory, activeConceptSpaceService) { //, facetService) {
+
+	    // TODO Get rid of the service boilerplate
+	    $scope.activeConceptSpaceService = activeConceptSpaceService;
+	    
+	    var sparqlService;
+	    var facetTreeConfig;
+	    var facetTreeService;
+	    var facetTreeTagger;
+	    var pathToFilterString;
+	   
+	    $scope.conceptSpace = null;
+	    
+	    $scope.$watch('activeConceptSpaceService.getConceptSpace()', function(conceptSpace) {
+	        $scope.conceptSpace = conceptSpace;
+
+	        if(conceptSpace) {
+	            
+	            var wsConf = conceptSpace.getWorkSpace().getData().config;
+
+	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
+				facetTreeConfig = conceptSpace.getFacetTreeConfig();
+				facetTreeService = ns.FaceteUtils.createFacetTreeService(sparqlService, facetTreeConfig, labelMap);
+				facetTreeTagger = ns.FaceteUtils.createFacetTreeTagger(facetTreeConfig.getPathToFilterString());
+				pathToFilterString = facetTreeConfig.getPathToFilterString();
+	        } else {
+				facetTreeConfig = null;
+				$scope.facet = null;
+	        }
+	        
+	        
+	        //$scope.pathToFilterString = conceptSpace.getFacetConfig().getPathToFilterString();
+	        $scope.refresh();
+	    });
+
+
+		$scope.doFilter = function(path, filterString) {
+		    pathToFilterString.put(path, filterString);
+		    $scope.refresh();
+		};
+
+// 		$scope.$on('facete:constraintsChanged', function() {
+// 		    $scope.refresh();
+// 		});
+	    
+	    $scope.refresh = function() {	        
+	        
+	        var facet = $scope.facet;
+	        var startPath = facet ? facet.item.getPath() : new facete.Path();
+	        
+	        //console.log('StartPath', startPath);
+	        
+	        if($scope.conceptSpace) {
+	        
+		        //console.log('scopefacets', $scope.facet);
+		        
+				var promise = facetTreeService.fetchFacetTree(startPath);
+		        
+				sponate.angular.bridgePromise(promise, $q.defer(), $rootScope).then(function(data) {			    
+				    facetTreeTagger.applyTags(data);
+					$scope.facet = data;
+				});
+
+	        } else {
+	            $scope.facet = null;
+	        }
+		};
+				
+		$scope.toggleCollapsed = function(path) {
+			util.CollectionUtils.toggleItem(facetTreeConfig.getExpansionSet(), path);
+			
+			var val = facetTreeConfig.getExpansionMap().get(path);
+			if(val == null) {
+			    facetTreeConfig.getExpansionMap().put(path, 1);
+			}
+			
+			$scope.refresh();
+		};
+		
+		$scope.selectIncoming = function(path) {
+		    console.log('Incoming selected at path ' + path);
+		    if(facetTreeConfig) {
+		        var val = facetTreeConfig.getExpansionMap().get(path);
+		        if(val != 2) {
+		        	facetTreeConfig.getExpansionMap().put(path, 2);		    
+		    		$scope.refresh();
+		        }
+		    }
+		};
+		
+		$scope.selectOutgoing = function(path) {
+		    console.log('Outgoing selected at path ' + path);
+		    if(facetTreeConfig) {
+		        var val = facetTreeConfig.getExpansionMap().get(path);
+		        if(val != 1) {
+		        	facetTreeConfig.getExpansionMap().put(path, 1);		    
+		    		$scope.refresh();
+		        }
+		    }
+		};
+		
+		
+		$scope.selectFacetPage = function(page, facet) {
+			var path = facet.item.getPath();
+            var state = facetTreeConfig.getFacetStateProvider().getFacetState(path);
+            var resultRange = state.getResultRange();
+            
+            console.log('Facet state for path ' + path + ': ' + state);
+			var limit = resultRange.getLimit() || 0;
+			
+			var newOffset = limit ? (page - 1) * limit : null;
+			
+			resultRange.setOffset(newOffset);
+			
+			$scope.refresh();
+		};
+		
+		$scope.toggleSelected = function(path) {
+		    $scope.$emit('facete:facetSelected', path);
+		};
+		
+		$scope.toggleTableLink = function(path) {
+			//$scope.emit('facete:toggleTableLink');
+		    tableMod.togglePath(path);
+		    
+		    //$scope.$emit('')
+		    //alert('yay' + JSON.stringify(tableMod.getPaths()));
+		    
+		    $scope.$emit('facete:refresh');
+		    
+// 		    var columnDefs = tableMod.getColumnDefs();
+// 		    _(columnDefs).each(function(columnDef) {
+		        
+// 		    });
+		    
+// 		    tableMod.addColumnDef(null, new ns.ColumnDefPath(path));
+		    //alert('yay ' + path);
+		};
+		
+		$scope.$on('facete:refresh', function() {
+		    $scope.refresh();
+		});
+	});
+		

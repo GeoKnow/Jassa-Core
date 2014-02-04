@@ -1,0 +1,25 @@
+<div ng-class="{'frame': facet.isExpanded}">
+	<div class="facet-row" ng-class="{'highlite': facet.isExpanded}" ng-mouseover="facet.isHovered=true" ng-mouseleave="facet.isHovered=false">
+		<a ng-show="facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-down"></span></a>
+		<a ng-show="!facet.isExpanded" href="" ng-click="toggleCollapsed(facet.item.getPath())"><span class="glyphicon glyphicon-chevron-right"></span></a>
+		<a data-rdf-term="{{facet.item.getNode().toString()}}" title="{{facet.item.getNode().getUri()}}" href="" ng-click="toggleSelected(facet.item.getPath())">{{facet.item.getNode().getUri()}}</a>
+
+
+		<a ng-visible="facet.isHovered || facet.table.isContained" href="" ng-click="toggleTableLink(facet.item.getPath())"><span class="glyphicon glyphicon-list-alt"></span></a>
+
+
+		<span style="float: right" class="badge">{{facet.item.getDistinctValueCount()}}</span>	
+	</div>
+	<div ng-if="facet.isExpanded" style="width:100%"> 
+
+
+		<tabset class="tabset-small">
+			<tab heading="Incoming Facets" active="{{facet.isIncomingActive === true}}" select="selectIncoming(facet.item.getPath())">
+				<div ng-repeat="dirset in [facet.incoming]" ng-include="'resources/partials/facet-dir-content.html'"></div>
+			</tab>
+			<tab heading="Outgoing Facets" active="{{facet.isOutgoingActive === true}}" select="selectOutgoing(facet.item.getPath())">					
+				<div ng-repeat="dirset in [facet.outgoing]" ng-include="'resources/partials/facet-dir-content.html'"></div>
+			</tab>
+		</tabset>
+	</div>
+</div>

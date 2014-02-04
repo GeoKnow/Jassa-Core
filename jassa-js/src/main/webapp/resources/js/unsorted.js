@@ -1,6 +1,22 @@
     var ns = {};
 
     
+    ns.stringifyCyclic = function(obj) {
+        var seen = [];
+        var result = JSONCanonical.stringify(obj, function(key, val) {
+           if (typeof val == "object") {
+                if (seen.indexOf(val) >= 0)
+                    return
+                seen.push(val)
+            }
+            return val;}
+        );
+        
+        return result;
+    };
+    
+    
+    
     
     ns.SparqlServiceFactoryDefault = Class.create({
         initialize: function() {
@@ -91,6 +107,16 @@
         
         setConstraintManager: function(constraintManager) {
             this.constraintManager = constraintManager;
+        },
+
+        /**
+         * The purpose of this method is to detect changes in the configuration!
+         * TODO rely on hash codes from child components
+         * 
+         */
+        hashCode: function() {
+            var result = ns.stringifyCyclic(this);
+            return result;
         }
         
         // The following attributes are pretty much UI dependent
@@ -148,6 +174,16 @@
         
         getPathToFilterString: function() {
             return this.pathToFilterString;
+        },
+        
+        /**
+         * The purpose of this method is to detect changes in the configuration!
+         * TODO rely on hash codes from child components
+         * 
+         */
+        hashCode: function() {
+            var result = ns.stringifyCyclic(this);
+            return result;
         }
     });
     

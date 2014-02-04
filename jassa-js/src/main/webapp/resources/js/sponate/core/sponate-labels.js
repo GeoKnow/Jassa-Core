@@ -46,6 +46,18 @@
         return a < b;
     };
     
+    // TODO Move to utils
+    ns.extractLabelFromUri = function(str) {
+        var a = str.lastIndexOf('#');
+        var b = str.lastIndexOf('/');
+        
+        var i = Math.max(a, b);
+
+        var result = (i == str.length) ? str : str.substring(i + 1); 
+
+        return result;
+    }
+    
     ns.AggregatorFactoryLabel = Class.create({
         initialize: function(labelPrios, prefLangs, labelExpr, subjectExpr, propertyExpr) {
             this.labelPrios = labelPrios;
