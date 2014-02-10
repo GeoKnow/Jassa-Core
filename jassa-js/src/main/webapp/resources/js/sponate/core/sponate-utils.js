@@ -21,6 +21,7 @@
 	});
 	
 	ns.SponateUtils = {
+
 	    /**
 	     * Parse a sponate mapping spec JSON object and return a sponate.Mapping object 
 	     * 
@@ -79,7 +80,42 @@
             var result = new ns.Mapping(name, pattern, elementFactory, patternRefs);
 
             return result;
-	    }
+	    },
+	    
+        defaultPrefLangs:  ['en', ''],
+
+        prefLabelPropertyUris: [
+            'http://www.w3.org/2000/01/rdf-schema#label'
+	    ],
+
+        createDefaultLabelMap: function(prefLangs, prefLabelPropertyUris, s, p, o) {
+
+            prefLangs = prefLangs || this.defaultPrefLangs;
+            prefLabelPropertyUris = prefLabelPropertyUris || this.prefLabelPropertyUris;
+            s = s || 's';
+            p = p || 'p';
+            o = o || 'o';
+            
+            var mapParser = new sponate.MapParser();
+            
+            var labelUtilFactory = new sponate.LabelUtilFactory(prefLabelPropertyUris, prefLangs);
+                
+            // A label util can be created based on var names and holds an element and an aggregator factory.
+            var labelUtil = labelUtilFactory.createLabelUtil(o, s, p);
+
+            var result = mapParser.parseMap({
+                name: 'labels',
+                template: [{
+                    id: '?' + s,
+                    displayLabel: labelUtil.getAggFactory(),
+                    hiddenLabels: [{id: '?' + o}]
+                }],
+                from: labelUtil.getElement()
+            });
+            
+            return result;
+        }    
+	    
 	};
 	
 	/**

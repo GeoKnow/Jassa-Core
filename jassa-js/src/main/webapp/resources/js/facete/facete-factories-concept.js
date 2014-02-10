@@ -26,5 +26,18 @@
 			return this.concept;
 		}
 	});
+	
+	
+    ns.ConceptFactoryFacetService = Class.create(ns.ConceptFactory, {
+        initialize: function(facetService) {
+            this.facetService = facetService;
+        },
+        
+        createConcept: function() {
+            var result = this.facetService.createConceptFacetValues(new facete.Path());
+            return result;
+        }
+    });
+
 
 })();

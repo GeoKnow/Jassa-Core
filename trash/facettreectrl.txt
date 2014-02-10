@@ -143,3 +143,31 @@
 		});
 	});
 		
+		
+		            
+//                  var updateFacetTreeService = function() {
+//                      var isConfigured = scope.sparqlService && scope.facetTreeConfig;
+//                      scope.facetTreeService = isConfigured ? ns.FaceteUtils.createFacetTreeService(scope.sparqlService, scope.facetTreeConfig, labelMap) : null; 
+//                  };
+            
+//                  var update = function() {
+//                      updateFacetTreeService();
+//                      controller.refresh();
+//                  };
+
+//                  scope.$watch('sparqlService', function() {
+//                      console.log('args', scope.sparqlService, arguments);
+//                      update();
+//                  });
+            
+//                  scope.$watch('facetTreeConfig', function() {
+//                      console.log('args', scope.facetTreeConfig, arguments);
+//                      update();
+//                  });
+
+//                  console.log('Parent scope:', scope.$parent);
+//                  console.log('Parent ss:', scope.$parent.sparqlService);
+//                  console.log('Parent ftc:', scope.$parent.facetTreeConfig);
+//                  console.log('Child ss:', scope.sparqlService);
+//                  console.log('Child ftc:', scope.facetTreeConfig);
+//                  console.log('Controller:', controller);

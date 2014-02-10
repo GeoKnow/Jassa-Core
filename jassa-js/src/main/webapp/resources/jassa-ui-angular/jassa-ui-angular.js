@@ -8,7 +8,7 @@ angular.module('ui.jassa', [])
     var updateFacetTreeService = function() {
         var isConfigured = $scope.sparqlService && $scope.facetTreeConfig;
         //debugger;
-        $scope.facetTreeService = isConfigured ? ns.FaceteUtils.createFacetTreeService($scope.sparqlService, $scope.facetTreeConfig, labelMap) : null; 
+        $scope.facetTreeService = isConfigured ? facete.FaceteUtils.createFacetTreeService($scope.sparqlService, $scope.facetTreeConfig, labelMap) : null; 
     };
     
     var update = function() {
@@ -39,7 +39,7 @@ angular.module('ui.jassa', [])
     
         if($scope.facetTreeService) {
           
-            var facetTreeTagger = ns.FaceteUtils.createFacetTreeTagger($scope.facetTreeConfig.getPathToFilterString());
+            var facetTreeTagger = facete.FaceteUtils.createFacetTreeTagger($scope.facetTreeConfig.getPathToFilterString());
     
             //console.log('scopefacets', $scope.facet);             
             var promise = $scope.facetTreeService.fetchFacetTree(startPath);
@@ -150,34 +150,7 @@ angular.module('ui.jassa', [])
         },
         controller: 'FacetTreeCtrl',
         compile: function(elm, attrs) {
-            return function postLink(scope, elm, attrs, controller) {
-            
-//                  var updateFacetTreeService = function() {
-//                      var isConfigured = scope.sparqlService && scope.facetTreeConfig;
-//                      scope.facetTreeService = isConfigured ? ns.FaceteUtils.createFacetTreeService(scope.sparqlService, scope.facetTreeConfig, labelMap) : null; 
-//                  };
-            
-//                  var update = function() {
-//                      updateFacetTreeService();
-//                      controller.refresh();
-//                  };
-
-//                  scope.$watch('sparqlService', function() {
-//                      console.log('args', scope.sparqlService, arguments);
-//                      update();
-//                  });
-            
-//                  scope.$watch('facetTreeConfig', function() {
-//                      console.log('args', scope.facetTreeConfig, arguments);
-//                      update();
-//                  });
-
-//                  console.log('Parent scope:', scope.$parent);
-//                  console.log('Parent ss:', scope.$parent.sparqlService);
-//                  console.log('Parent ftc:', scope.$parent.facetTreeConfig);
-//                  console.log('Child ss:', scope.sparqlService);
-//                  console.log('Child ftc:', scope.facetTreeConfig);
-//                  console.log('Controller:', controller);
+            return function link(scope, elm, attrs, controller) {
             };
         }
     };

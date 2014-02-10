@@ -58,7 +58,9 @@
 <!-- 							    <param>utils/Logging.js</param> -->
 								<param>util/collections.js</param>
 								<param>util/trees.js</param>
-															    
+								<param>util/json-utils.js</param>
+														
+
 							    <param>rdf/rdf-core.js</param>
 							    <param>vocab/util.js</param>
 							    <param>vocab/xsd.js</param>
@@ -105,8 +107,10 @@
 								<param>sponate/core/sponate-criteria-sparql.js</param>
 																
 								<param>sponate/core/sponate-labels.js</param>
+								<param>sponate/core/sponate-labels.js</param>
 
 								<param>sponate/adapters/sponate-angular.js</param>
+								<param>sponate/core/sponate-geo-utils.js</param>
 								
 								
 <!-- 								<param>facete/FactoryConcept.js</param> -->
@@ -133,10 +137,11 @@
 								<param>facete/facete-query-execution.js</param>
 
 <!-- 								<param>facete/facete-query-generator.js</param> -->
+								<param>facete/facete-config.js</param>
 								
 								<param>facete/facete-playground.js</param>
 								<param>facete/facete-tables.js</param>
-								
+								<param>facete/facete-taggers.js</param>
 								
 								<param>geo/geo-bbox-expr-factories.js</param>
 								<param>geo/quad-tree.js</param>

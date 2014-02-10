@@ -205,7 +205,7 @@
 	
     <script type="text/javascript" src="resources/libs/JSONCanonical/JSONCanonical.js"></script>
 	
-    <script type="text/javascript" src="resources/libs/jassa-ui-angular/jassa-ui-angular.js"></script>
+    <script type="text/javascript" src="resources/jassa-ui-angular/jassa-ui-angular.js"></script>
 	
 	
 	<script type="text/javascript">
@@ -243,7 +243,7 @@
 	
 	</script>
 	
-	<script src="resources/js/unsorted.js"></script>
+	<script src="resources/js/app-contexts.js"></script>
 
 	<script>
 	
@@ -323,9 +323,9 @@
 	var geomFromTextFnName = 'bif:st_geomFromText';
 	
 	
-    var wgs84MapFactory = new ns.GeoMapFactory(wgs84GeoView, new geo.BBoxExprFactoryWgs84(vx, vy));
+    var wgs84MapFactory = new sponate.GeoMapFactory(wgs84GeoView, new geo.BBoxExprFactoryWgs84(vx, vy));
 	//var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw));
-	var ogcMapFactory = new ns.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw, intersectsFnName, geomFromTextFnName));
+	var ogcMapFactory = new sponate.GeoMapFactory(ogcGeoView, new geo.BBoxExprFactoryWkt(vw, intersectsFnName, geomFromTextFnName));
 
     var favFacets = [facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'), facete.Path.parse('http://www.w3.org/2002/07/owl#sameAs'), facete.Path.parse('http://ns.aksw.org/spatialHierarchy/isLocatedIn')]; 
 
@@ -508,7 +508,7 @@
 	
 	myModule.factory('sparqlServiceFactory', function() {
 
-	    return new ns.SparqlServiceFactoryDefault();
+	    return new service.SparqlServiceFactoryDefault();
 
 	});
 	
@@ -831,7 +831,7 @@
 
 	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
 				facetConfig = conceptSpace.getFacetTreeConfig().getFacetConfig();
-				facetConceptGenerator = ns.FaceteUtils.createFacetConceptGenerator(facetConfig);
+				facetConceptGenerator = facete.FaceteUtils.createFacetConceptGenerator(facetConfig);
 				facetService = new facete.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap);
 				constraintTaggerFactory = new facete.ConstraintTaggerFactory(facetConfig.getConstraintManager());
 				
@@ -1248,7 +1248,7 @@
         
                     var sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
             		var facetConfig = conceptSpace.getFacetTreeConfig().getFacetConfig();
-            		var facetConceptGenerator = ns.FaceteUtils.createFacetConceptGenerator(facetConfig);
+            		var facetConceptGenerator = facete.FaceteUtils.createFacetConceptGenerator(facetConfig);
 
                     var paths = conceptSpace.getData().activeMapLinkPaths.getArray();
                     
@@ -1358,7 +1358,7 @@
 
 	            sparqlService = sparqlServiceFactory.createSparqlService(wsConf.sparqlServiceIri, wsConf.defaultGraphIris);
 				facetConfig = conceptSpace.getFacetTreeConfig().getFacetConfig();
-				facetConceptGenerator = ns.FaceteUtils.createFacetConceptGenerator(facetConfig);
+				facetConceptGenerator = facete.FaceteUtils.createFacetConceptGenerator(facetConfig);
 				
 				
 		    	var data = conceptSpace.getData();
@@ -1504,9 +1504,7 @@
     
     
     myModule.controller('TestCtrl', ['$scope', 'activeConceptSpaceService', 'sparqlServiceFactory', function($scope, activeConceptSpaceService, sparqlServiceFactory) {
-        
 
-	    // TODO Get rid of the service boilerplate
 	    $scope.activeConceptSpaceService = activeConceptSpaceService;
 	    
 	    $scope.conceptSpace = null;
@@ -1520,12 +1518,7 @@
 			$scope.facetTreeConfig = conceptSpace ? conceptSpace.getFacetTreeConfig() : null
 	    });
 
-
-//        $scope.sparqlService = new service.SparqlServiceCache(new service.SparqlServiceHttp('http://localhost/fts-sparql'));
-//        $scope.facetTreeConfig = new ns.FacetTreeConfig();
-        
         $scope.selectFacet = function(path) {
-            //alert('selectFacet: ' + path);
 		    $scope.$emit('facete:facetSelected', path);
         };
     }]);
@@ -1682,6 +1675,7 @@
   								<facet-tree ng-controller="TestCtrl" sparql-service="sparqlService" facet-tree-config="facetTreeConfig" select="selectFacet(path)" />  							
 							</div>
 						</div>
+
 					
 						<div class="panel panel-info" ng-controller="FacetValueListCtrl">
 							<div class="panel-heading">
