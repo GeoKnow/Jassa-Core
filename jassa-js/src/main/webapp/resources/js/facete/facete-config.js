@@ -1,6 +1,7 @@
 (function() {
 
     var util = Jassa.util;
+    var rdf = Jassa.rdf;
     var ns = Jassa.facete;
     
     ns.FacetConfig = Class.create({
@@ -50,12 +51,12 @@
 
     ns.FacetConfig.createDefaultFacetConfig = function() {
         var baseVar = rdf.NodeFactory.createVar("s");
-        var baseConcept = facete.ConceptUtils.createSubjectConcept(baseVar);
+        var baseConcept = ns.ConceptUtils.createSubjectConcept(baseVar);
         //var sparqlStr = sparql.SparqlString.create("?s a ?t");
-        //var baseConcept = new facete.Concept(new sparql.ElementString(sparqlStr));
-        var rootFacetNode = facete.FacetNode.createRoot(baseVar);
+        //var baseConcept = new ns.Concept(new sparql.ElementString(sparqlStr));
+        var rootFacetNode = ns.FacetNode.createRoot(baseVar);
 
-        var constraintManager = new facete.ConstraintManager();
+        var constraintManager = new ns.ConstraintManager();
         
         var result = new ns.FacetConfig(baseConcept, rootFacetNode, constraintManager);
         return result;
@@ -74,7 +75,7 @@
             this.labelMap = labelMap; // TODO Use some default
             this.expansionSet = expansionSet || new util.HashSet();
             this.expansionMap = expansionMap || new util.HashMap();
-            this.facetStateProvider = facetStateProvider || new facete.FacetStateProviderImpl(10);
+            this.facetStateProvider = facetStateProvider || new ns.FacetStateProviderImpl(10);
             this.pathToFilterString = pathToFilterString || new util.HashMap();
         },
         
@@ -132,13 +133,13 @@
             createFacetConceptGenerator2: function(baseConcept, rootFacetNode, constraintManager) {
                 // Based on above objects, create a provider for the configuration
                 // which the facet service can build upon
-                var facetConfigProvider = new facete.FacetGeneratorConfigProviderIndirect(
-                    new facete.ConceptFactoryConst(baseConcept),
-                    new facete.FacetNodeFactoryConst(rootFacetNode),
+                var facetConfigProvider = new ns.FacetGeneratorConfigProviderIndirect(
+                    new ns.ConceptFactoryConst(baseConcept),
+                    new ns.FacetNodeFactoryConst(rootFacetNode),
                     constraintManager
                 );
                 
-                var fcgf = new facete.FacetConceptGeneratorFactoryImpl(facetConfigProvider);
+                var fcgf = new ns.FacetConceptGeneratorFactoryImpl(facetConfigProvider);
                 var result = fcgf.createFacetConceptGenerator();
                 
                 return result;
@@ -151,7 +152,7 @@
             createFacetService: function(sparqlService, facetConfig, labelMap) {
                 var facetConceptGenerator = this.createFacetConceptGenerator(facetConfig);
 
-                var facetService = new facete.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap);
+                var facetService = new ns.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap);
 
                 return facetService;
             },
@@ -169,11 +170,11 @@
                 var pathToFilterString = facetTreeConfig.getPathToFilterString();
                 
 
-                var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet, expansionMap, facetStateProvider, pathToFilterString);
+                var facetTreeService = new ns.FacetTreeServiceImpl(facetService, expansionSet, expansionMap, facetStateProvider, pathToFilterString);
 
                 return facetTreeService;
 
-                //var constraintTaggerFactory = new facete.ConstraintTaggerFactory(constraintManager);       
+                //var constraintTaggerFactory = new ns.ConstraintTaggerFactory(constraintManager);       
                 
                 
                 //var faceteConceptFactory = new ns.ConceptFactoryFacetService(facetService);
@@ -185,8 +186,8 @@
             },
             
             createFacetTreeTagger: function(pathToFilterString) {
-                var tableMod = new facete.FaceteTableMod(); 
-                tableMod.togglePath(new facete.Path());
+                var tableMod = new ns.FaceteTableMod(); 
+                tableMod.togglePath(new ns.Path());
                 
                 
                 var pathTagger = new ns.ItemTaggerManager();
