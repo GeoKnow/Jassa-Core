@@ -1,6 +1,6 @@
 {
   "name": "jassa",
-  "version": "0.5.0",
+  "version": "0.0.1-SNAPSHOT",
   "homepage": "https://github.com/GeoKnow/Jassa",
   "authors": [
     "Claus Stadler <cstadler@informatik.uni-leipzig.de>"
@@ -10,7 +10,8 @@
   "dependencies": {
     "jquery": "~1.9.1",
     "underscore": "~1.4.4",
-    "underscore.string": "~2.3.0"
+    "underscore.string": "~2.3.0",
+    "jscache": ""
   },
   "keywords": [
     "rdf",

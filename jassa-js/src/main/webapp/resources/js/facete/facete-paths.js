@@ -106,6 +106,10 @@
 			this.steps = steps ? steps : [];
 		},
 		
+		getLength: function() {
+		    return this.steps.length;
+		},
+		
 		isEmpty: function() {
 			var result = this.steps.length === 0;
 			return result;

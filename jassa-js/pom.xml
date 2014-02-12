@@ -49,7 +49,9 @@
 							<jsTargetDir>webapp/resources/js/</jsTargetDir>
 							<jsFinalFile>jassa.js</jsFinalFile>							
 							<jsSourceFiles>
-								<param>util/prototypejs-class.js</param>
+								<param>ext/json-canonical.js</param>
+<!-- 								<param>ext/monsur-jscache.js</param> -->
+								<param>ext/prototypejs-class.js</param>
 							
 							
 							    <param>modules.js</param>
