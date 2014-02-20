@@ -93,7 +93,7 @@
         'http://www.w3.org/2000/01/rdf-schema#label',
     ];
 
-	var prefLangs = ['de', 'en', ''];
+	var prefLangs = ['en', 'de', ''];
 
 
 	/*
@@ -170,13 +170,17 @@
 	// rdf term they correspond. This would be needed for rewriting criterias:
 	// - is 'http://foo.bar' a string or a URI?
 	
-	var foo = store.labels.find({hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}}).concept(concept, true).limit(10);
+	//var criteria = {hiddenLabels: {$elemMatch: {id: {$regex: 'mask'}}}};
+	
+	var foo = store.labels.find().concept(concept, true).limit(10).skip(5);
 	foo.count().done(function(count) {
 	    console.log('count', count); 
 	});
 	
 	foo.asList().done(function(items) {
-	    console.log('Yay', items); 
+	    _(items).each(function(item) {
+	    	console.log('Item: ', items);
+	    });
 	});
 	
 	

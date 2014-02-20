@@ -16,6 +16,11 @@ You may have noticed that we repeatedly used the term '''class'''. While it is t
 
 Personal anecdote: Use of classes (and inheritance) at least doubled my JavaScript productivity - if you are working on a sufficiently complex project, never ever listen to the voices that tell you that design is overrated (and there are many in the JS community) - its everything! (TODO Most likely someone famous could be quoted here) ;)
 
+## Module Overview
+
+![Jassa Module Overview](jassa-doc/images/jassa-module-overview.png)
+
+
 ## How to obtain
 
 * npm 
