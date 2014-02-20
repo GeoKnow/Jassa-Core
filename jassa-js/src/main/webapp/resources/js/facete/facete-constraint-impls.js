@@ -1,6 +1,7 @@
 (function() {
 	
 	var vocab = Jassa.vocab;
+	var sparql = Jassa.sparql;
 	
 	var ns = Jassa.facete;
 

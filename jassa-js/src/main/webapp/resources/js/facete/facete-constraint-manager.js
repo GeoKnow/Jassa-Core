@@ -1,6 +1,7 @@
 (function() {
 
 	var util = Jassa.util;
+	var sparql = Jassa.sparql;
 	
 	var ns = Jassa.facete;
 	

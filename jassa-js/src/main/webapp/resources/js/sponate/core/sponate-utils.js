@@ -90,15 +90,15 @@
 
         createDefaultLabelMap: function(prefLangs, prefLabelPropertyUris, s, p, o) {
 
-            prefLangs = prefLangs || this.defaultPrefLangs;
-            prefLabelPropertyUris = prefLabelPropertyUris || this.prefLabelPropertyUris;
+            prefLangs = prefLangs || ns.SponateUtils.defaultPrefLangs;
+            prefLabelPropertyUris = prefLabelPropertyUris || ns.SponateUtils.prefLabelPropertyUris;
             s = s || 's';
             p = p || 'p';
             o = o || 'o';
             
-            var mapParser = new sponate.MapParser();
+            var mapParser = new ns.MapParser();
             
-            var labelUtilFactory = new sponate.LabelUtilFactory(prefLabelPropertyUris, prefLangs);
+            var labelUtilFactory = new ns.LabelUtilFactory(prefLabelPropertyUris, prefLangs);
                 
             // A label util can be created based on var names and holds an element and an aggregator factory.
             var labelUtil = labelUtilFactory.createLabelUtil(o, s, p);
