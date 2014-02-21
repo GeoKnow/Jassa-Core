@@ -59,7 +59,21 @@
 	var sparql = Jassa.sparql;
 	var sponate = Jassa.sponate;
 	var service = Jassa.service;
-
+	var util = Jassa.util;
+	
+	/* HashCode test
+	var obj = {
+		foo: 'hello',
+		bar: {
+			baz: 1,
+			hashCode: function() { return 'hash'; }
+		}
+		, hashCode: function() { return 'test'; }
+	};
+	var hashCode = util.ObjectUtils.hashCode(obj);
+	alert('hashCode: ' + hashCode);
+	*/
+	
 	/*
 	 * Sponate
 	 */
@@ -69,6 +83,9 @@
 
 	// Rule of thumb: If you use optional in the from attribute, you are probably doing it wrong
 
+	
+	
+	
 	var mode = 1;
 	if(mode == 0) {
 		

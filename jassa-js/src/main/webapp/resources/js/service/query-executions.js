@@ -200,7 +200,7 @@
                  var itBinding = new util.IteratorArray(arr);
                  var r = new ns.ResultSetArrayIteratorBinding(itBinding);
                  return r;
-             }).promise();
+             });//.promise();
              
              return result;
          } 

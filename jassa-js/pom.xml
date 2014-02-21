@@ -87,9 +87,9 @@
 								<param>service/sparql-services.js</param>
 								<param>service/query-caches.js</param>
 
-								<param>service/SparqlServicePaginator.js</param>
-
 								<param>service/query-executions.js</param>
+								<param>service/SparqlServicePaginate.js</param>
+
 								<param>service/query-execution-utils.js</param>
 								<param>service/query-execution-joins.js</param>
 								<param>service/sparql-service-factories.js</param>
