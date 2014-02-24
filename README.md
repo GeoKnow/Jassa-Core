@@ -27,13 +27,13 @@ Personal anecdote: Use of classes (and inheritance) at least doubled my JavaScri
 
         npm install jassa
 
-* bower
+* bower; will fetch files from the [jassa-bower release git repo](https://github.com/GeoKnow/Jassa-Bower)
 
-        Will come once bower does not silently exit with status code 1 ...
+        bower install jassa
 
-* direct download
-
-        to be done...
+* direct download of latest versions from the jassa-bower release git repo
+  * [jassa.js](https://raw2.github.com/GeoKnow/Jassa-Bower/master/jassa.js)
+  * [jassa.min.js](https://raw2.github.com/GeoKnow/Jassa-Bower/master/jassa.js)
 
 
 ## Dependencies
