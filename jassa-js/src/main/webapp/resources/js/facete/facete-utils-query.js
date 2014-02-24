@@ -146,12 +146,14 @@
             }
             
             //result.groupBy.push(outputVar);
+            /*
             if(groupVars) {
                 _(groupVars).each(function(groupVar) {
                     varQuery.getProjectVars().add(groupVar);
                     varQuery.getGroupBy().push(new sparql.ExprVar(groupVar));
                 });
             }
+            */
             
             varQuery.setDistinct(useDistinct);
             if(variable) {
@@ -163,6 +165,14 @@
             var elementVarQuery = new sparql.ElementSubQuery(varQuery);
             
             var result = new sparql.Query();
+            
+            if(groupVars) {
+                _(groupVars).each(function(groupVar) {
+                    result.getProjectVars().add(groupVar);
+                    result.getGroupBy().push(new sparql.ExprVar(groupVar));
+                });
+            }
+            
             result.getProjectVars().add(outputVar, new sparql.E_Count());
             result.getElements().push(elementVarQuery);
             
