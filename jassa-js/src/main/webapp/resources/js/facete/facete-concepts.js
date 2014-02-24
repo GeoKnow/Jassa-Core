@@ -2,8 +2,9 @@
 	
 	var sparql = Jassa.sparql;
 	
-	var ns = Jassa.facete;
 	var rdf = Jassa.rdf;
+
+	var ns = Jassa.facete;
 
 	
 	/**
@@ -101,7 +102,36 @@
 			return result;
 		},
 
+		
 		createQueryCount: function(concept, outputVar) {
+		    var result = ns.QueryUtils.createQueryCount(concept.getElements(), null, concept.getVar(), outputVar, null, true);
+		    
+		    return result;
+		},
+		
+        createQueryCountNotAsConciseAsPossible: function(concept, outputVar) {
+            /*
+            var subQuery = new sparql.Query();
+            
+            subQuery.getProjectVars().add(concept.getVar());
+            subQuery.setDistinct(true);
+
+            var subQueryElements = subQuery.getElements();
+            var conceptElements = concept.getElements();
+            subQueryElements.push.apply(subQueryElements, conceptElements)
+            */
+            
+            var subQuery = ns.ConceptUtils.createQueryList(concept);
+            
+            var result = new sparql.Query();
+            result.getProjectVars().add(outputVar, new sparql.E_Count());
+
+            result.getElements().push(subQuery);
+ 
+            return result;          
+        },
+
+		createQueryCountDoesNotWorkWithVirtuoso: function(concept, outputVar) {
 			var result = new sparql.Query();
 			
 			result.getProjectVars().add(outputVar, new sparql.E_Count(new sparql.ExprVar(concept.getVar()), true));

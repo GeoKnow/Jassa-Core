@@ -150,6 +150,9 @@
 								<param>geo/geo-filter-utils.js</param>
 								<param>geo/geo-quad-tree-cache.js</param>
 								<param>geo/geo-map-state.js</param>
+								<param>geo/openlayers-utils.js</param>
+								
+								<param>geo/geo-sponate-utils.js</param>
 							</jsSourceFiles>
 							
 

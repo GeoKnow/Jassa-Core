@@ -34,15 +34,17 @@
          * 
          */
         hashCode: function(obj) {
-//            if(obj == null) {
-//                return '-1';
-//            }            
+
             var result = ns.JsonUtils.stringifyCyclic(obj, function(key, val) {
                 if(_(val).isObject()) {
+
+                    var hashFnName = _(ns.ObjectUtils.defaultHashFnNames).find(function(name) {
+                        return _(val[name]).isFunction();
+                    });
                     
-                    var fnHashCode = val.hashCode;
-                    
-                    if(_(fnHashCode).isFunction()) {
+                    var fnHashCode = val[hashFnName];
+
+                    if(fnHashCode) {
                         val = fnHashCode.apply(val);
                     }
                     
@@ -54,4 +56,5 @@
         }
     };
     
+    ns.ObjectUtils.defaultHashFnNames = ['hashCode']
 })();

@@ -83,7 +83,11 @@
 			
 			return result;
 		},
-			
+		
+		hashCode: function() {
+		   return this.getServiceId() + '/' + this.getStateHash();
+		},
+		
 		setDefaultGraphs: function(uriStrs) {
 			this.defaultGraphUris = uriStrs ? uriStrs : [];
 		},
@@ -147,6 +151,10 @@
 	        return this.qef.getStateHash();
 	    },
 	    
+	    hashCode: function() {
+	        return 'cached:' + this.qef.hashCode();
+	    },
+
 	    createQueryExecutionStr: function(queryStr) {
 	        var serviceId = this.qef.getServiceId();
 	        var stateHash = this.qef.getStateHash();

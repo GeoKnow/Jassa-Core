@@ -39,7 +39,10 @@ var Jassa = {
 	
 	client: {},
 	
-	geo: {}
+	geo: {
+	    openlayers: {},
+	    leaflet: {}
+	}
 };
 
 // Export for nodejs

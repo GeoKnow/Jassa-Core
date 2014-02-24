@@ -104,12 +104,84 @@
 //				resultElements.push.apply(resultElements, elements);
 //			}
 //		},
-			
+
+        /**
+         * Creates a query with
+         * Select (Count(*) As outputVar) {{ Select Distinct ?variable { element } }} 
+         * 
+         */		
+        createQueryCount: function(elements, limit, variable, outputVar, groupVars, useDistinct, options) {
+
+            var exprVar = variable ? new sparql.ExprVar(variable) : null;
+
+            var varQuery = new sparql.Query();
+            if(limit) {
+                var subQuery = new sparql.Query();
+                
+                var subQueryElements = subQuery.getElements();
+                subQueryElements.push.apply(subQueryElements, elements); //element.copySubstitute(function(x) { return x; }));
+    
+                if(groupVars) {
+                    for(var i = 0; i < groupVars.length; ++i) {                 
+                        var groupVar = groupVars[i];                    
+                        subQuery.projectVars.add(groupVar);
+                        //subQuery.groupBy.push(groupVar);
+                    }
+                }
+                
+                if(variable) {
+                    subQuery.projectVars.add(variable);
+                }
+                
+                if(subQuery.projectVars.vars.length === 0) {
+                    subQuery.isResultStar = true;
+                }
+                
+                subQuery.limit = limit;
+                
+                varQuery.getElements().push(new sparql.ElementSubQuery(subQuery));            
+            } else {
+                var varQueryElements = varQuery.getElements();
+                varQueryElements.push.apply(varQueryElements, elements);
+            }
+            
+            //result.groupBy.push(outputVar);
+            if(groupVars) {
+                _(groupVars).each(function(groupVar) {
+                    varQuery.getProjectVars().add(groupVar);
+                    varQuery.getGroupBy().push(new sparql.ExprVar(groupVar));
+                });
+            }
+            
+            varQuery.setDistinct(useDistinct);
+            if(variable) {
+                varQuery.getProjectVars().add(variable)
+            } else {
+                varQuery.setResultStar(true);
+            }
+
+            var elementVarQuery = new sparql.ElementSubQuery(varQuery);
+            
+            var result = new sparql.Query();
+            result.getProjectVars().add(outputVar, new sparql.E_Count());
+            result.getElements().push(elementVarQuery);
+            
+            //exp, new sparql.E_Count(exprVar, useDistinct));
+            //ns.applyQueryOptions(result, options);
+            
+            
+            
+    //debugger;
+            //console.log("Created count query:" + result + " for element " + element);
+            return result;
+        },
+        
+        
 		/**
 		 * Creates a query with Count(Distinct ?variable)) As outputVar for an element.
 		 * 
 		 */
-		createQueryCount: function(elements, limit, variable, outputVar, groupVars, useDistinct, options) {
+		createQueryCountDoesNotWorkWithVirtuoso: function(elements, limit, variable, outputVar, groupVars, useDistinct, options) {
 	
 			
 			var exprVar = variable ? new sparql.ExprVar(variable) : null;
