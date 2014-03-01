@@ -33,10 +33,13 @@
          * Recursively iterate the object tree and use a .hashCode function if available
          * 
          */
-        hashCode: function(obj) {
+        hashCode: function(obj, skipOnce) {
 
             var result = ns.JsonUtils.stringifyCyclic(obj, function(key, val) {
-                if(_(val).isObject()) {
+                
+                var r = null;
+
+                if(!skipOnce && _(val).isObject()) {
 
                     var hashFnName = _(ns.ObjectUtils.defaultHashFnNames).find(function(name) {
                         return _(val[name]).isFunction();
@@ -45,11 +48,20 @@
                     var fnHashCode = val[hashFnName];
 
                     if(fnHashCode) {
-                        val = fnHashCode.apply(val);
+                        r = fnHashCode.apply(val);
+                    } else {
+                        r = val;
                     }
-                    
-                    return val;
+
+                } else {
+                    r = val;
                 }
+                
+                if(skipOnce) {
+                    skipOnce = false;
+                }
+                
+                return r;
             });
             
             return result;

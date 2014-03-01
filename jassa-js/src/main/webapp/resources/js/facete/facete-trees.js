@@ -1,5 +1,6 @@
 (function() {
 
+    var rdf = Jassa.rdf;
 	var sparql = Jassa.sparql;
 	
 	var ns = Jassa.facete;
@@ -203,7 +204,7 @@
 		
 		getVar: function() {
 			var varName = this.varNode.getVariableName();
-			var result = sparql.Node.v(varName);
+			var result = rdf.NodeFactory.createVar(varName);
 			return result;			
 		},
 		

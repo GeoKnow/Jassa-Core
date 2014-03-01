@@ -1,5 +1,7 @@
 (function() {
 	
+    var util = Jassa.util;
+    
 	var ns = Jassa.facete;
 	
 	/**
@@ -10,18 +12,22 @@
 	 */
 	ns.ConstraintSpec = Class.create({
 		getName: function() {
+            console.log('[ERROR] Override me');		    
             throw 'Override me';
 		},
 		
 		getDeclaredPaths: function() {
+		    console.log('[ERROR] Override me');
             throw 'Override me';
 		},
 		
 		equals: function() {
+	          console.log('[ERROR] Override me');
             throw 'Override me';
 		},
 		
 		hashCode: function() {
+	        console.log('[ERROR] Override me');
 		    throw 'Override me';
 		}
 	});
@@ -81,6 +87,11 @@
 		    
 		    var r = a && b &&c;
 		    return r;
+		},
+		
+		hashCode: function() {
+		    var result = util.ObjectUtils.hashCode(this, true);
+		    return result;
 		}
 	});
 	

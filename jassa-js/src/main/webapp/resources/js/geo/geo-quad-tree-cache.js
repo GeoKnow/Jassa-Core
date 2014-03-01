@@ -201,7 +201,7 @@
     
             // Fetch the items
             var baseFlow = this.createFlowForGlobal().find().concept(this.concept);            
-            var result = baseFlow.asList().pipe(function(docs) {
+            var result = baseFlow.asList(true).pipe(function(docs) {
                 //console.log("Global fetching: ", geomToFeatureCount);
                 self.loadTaskAction(node, docs);
                 
@@ -419,7 +419,7 @@
                 //if(node.data.absoluteGeomToFeatureCount)
 
                 var loadFlow = self.createFlowForBounds(node.getBounds()).find().concept(this.concept);
-                var loadTask = loadFlow.asList().pipe(function(docs) {
+                var loadTask = loadFlow.asList(true).pipe(function(docs) {
                     self.loadTaskAction(node, docs);
                 });
     

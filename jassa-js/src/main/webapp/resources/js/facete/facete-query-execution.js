@@ -566,7 +566,7 @@
 			var facetConceptItems = this.facetConceptGenerator.createConceptFacetValues(path, isInverse, properties, isNegated);
 			
 
-			var outputVar = rdf.NodeFactory.createVar("_c_");
+			var outputVar = rdf.NodeFactory.createVar('_c_');
 			
 						
             // Initialize the result

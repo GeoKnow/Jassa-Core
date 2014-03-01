@@ -345,7 +345,7 @@
 				    facetElements = baseElements;
 				}  
 			} else {
-				facetElements.push.apply(baseElements); 
+				facetElements.push.apply(facetElements, baseElements); 
 			}
 			
 

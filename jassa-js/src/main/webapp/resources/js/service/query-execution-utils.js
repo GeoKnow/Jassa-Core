@@ -76,7 +76,32 @@
 		},
 		
 		
-		
+		/**
+		 * Count the results of a query, whith fallback on timeouts
+		 * 
+		 */
+		fetchCountQuery: function(sparqlService, query, firstTimeoutInMs, fallbackCount)
+		{
+		    var qe = sparqlService.createQueryExecution(query);
+		    qe.setTimeout(timeoutInMs);
+
+		    var countVar = null;
+		    
+		    var result = jQuery.Deferred();
+		    ns.ServiceUtils.fetchInt(qe, countVar).done(function(count) {
+		        result.resolve({
+		            count: count,
+		            hasMoreItems: false
+		        });
+		    }).fail(function() {
+		        // Try counting with the fallback size
+		        
+		    });
+		    
+		    var result = deferred.promise();
+		    return result;
+		},
+
 	    
 	    //ns.globalSparqlCacheQueue = [];
 	    

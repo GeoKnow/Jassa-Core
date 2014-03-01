@@ -12,6 +12,7 @@
 	
 	ns.ConstraintElementFactory = Class.create({
 		createElementsAndExprs: function(rootFacetNode, constraintSpec) {
+		    console.log('[ERROR] Override me');
 			throw "Override me";
 		}
 	});

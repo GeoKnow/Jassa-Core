@@ -247,6 +247,10 @@
 
 	<script>
 	
+var test = new facete.FacetTreeConfig();
+var str = test.hashCode();
+alert(str);
+
 	
 	var markerFillColors = ['#ff0000', '#0000ff', '00ff00'];
 	var markerStrokeColors = ['#ff8080', '#8080ff', '80ff80'];
