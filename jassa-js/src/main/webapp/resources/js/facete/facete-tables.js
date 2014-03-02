@@ -140,6 +140,16 @@
             this.colIdToAgg = {};
             
             this.limitAndOffset = new ns.LimitAndOffset();
+            
+            this._isDistinct = true;
+        },
+        
+        isDistinct: function() {
+            return this._isDistinct;
+        },
+        
+        setDistinct: function(isDistinct) {
+            this._isDistinct = isDistinct;
         },
         
         getColumnIds: function() {
@@ -478,6 +488,9 @@
             }
             
             
+            var isDistinct = tableMod.isDistinct();
+
+            
             var result = new sparql.Query();
             result.getElements().push(element);
             
@@ -527,6 +540,9 @@
                     var expr = idToColExpr[nonAggColumnId]; 
                     result.getGroupBy().push(expr); 
                 });
+                
+                // Aggregation implies distinct
+                isDistinct = false;
             }
             
             
@@ -587,6 +603,8 @@
                 
                 
             });
+            
+            result.setDistinct(isDistinct);
             
             return result;
         }

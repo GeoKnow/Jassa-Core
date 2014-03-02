@@ -27,12 +27,11 @@
 //			throw "Override me";
 //		}
 //	});
-	
 
 	ns.ConstraintElementFactoryExist = Class.create(ns.ConstraintElementFactory, {
 		createElementsAndExprs: function(rootFacetNode, constraintSpec) {
 			var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
-			var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];		
+			var elements = sparql.ElementUtils.createElementsTriplesBlock(facetNode.getTriples());
 			var triplesAndExprs = new ns.ElementsAndExprs(elements, []);
 			
 			return result;
@@ -51,7 +50,8 @@
 			var pathVar = facetNode.getVar();
 			var exprVar = new sparql.ExprVar(pathVar);
 			
-			var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];
+			//var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];
+			var elements = sparql.ElementUtils.createElementsTriplesBlock(facetNode.getTriples());
 	
 			//var valueExpr = constraintSpec.getValue();
 			var valueExpr = sparql.NodeValue.makeNode(constraintSpec.getValue());

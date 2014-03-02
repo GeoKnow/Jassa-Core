@@ -326,8 +326,12 @@
 
 			
 			var excludePath = excludeSelfConstraints ? path : null;			
-			var constraintElements = constraintManager.createElements(rootFacetNode, excludePath);
+			//var constraintElements = constraintManager.createElements(rootFacetNode, excludePath);
 
+			var elementsAndExprs = constraintManager.createElementsAndExprs(rootFacetNode, excludePath);
+			var constraintElements = elementsAndExprs.getElements();
+			var constraintExprs = elementsAndExprs.getExprs();
+			
 			var facetNode = rootFacetNode.forPath(path);
 			var facetVar = facetNode.getVar();
 
@@ -347,6 +351,14 @@
 			} else {
 				facetElements.push.apply(facetElements, baseElements); 
 			}
+			
+			var filterElements = _(constraintExprs).map(function(expr) {
+			    var element = new sparql.ElementFilter(expr);
+			    return element;
+			});
+			
+			facetElements.push.apply(facetElements, filterElements);
+			
 			
 
 			// TODO Fix the API - it should only need one call
@@ -387,7 +399,8 @@
 				excludePath = path.copyAppendStep(singleStep);
 			}
 			
-			var constraintElements = constraintManager.createElements(rootFacetNode, excludePath);
+			var elementsAndExprs = constraintManager.createElementsAndExprs(rootFacetNode, excludePath);
+			var constraintElements = elementsAndExprs.toElements();
 
 			var facetNode = rootFacetNode.forPath(path);
 			var facetVar = facetNode.getVar();

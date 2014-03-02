@@ -161,29 +161,29 @@
 //			return result;
 //		},
 		
-		createElements: function(facetNode, excludePath) {
+		createElementsAndExprs: function(facetNode, excludePath) {
 			//var triples = [];
 			var elements = [];
+			var resultExprs = [];
 			
 			
 			var pathToExprs = {};
 			
 			var self = this;
 
-			_.each(this.constraints, function(constraint) {
+			_(this.constraints).each(function(constraint) {
 				var paths = constraint.getDeclaredPaths();
 				
-				var pathId = _.reduce(
-						paths,
-						function(memo, path) {
-							return memo + " " + path;
-						},
-						""
+				var pathId = _(paths).reduce(
+					function(memo, path) {
+						return memo + ' ' + path;
+					},
+					''
 				);
 
 				// Check if any of the paths is excluded
 				if(excludePath) {
-					var skip = _.some(paths, function(path) {
+					var skip = _(paths).some(function(path) {
 						//console.log("Path.equals", excludePath, path);
 						
 						var tmp = excludePath.equals(path);
@@ -196,7 +196,7 @@
 				}
 				
 				
-				_.each(paths, function(path) {
+				_(paths).each(function(path) {
 					
 					//if(path.equals(excludePath)) {
 						// TODO Exclude only works if there is only a single path
@@ -241,9 +241,21 @@
 				}				
 			});
 
-			_.each(pathToExprs, function(exprs) {
+			_(pathToExprs).each(function(exprs) {
 				var orExpr = sparql.orify(exprs);
-				var element = new sparql.ElementFilter([orExpr]);
+				resultExprs.push(orExpr);
+			});
+			
+	        var result = new ns.ElementsAndExprs(elements, resultExprs);
+
+	        return result;
+		} 
+	});
+
+		/*
+	    createElements: function() {
+			
+				var element = new sparql.ElementFilter(orExpr);
 
 				//console.log("andExprs" +  element);
 
@@ -258,6 +270,7 @@
 		}
 		
 	});
+	*/
 
 })();
 

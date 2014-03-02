@@ -199,25 +199,34 @@
 	});
 	
 	
+	/**
+	 * Variables of conceptB are renamed
+	 * 
+	 */
 	ns.ElementFactoryJoinConcept = Class.create(ns.ElementFactory, {
         initialize: function(conceptFactoryA, conceptFactoryB, joinType) {
             this.conceptFactoryA = conceptFactoryA;
             this.conceptFactoryB = conceptFactoryB;
-            this.joinType = joinType ? ns.JoinType.INNER_JOIN : joinType;
+            this.joinType = joinType || ns.JoinType.INNER_JOIN;
         },
 	    
         createElement: function() {
+
             var conceptA = this.conceptFactoryA.createConcept();
             var conceptB = this.conceptFactoryB.createConcept();
             
             var elementA = conceptA.getElement();
             var elementB = conceptB.getElement();
             
+            if(conceptB.isSubjectConcept()) {
+                return elementA;
+            }
+            
             var joinVarsA = [conceptA.getVar()];
             var joinVarsB = [conceptB.getVar()];
             
-            var rootJoinNode = ns.JoinBuilderElement.create(elementB);
-            var joinNode = rootJoinNode.joinAny(this.joinType, joinVarsB, elementA, joinVarsA);
+            var rootJoinNode = ns.JoinBuilderElement.create(elementA);
+            var joinNode = rootJoinNode.joinAny(this.joinType, joinVarsA, elementB, joinVarsB);
 
             var joinBuilder = joinNode.getJoinBuilder();
             var elements = joinBuilder.getElements();
@@ -229,6 +238,26 @@
 	
 	
 	ns.ElementUtils = {
+        createFilterElements: function(exprs) {
+            var result = _(exprs).map(function(expr) {
+                var r = new sparql.ElementFilter(expr);
+                return r;
+            });
+            
+            return result;
+        },
+            
+        createElementsTriplesBlock: function(triples) {
+            var result = [];
+            
+            if(triples.length > 0) {
+                var element = new sparql.ElementTriplesBlock(triples);
+                result.push(element);
+            }
+            
+            return result;
+        }, 
+
 		flatten: function(elements) {
 			var result = _.map(elements, function(element) { return element.flatten(); });
 
