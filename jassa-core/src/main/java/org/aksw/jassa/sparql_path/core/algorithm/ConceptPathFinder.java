@@ -75,39 +75,70 @@ public class ConceptPathFinder {
 		return result;
 	}
 	
-	public static List<Path> findPaths(QueryExecutionFactory qef, Concept sourceConcept, Concept tmpTargetConcept, int nPaths, int maxHops) {
+	public static Model createJoinSummary(QueryExecutionFactory qef) {
+	 
+        QueryExecution qe = qef.createQueryExecution("Select ?x ?y { ?x <" + VocabPath.joinsWith.getURI() + "> ?y }");
+        
+        ResultSet rs = qe.execSelect();
+        
+        Model result = processJoinSummaryQuery(rs);
+        
+        return result;
+	}
+	
+	public static Model createDefaultJoinSummaryModel(QueryExecutionFactory qef) {
+        
+        ResultSet rs = getPropertyAdjacency(qef);
+        
+        Model result = processJoinSummaryQuery(rs);
+        
+        return result;        
+	}
+	
+	public static Model processJoinSummaryQuery(ResultSet rs) {
+	    Model joinSummaryModel = ModelFactory.createDefaultModel();
 
+	    while(rs.hasNext()) {
+            QuerySolution qs = rs.next();
+            
+            Resource x = qs.getResource("x");
+            Resource y = qs.getResource("y");
+            
+            joinSummaryModel.add(x, VocabPath.joinsWith, y);
+            
+            
+//          String x = qs.get("x").asNode().getURI();
+//          String y = qs.get("y").asNode().getURI();
+
+            
+            
+            //System.out.println(x + "   " + y);
+            //transitionGraph.addVertex(arg0);
+        }
+        logger.debug("Join summary model contains " + joinSummaryModel.size() + " triples");
+        
+        
+        return joinSummaryModel;
+	}
+	
+    public static List<Path> findPaths(QueryExecutionFactory qef, Concept sourceConcept, Concept tmpTargetConcept, int nPaths, int maxHops, Model joinSummaryModel) {
+        
+        /*
+        if(joinSummaryModel == null) {
+            joinSummaryModel = createDefaultJoinSummaryModel(qef);
+        }*/
+ 
 		
 		Concept targetConcept = tmpTargetConcept.makeDistinctFrom(sourceConcept);
 		
 		logger.debug("Distinguished target concept: " + targetConcept);
+		
 		
 
 		//PathConstraint.getPathConstraintsSimple(targetConcept);
 		
 		//UndirectedGraph<String, EdgeTransition> transitionGraph = new SimpleGraph<String, EdgeTransition>(EdgeTransition.class);
 
-		Model joinSummaryModel = ModelFactory.createDefaultModel();
-		
-        ResultSet rs = getPropertyAdjacency(qef);
-		while(rs.hasNext()) {
-			QuerySolution qs = rs.next();
-			
-			Resource x = qs.getResource("x");
-			Resource y = qs.getResource("y");
-			
-			joinSummaryModel.add(x, VocabPath.joinsWith, y);
-			
-			
-//			String x = qs.get("x").asNode().getURI();
-//			String y = qs.get("y").asNode().getURI();
-
-			
-			
-			//System.out.println(x + "   " + y);
-			//transitionGraph.addVertex(arg0);
-		}
-		logger.debug("Join summary model contains " + joinSummaryModel.size() + " triples");
 		
 		
 		// Retrieve properties of the source concept

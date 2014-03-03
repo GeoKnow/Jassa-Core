@@ -2,6 +2,7 @@ package org.aksw.jassa.web.api;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -9,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
+import org.aksw.jassa.sparql_path.core.VocabPath;
 import org.aksw.jassa.sparql_path.core.algorithm.ConceptPathFinder;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
 import org.aksw.jassa.sparql_path.core.domain.Path;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+import com.hp.hpl.jena.rdf.model.Model;
 
 
 @Service
@@ -40,7 +43,10 @@ public class PathFindingApi {
             @QueryParam("source-element") String sourceElement,
             @QueryParam("source-var") String sourceVar,
             @QueryParam("target-element") String targetElement,
-            @QueryParam("target-var") String targetVar)
+            @QueryParam("target-var") String targetVar,
+            @QueryParam("js-service-uri") String joinSummaryServiceUri,
+            @QueryParam("js-graph-uri") List<String> joinSummaryGraphUris
+    )
         throws ClassNotFoundException, SQLException {
         
         Concept sourceConcept = Concept.create(sourceElement, sourceVar);        
@@ -48,7 +54,21 @@ public class PathFindingApi {
         
         QueryExecutionFactory sparqlService = sparqlServiceFactory.createSparqlService(serviceUri, defaultGraphUris);
 
-        List<Path> paths = ConceptPathFinder.findPaths(sparqlService, sourceConcept, targetConcept, 10, 10);
+        Model joinSummaryModel;
+        
+        if(joinSummaryServiceUri != null) {
+            
+            if(joinSummaryGraphUris == null) {
+                joinSummaryGraphUris = Collections.emptyList();
+            }
+            
+            QueryExecutionFactory jsSparqlService = sparqlServiceFactory.createSparqlService(joinSummaryServiceUri, joinSummaryGraphUris);
+            joinSummaryModel = ConceptPathFinder.createJoinSummary(jsSparqlService);
+        } else {
+            joinSummaryModel = ConceptPathFinder.createDefaultJoinSummaryModel(sparqlService); 
+        }
+        
+        List<Path> paths = ConceptPathFinder.findPaths(sparqlService, sourceConcept, targetConcept, 10, 10, joinSummaryModel);
         
         List<String> tmp = new ArrayList<String>();
         for(Path path : paths) {

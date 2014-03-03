@@ -8,10 +8,13 @@
      * 
      */
     ns.ConceptPathFinderApi = Class.create({
-        initialize: function(apiUrl, sparqlServiceIri, defaultGraphIris) {
+        initialize: function(apiUrl, sparqlServiceIri, defaultGraphIris, joinSummaryServiceIri, joinSummaryGraphIris) {
             this.apiUrl = apiUrl;
             this.sparqlServiceIri = sparqlServiceIri;
             this.defaultGraphIris = defaultGraphIris;
+            
+            this.joinSummaryServiceIri = joinSummaryServiceIri;
+            this.joinSummaryGraphIris = joinSummaryGraphIris || [];
         },
     
         findPaths: function(sourceConcept, targetConcept) {
@@ -25,7 +28,9 @@
                     'source-element': sourceConcept.getElement().toString(),
                     'source-var':  sourceConcept.getVar().getName(),
                     'target-element': targetConcept.getElement().toString(),
-                    'target-var': targetConcept.getVar().getName()
+                    'target-var': targetConcept.getVar().getName(),
+                    'js-service-uri': this.joinSummaryServiceIri,
+                    'js-defaultGraphIris': this.joinSummaryGraphIris
                 }
             };
 
