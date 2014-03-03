@@ -120,7 +120,13 @@ public class ConceptPathFinder {
         
         return joinSummaryModel;
 	}
-	
+
+    public static List<Path> findPaths(QueryExecutionFactory qef, Concept sourceConcept, Concept tmpTargetConcept, int nPaths, int maxHops) {
+        Model joinSummaryModel = createDefaultJoinSummaryModel(qef);
+        List<Path> result = findPaths(qef, sourceConcept, tmpTargetConcept, nPaths, maxHops, joinSummaryModel);
+        return result;
+    }
+    
     public static List<Path> findPaths(QueryExecutionFactory qef, Concept sourceConcept, Concept tmpTargetConcept, int nPaths, int maxHops, Model joinSummaryModel) {
         
         /*
