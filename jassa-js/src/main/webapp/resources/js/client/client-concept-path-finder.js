@@ -13,8 +13,12 @@
             this.sparqlServiceIri = sparqlServiceIri;
             this.defaultGraphIris = defaultGraphIris;
             
+            // TODO Path finding options and strategy should go into generic attributes
+            //this.nPaths = nPaths;
+            //this.maxHops = maxHops;
+            
             this.joinSummaryServiceIri = joinSummaryServiceIri;
-            this.joinSummaryGraphIris = joinSummaryGraphIris || [];
+            this.joinSummaryGraphIris = joinSummaryGraphIris;
         },
     
         findPaths: function(sourceConcept, targetConcept) {
@@ -22,6 +26,7 @@
                 url: this.apiUrl,
                 dataType: 'json',
                 crossDomain: true,
+                traditional: true, // Serializes JSON arrays by repeating the query string paramater
                 data: {
                     'service-uri': this.sparqlServiceIri,
                     'default-graph-uri': this.defaultGraphIris,
@@ -30,7 +35,9 @@
                     'target-element': targetConcept.getElement().toString(),
                     'target-var': targetConcept.getVar().getName(),
                     'js-service-uri': this.joinSummaryServiceIri,
-                    'js-defaultGraphIris': this.joinSummaryGraphIris
+                    'js-graph-uri': this.joinSummaryGraphIris
+                    //'n-paths': this.nPaths,
+                    //'max-hops': this.maxHops
                 }
             };
 

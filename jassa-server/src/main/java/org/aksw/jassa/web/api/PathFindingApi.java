@@ -45,9 +45,14 @@ public class PathFindingApi {
             @QueryParam("target-element") String targetElement,
             @QueryParam("target-var") String targetVar,
             @QueryParam("js-service-uri") String joinSummaryServiceUri,
-            @QueryParam("js-graph-uri") List<String> joinSummaryGraphUris
+            @QueryParam("js-graph-uri") List<String> joinSummaryGraphUris,
+            @QueryParam("n-paths") Integer nPaths,
+            @QueryParam("max-hops") Integer maxHops
     )
         throws ClassNotFoundException, SQLException {
+        
+        nPaths = nPaths != null? nPaths : 3;
+        maxHops = maxHops != null ? maxHops : 3;
         
         Concept sourceConcept = Concept.create(sourceElement, sourceVar);        
         Concept targetConcept = Concept.create(targetElement, targetVar);
@@ -68,7 +73,7 @@ public class PathFindingApi {
             joinSummaryModel = ConceptPathFinder.createDefaultJoinSummaryModel(sparqlService); 
         }
         
-        List<Path> paths = ConceptPathFinder.findPaths(sparqlService, sourceConcept, targetConcept, 10, 10, joinSummaryModel);
+        List<Path> paths = ConceptPathFinder.findPaths(sparqlService, sourceConcept, targetConcept, nPaths, maxHops, joinSummaryModel);
         
         List<String> tmp = new ArrayList<String>();
         for(Path path : paths) {

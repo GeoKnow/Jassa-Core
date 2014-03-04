@@ -19,6 +19,7 @@ import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.aksw.jena_sparql_api.utils.GeneratorBlacklist;
 import org.jgrapht.GraphPath;
+import org.jgrapht.alg.DijkstraShortestPath;
 import org.jgrapht.alg.KShortestPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -40,12 +41,19 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sdb.core.Generator;
 import com.hp.hpl.jena.sdb.core.Gensym;
+import com.hp.hpl.jena.sparql.core.Var;
 import com.hp.hpl.jena.sparql.expr.E_Equals;
+import com.hp.hpl.jena.sparql.expr.E_OneOf;
+import com.hp.hpl.jena.sparql.expr.ExprList;
 import com.hp.hpl.jena.sparql.expr.ExprVar;
+import com.hp.hpl.jena.sparql.expr.NodeValue;
 import com.hp.hpl.jena.sparql.syntax.Element;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
+import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import com.hp.hpl.jena.sparql.syntax.PatternVars;
+import com.hp.hpl.jena.vocabulary.OWL;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 class GraphPathComparator<V, E>
     implements Comparator<GraphPath<V, E>> {
@@ -150,17 +158,53 @@ public class ConceptPathFinder {
 		// Retrieve properties of the source concept
 		// Example: If our source concept is ?s a Type", we do not know which properties the concept has
 
-		Concept propertyConcept = QueryGenerationUtils.createPropertyQuery(sourceConcept);
+		Concept propertyConcept;
+		if(sourceConcept.isSubjectConcept()) {
+		    List<Element> elements = sourceConcept.getElements();
+		    ElementTriplesBlock etb = (ElementTriplesBlock) elements.get(0);
+		    Triple triple = etb.getPattern().get(0);
+		    
+		    Var s = (Var)triple.getSubject();
+		    
+		    Var p = (Var)triple.getPredicate();
+		    
+		    ElementFilter pFilter = new ElementFilter(new E_Equals(new ExprVar(p), NodeValue.makeNode(RDF.type.asNode())));
+		    
+		    Var o = (Var)triple.getObject();
+		    ExprList oExprs = new ExprList();
+		    oExprs.add(NodeValue.makeNode(RDF.Property.asNode()));
+		    oExprs.add(NodeValue.makeNode(OWL.DatatypeProperty.asNode()));
+		    oExprs.add(NodeValue.makeNode(OWL.ObjectProperty.asNode()));
+		    
+            ElementFilter oFilter = new ElementFilter(new E_OneOf(new ExprVar(o), oExprs));
+		    
+            List<Element> newElements = new ArrayList<Element>();
+            newElements.add(etb);
+            newElements.add(pFilter);
+            newElements.add(oFilter);
+		    
+            propertyConcept = new Concept(newElements, s);
+            
+		} else {
+		    propertyConcept = QueryGenerationUtils.createPropertyQuery(sourceConcept);
+		}
+		 
 		Query propertyQuery = propertyConcept.asQuery();
 		logger.debug("Property query: " + propertyQuery);
 
 
 		List<Node> nodes = QueryExecutionUtils.executeList(qef, propertyQuery);
-		logger.debug("Retrieved " + nodes.size() + " properties: " + nodes);
+		logger.debug("Retrieved " + nodes.size() + " properties");// + nodes);
 
 		
 		// Add the start node to the transition model
 		for(Node node : nodes) {
+		    
+		    // TODO Hack to see how this affects performance and quality
+		    if(node.getURI().startsWith("http://dbpedia.org/property/")) {
+		        continue;
+		    }
+		    
 			Triple triple = new Triple(VocabPath.start.asNode(), VocabPath.joinsWith.asNode(), node);
 
 			
@@ -217,24 +261,37 @@ public class ConceptPathFinder {
 		    graph.addEdge(s, o);
 		}
 		
+		logger.debug("Graph Metrics: " + graph.vertexSet().size() + " vertices, " + graph.edgeSet().size() + " edges; based on (at least) " + joinSummaryModel.size() + " triples"); 
 		
 		//PathCallbackList callback = new PathCallbackList();
-        KShortestPaths<Node, DefaultEdge> kShortestPaths = new KShortestPaths<Node, DefaultEdge>(graph, startVertex, nPaths, maxHops);
-
+        //xx//KShortestPaths<Node, DefaultEdge> kShortestPaths = new KShortestPaths<Node, DefaultEdge>(graph, startVertex, nPaths, maxHops);
+		
 		List<GraphPath<Node, DefaultEdge>> candidateGraphPaths = new ArrayList<GraphPath<Node, DefaultEdge>>();
+		int i = 0;
 		for(Node candidate : candidates) {
+		    ++i;
+		    logger.debug("Processing candidate " + i + "/" + candidates.size() + ": " + candidate + " (nPaths = " + nPaths + ", maxHops = " + maxHops + ")");
 			//Resource dest = joinSummaryModel.asRDFNode(candidate).asResource();
-			
+		    
 		    if(startVertex.equals(candidate)) {
 		        GraphPath<Node, DefaultEdge> graphPath = new GraphPathImpl<Node, DefaultEdge>(graph, startVertex, candidate, new ArrayList<DefaultEdge>(), 0.0);
 		        candidateGraphPaths.add(graphPath);
 		    }
 		    else {
+		        DijkstraShortestPath<Node, DefaultEdge> dijkstraShortestPath = new DijkstraShortestPath<Node, DefaultEdge>(graph, startVertex, candidate);
+		        GraphPath<Node, DefaultEdge> tmp = dijkstraShortestPath.getPath();
+		        if(tmp != null) {
+		            candidateGraphPaths.add(tmp);
+		        }
+
+		        
 		        // This code fires an exception if start equals target
+		        /*
 		        List<GraphPath<Node, DefaultEdge>> tmp = kShortestPaths.getPaths(candidate);
 		        if(tmp != null) {
 		            candidateGraphPaths.addAll(tmp);
 		        }
+		        */
 		    }
 			
 			//NeighborProvider<Resource> np = new NeighborProviderModel(joinSummaryModel);

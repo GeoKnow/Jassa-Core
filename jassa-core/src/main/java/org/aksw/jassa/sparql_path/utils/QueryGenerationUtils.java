@@ -16,6 +16,8 @@ import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import com.hp.hpl.jena.sparql.syntax.PatternVars;
 
 public class QueryGenerationUtils {
+    
+    
 	/**
 	 * Takes a concept and adds
 	 * 

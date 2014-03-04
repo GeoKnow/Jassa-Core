@@ -413,12 +413,12 @@
             var result = [];
                         
             //$.each(nodes, function(index, node) {
-            _.each(nodes, function(node) {
+            _each(nodes).each(function(node) {
                 //console.debug("Inferred minimum item count: ", node.infMinItemCount);
     
                 //if(node.data.absoluteGeomToFeatureCount)
 
-                var loadFlow = self.createFlowForBounds(node.getBounds()).find().concept(this.concept);
+                var loadFlow = self.createFlowForBounds(node.getBounds()).find().concept(self.concept);
                 var loadTask = loadFlow.asList(true).pipe(function(docs) {
                     self.loadTaskAction(node, docs);
                 });
