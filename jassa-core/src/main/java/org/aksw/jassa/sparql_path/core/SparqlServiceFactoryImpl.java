@@ -1,4 +1,4 @@
-package org.aksw.jassa.web.main;
+package org.aksw.jassa.sparql_path.core;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -6,10 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.aksw.jena_sparql_api.cache.core.QueryExecutionFactoryCacheEx;
 import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.aksw.jena_sparql_api.http.QueryExecutionFactoryHttp;
 import org.aksw.jena_sparql_api.pagination.core.QueryExecutionFactoryPaginated;
+import org.aksw.jena_sparql_api.retry.core.QueryExecutionFactoryRetry;
 
 public class SparqlServiceFactoryImpl
     implements SparqlServiceFactory
@@ -37,8 +39,10 @@ public class SparqlServiceFactoryImpl
             result = new QueryExecutionFactoryHttp(serviceUri, defaultGraphUris);
             //result = new QueryExecutionFactoryPag
 //            result = new QueryExecutionFactoryDelay(result, 1000l); // 1 second delay between queries
-//            result = new QueryExecutionFactoryRetry(result, 5, 60000l); // 5 retries, 5 second delay between retries
-//            result = new QueryExecutionFactoryCacheEx(result, cacheFrontend);
+            result = new QueryExecutionFactoryRetry(result, 3, 5000l); // 3 retries, 5 second delay between retries
+            if(cacheFrontend != null) {
+                result = new QueryExecutionFactoryCacheEx(result, cacheFrontend);
+            }
             result = new QueryExecutionFactoryPaginated(result);
             
             keyToSparqlService.put(key, result);

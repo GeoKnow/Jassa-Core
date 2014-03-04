@@ -1,4 +1,4 @@
-package org.aksw.jassa.web.main;
+package org.aksw.jassa.sparql_path.core;
 
 import java.util.Collection;
 

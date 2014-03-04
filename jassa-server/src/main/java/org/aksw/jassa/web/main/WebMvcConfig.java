@@ -1,5 +1,7 @@
 package org.aksw.jassa.web.main;
 
+import org.aksw.jassa.sparql_path.core.SparqlServiceFactory;
+import org.aksw.jassa.sparql_path.core.SparqlServiceFactoryImpl;
 import org.aksw.jena_sparql_api.cache.extra.CacheFrontend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

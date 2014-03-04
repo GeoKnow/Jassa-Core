@@ -10,11 +10,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.aksw.jassa.sparql_path.core.VocabPath;
+import org.aksw.jassa.sparql_path.core.SparqlServiceFactory;
 import org.aksw.jassa.sparql_path.core.algorithm.ConceptPathFinder;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
 import org.aksw.jassa.sparql_path.core.domain.Path;
-import org.aksw.jassa.web.main.SparqlServiceFactory;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
