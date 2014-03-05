@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>jassa-servlets</artifactId>
-	<name>JAvascript Suite for Sparql Access - Servlets</name>
+	<name>Jassa - Servlets</name>
 	<!-- <packaging>js</packaging> -->
 	<description>A JavaScript library for Sparql access</description>
 	<packaging>jar</packaging>

@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>jassa-core</artifactId>
-	<name>Jassa - Server core</name>
+	<name>Jassa - Core</name>
 	<!-- <packaging>js</packaging> -->
 	<description>A JavaScript library for Sparql access</description>
 	<packaging>jar</packaging>
