@@ -1,5 +1,7 @@
 tmp
 deptree.txt
 *.md.html
+pom.xml.releaseBackup
+release.properties
 
 bower_components

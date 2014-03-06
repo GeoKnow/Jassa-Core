@@ -97,7 +97,7 @@
 		},
 		
 		createQueryExecutionStr: function(queryStr) {
-		    var ajaxOptions = _({}).extend(this.ajaxOptions);
+		    var ajaxOptions = _({}).defaults(this.ajaxOptions);
 		    
 			var result = new ns.QueryExecutionHttp(queryStr, this.serviceUri, this.defaultGraphUris, ajaxOptions, this.httpArgs);
 			return result;
@@ -126,6 +126,23 @@
 //    });
 //
 	
+
+    ns.RequestCache = Class.create({
+        initialize: function(executionCache, resultCache) {
+            this.executionCache = executionCache ? executionCache : {};
+            this.resultCache = resultCache ? resultCache : new Cache();           
+        },
+  
+        getExecutionCache: function() {
+            return this.executionCache;
+        },
+  
+        getResultCache: function() {
+            return this.resultCache;
+        }
+    });
+
+
 	/**
 	 * Result Cache stores result sets - this is an instance of a class
 	 * 
@@ -139,8 +156,12 @@
 	    
 	    initialize: function(queryExecutionFactory, resultCache, executionCache) {
 	        this.qef = queryExecutionFactory;
+	        this.requestCache = new ns.RequestCache();
+	        
+	        /*
             this.executionCache = executionCache ? executionCache : {};
 	        this.resultCache = resultCache ? resultCache : new Cache();
+	        */
 	    },
 	    
 	    getServiceId: function() {
@@ -163,7 +184,7 @@
 	        
 	        var qe = this.qef.createQueryExecution(queryStr);
 
-	        var result = new ns.QueryExecutionCache(qe, cacheKey, this.executionCache, this.resultCache);
+	        var result = new ns.QueryExecutionCache(qe, cacheKey, this.requestCache);
 	        
 	        return result;
 	    }

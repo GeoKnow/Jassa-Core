@@ -39,6 +39,10 @@
 		    return this.varNames;
 		},
 		
+		getBindings: function() {
+		    return this.itBinding.getArray();
+		},
+		
 		// Return the binding array
 		getIterator: function() {
 			//return this.itBinding.getArray();

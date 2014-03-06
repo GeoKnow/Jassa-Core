@@ -138,6 +138,38 @@
 	
 	
 	
+	var testDenis = function() {
+	    var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+		//var sparqlService = new service.SparqlServiceHttp('http://cstadler.aksw.org/conti/freebase/germany/sparql', ['http://freebase.com/2013-09-22/data/']);
+
+		sparqlService = new service.SparqlServiceCache(sparqlService);
+		
+	    
+		for(var i = 0; i < 10; ++i) {
+		    //var queryString = 'Select * { <http://dbpedia.org/resource/Linux> ?p ?o } Limit 10';
+			//var queryString = 'Select * { ?s ?p ?o } Limit 10';
+			var queryString = 'Select * { <http://dbpedia.org/resource/Paris> ?p ?o }';
+
+	
+		    var qe = sparqlService.createQueryExecution(queryString);
+			qe.setTimeout(60000);
+			
+			qe.execSelect().done(function(rs) {
+			    
+			    var bs = rs.getBindings();
+			    console.log('SUCCESS ARGS', arguments);
+			    
+			    //alert(JSON.stringify(bs));
+			}).fail(function() {
+			    console.log('FAIL ARGS: ', arguments);
+			    //alert('fail'); 
+			});
+		}
+	}
+	
+	testDenis();
+		
+	
 	
 	
 	/*
