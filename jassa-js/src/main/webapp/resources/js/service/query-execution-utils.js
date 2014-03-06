@@ -130,7 +130,7 @@
 		    
 		    return result;
 		},
-
+		
            // TODO Maybe move to a conversion utils package.
         jsonToResultSet: function(json) {
         
