@@ -60,7 +60,7 @@ public class PathFindingApi {
 
         Model joinSummaryModel;
         
-        if(joinSummaryServiceUri != null) {
+        if(joinSummaryServiceUri != null && !joinSummaryServiceUri.isEmpty()) {
             
             if(joinSummaryGraphUris == null) {
                 joinSummaryGraphUris = Collections.emptyList();
