@@ -74,6 +74,7 @@
 	
 	
 	
+	
 	//alert('Query: ' + query);
 	
 	//throw 'Done';
@@ -167,8 +168,33 @@
 		}
 	}
 	
-	testDenis();
+	//testDenis();
+	
+	
+	var testCount = function() {
+	    //var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+	    var sparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
+
+	    var vs = rdf.NodeFactory.createVar('s');
+	    var concept = facete.ConceptUtils.createSubjectConcept(vs);
+	    
+	    var query = new sparql.Query();
+	    query.getProjectVars().add(vs);
+	    
+	    query.getElements().push(concept.getElement());
+	    
+	    var promise = service.ServiceUtils.fetchCountQuery(sparqlService, query, 3000, 1000);
+	    
+	    promise.done(function(state) {
+	        alert('Success counting: ' + JSON.stringify(state));
+	    }).fail(function() {
+	        alert('Failed counting');	        
+	    });
+	    
+	    
+	};
 		
+	testCount();
 	
 	
 	

@@ -134,7 +134,7 @@
                 }
                 
                 if(subQuery.projectVars.vars.length === 0) {
-                    subQuery.isResultStar = true;
+                    subQuery.setResultStar(true);
                 }
                 
                 subQuery.limit = limit;
@@ -216,7 +216,7 @@
 				}
 				
 				if(subQuery.projectVars.vars.length === 0) {
-			    	subQuery.isResultStar = true;
+			    	subQuery.setResultStar(true);
 				}
 				
 				subQuery.limit = limit;

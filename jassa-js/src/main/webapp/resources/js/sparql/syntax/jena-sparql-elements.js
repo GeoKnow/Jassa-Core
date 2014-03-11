@@ -1110,17 +1110,14 @@
 		
 		getVarsMentioned: function() {
 		    
-	        console.log('Not implemented properly yet. Things may break!');
-
+	        console.log('sparql.Query.getVarsMentioned(): Not implemented properly yet. Things may break!');
+	        // TODO Also include projection, group by, etc in the output - not just the elements
 		    
-		    var result = [];
-		    
-		    _(this.elements).reduce(function(memo, element) {
+		    var result = _(this.elements).reduce(function(memo, element) {
 		        var evs = element.getVarsMentioned();
 		        var r = _(memo).union(evs);
 		        return r;
-		    }, result);
-		    
+		    }, []);		    
 		    
 		    return result;		    
 		},

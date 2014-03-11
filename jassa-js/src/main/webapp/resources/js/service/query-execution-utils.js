@@ -3,10 +3,13 @@
     var util = Jassa.util;
     var sparql = Jassa.sparql;
     
+    // TODO: Get rid of this dependency
+    var facete = Jassa.facete;
+    
 	var ns = Jassa.service;
 
     // Great! Writing to the object in a deferred done handler causes js to freeze...
-    ns.globalSparqlCache = {};
+    //ns.globalSparqlCache = {};
 
 	ns.ServiceUtils = {
 	
@@ -78,23 +81,57 @@
 		
 		/**
 		 * Count the results of a query, whith fallback on timeouts
+		 * 
+		 * Attempt to count the full result set based on firstTimeoutInMs
+		 * 
+		 * if this fails, repeat the count attempt using the scanLimit
+		 * 
 		 * TODO Finish
 		 */
-		fetchCountQuery: function(sparqlService, query, firstTimeoutInMs, fallbackCount) {
-		    var qe = sparqlService.createQueryExecution(query);
-		    qe.setTimeout(timeoutInMs);
-
-		    var countVar = null;
+		fetchCountQuery: function(sparqlService, query, firstTimeoutInMs, limit) {
 		    
-		    var result = jQuery.Deferred();
-		    ns.ServiceUtils.fetchInt(qe, countVar).done(function(count) {
-		        result.resolve({
+		    var elements = [new sparql.ElementSubQuery(query)];
+		    
+		    var varsMentioned = query.getVarsMentioned();
+		    
+		    var varGen = sparql.VarUtils.createVarGen('c', varsMentioned);
+
+		    var outputVar = varGen.next();
+		    //var outputVar = rdf.NodeFactory.createVar('_cnt_');
+		    
+		    //createQueryCount(elements, limit, variable, outputVar, groupVars, useDistinct, options)
+		    var countQuery = facete.QueryUtils.createQueryCount(elements, null, null, outputVar, null, null, null);
+		    
+		    var qe = sparqlService.createQueryExecution(countQuery);
+		    qe.setTimeout(firstTimeoutInMs);
+		    
+		    var deferred = jQuery.Deferred();
+		    var p1 = ns.ServiceUtils.fetchInt(qe, outputVar); 
+		    p1.done(function(count) {
+		        
+		        deferred.resolve({
 		            count: count,
+		            limit: null,
 		            hasMoreItems: false
 		        });
+
 		    }).fail(function() {
+
 		        // Try counting with the fallback size
-		        
+	            var countQuery = facete.QueryUtils.createQueryCount(elements, limit, null, outputVar, null, null, null);		        
+	            var qe = sparqlService.createQueryExecution(countQuery);
+	            var p2 = ns.ServiceUtils.fetchInt(qe, outputVar); 
+	            p2.done(function(count) {
+	                	                
+	                deferred.resolve({
+	                    count: count,
+	                    limit: limit,
+	                    hasMoreItems: count >= limit // using greater for robustness, although it should never happen
+	                });	            
+	            }).fail(function() {
+	               deferred.fail(); 
+	            });	            
+
 		    });
 		    
 		    var result = deferred.promise();
