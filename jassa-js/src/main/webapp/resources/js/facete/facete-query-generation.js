@@ -375,7 +375,7 @@
 		 * 
 		 * This method signature is not final yet.
 		 *
-		 * 
+		 * TODO Possibly add support for specifying the p ond o variables
 		 */
 		createConceptFacetsCore: function(path, isInverse, enableOptimization, singleProperty) { //excludeSelfConstraints) {
 

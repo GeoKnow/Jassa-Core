@@ -417,6 +417,9 @@ alert(str);
                     }
                 });
                 
+                if(true) {
+                    return;
+                }
 	                //console.log('rendering map');
 	                /* set text from attribute of custom tag*/
 	                //element.text(attrs.text).button();

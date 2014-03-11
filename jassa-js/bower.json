@@ -9,7 +9,7 @@
   "main": "jassa.js",
   "dependencies": {
     "jquery": "~1.9.1",
-    "underscore": "~1.4.4",
+    "underscore": ">=1.6.0",
     "underscore.string": "~2.3.0",
     "jscache": ""
   },

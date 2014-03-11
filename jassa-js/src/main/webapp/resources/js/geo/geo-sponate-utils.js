@@ -28,7 +28,10 @@
                 id: ns.GeoConcepts.conceptWgs84.getVar(), //'?s',
                 lon: vx, // '?x',
                 lat: vy, // '?y'
-                wkt: function(b) { return rdf.NodeFactory.createTypedLiteralFromString('POINT(' + b.get(vx).getLiteralValue() + ' ' + b.get(vy).getLiteralValue() + ')', 'http://www.opengis.net/ont/geosparql#wktLiteral'); }
+                wkt: function(b) {
+					var result = rdf.NodeFactory.createTypedLiteralFromString('POINT(' + b.get(vx).getLiteralValue() + ' ' + b.get(vy).getLiteralValue() + ')', 'http://www.opengis.net/ont/geosparql#wktLiteral');
+					return result;
+				}
             }],
             from: ns.GeoConcepts.conceptWgs84.getElement()
         }),

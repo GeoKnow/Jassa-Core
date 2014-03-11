@@ -557,12 +557,261 @@
 		},
 		
 		
+		fetchFacetValueCountsThresholded: function(path, isInverse, properties, isNegated, scanLimit, maxQueryLength) {
+		    scanLimit = 1000;
+		    // Check the scan counts (i.e. how many triples we would have to scan in order to compute the counts of distinct values)
+		    var querySpecs = this.createQuerySpecsFacetValueScanCounts(path, isInverse, properties, isNegated, scanLimit, maxQueryLength);
+		    var promise = this.processQuerySpecsFacetValueCounts(path, isInverse, properties, querySpecs);
+		    
+		    var result = jQuery.Deferred();
+		    
+		    var self = this;
+		    promise.done(function(facetItems) {
+		        var selectiveItems = _(facetItems).filter(function(x) { return x.getDistinctValueCount() < scanLimit; });
+		        var selectiveProperties = _(selectiveItems).map(function(x) { return x.getNode(); });
+                // Check which properties had scan counts below the threshold
+		        
+		        var p = self.fetchFacetValueCountsFull(path, isInverse, selectiveProperties, isNegated, scanLimit);
+		        
+		        p.done(function(fis) {
+                    var selectivePropertyNameToItem = _(fis).indexBy(function(x) { return x.getNode().getUri(); });
+
+                    var r = _(properties).map(function(property) {
+                        var propertyName = property.getUri();
+                        var item = selectivePropertyNameToItem[propertyName];
+
+                        if(!item) {
+                            var distinctValueCount = -1;
+                            
+                            var step = new ns.Step(propertyName, isInverse);
+                            var childPath = path.copyAppendStep(step);
+                            var item = new ns.FacetItem(childPath, property, distinctValueCount);                            
+                        }
+                        
+                        return item;
+		            });
+		            
+                    result.resolve(r);
+		            
+		        }).fail(function() {
+		           result.fail.apply(this, arguments); 
+		        });
+		        
+		        
+		        
+		        
+		    }).fail(function() {
+		        result.fail.apply(this, arguments);
+		    });
+		    
+		    return result;
+		},
+		
+		/**
+		 * Variation of fetchFacetValueCounts that adds only counts of to a certain limit for each property
+		 * 
+		 * @param path
+		 * @param isInverse
+		 * @param properties
+		 * @param isNegated - Not supported yet with this strategy / requires fetching ALL properties first
+		 */
+		createQuerySpecsFacetValueScanCounts: function(path, isInverse, properties, isNegated, scanLimit, maxQueryLength) {
+		    
+		    if(isNegated) {
+		        console.log('Negated property sets not (yet) supported with thresholded counting strategy');
+		        throw 'Bailing out';
+		    }
+		    
+	        var outputVar = rdf.NodeFactory.createVar('_c_');
+
+	        // TODO Hack: We assume that the var is called this way, but we need to ensure this
+	        var groupVar = rdf.NodeFactory.createVar('p_1');
+		    
+	        var self = this;
+		    var unionMembers = _(properties).map(function(property) {
+		        
+	            var facetConceptItems = self.facetConceptGenerator.createConceptFacetValues(path, isInverse, [property], isNegated);
+		        var facetConceptItem = facetConceptItems[0];
+		        
+                var facetConcept = facetConceptItem.getFacetConcept();
+                
+                var groupVar = facetConcept.getFacetVar();
+                var countVar = facetConcept.getFacetValueVar(); 
+                var elements = facetConcept.getElements();
+            
+                
+                /*
+                var limitQuery = new sparql.Query();
+                var limitElements = limitQuery.getElements();
+
+                limitQuery.getProjectVars().add(groupVar);
+                limitQuery.getProjectVars().add(countVar);
+
+                limitElements.push.apply(limitElements, elements);
+                limitQuery.setLimit(scanLimit);
+                */
+                
+                /*
+                var distinctQuery = new sparql.Query();
+                distinctQuery.setDistinct(true);
+                distinctQuery.getProjectVars().add(groupVar);
+                distinctQuery.getProjectVars().add(countVar);
+                distinctQuery.getElements().push(new sparql.ElementSubQuery(limitQuery));
+                distinctQuery.setLimit(limit);
+                */
+                
+                
+                //var subElement = new sparql.ElementSubQuery(limitQuery);
+                //var subElement = new sparql.ElementSubQuery(distinctQuery);
+                
+                //var countQuery = ns.QueryUtils.createQueryCount([subElement], null, countVar, outputVar, [groupVar], false);
+                var countQuery = ns.QueryUtils.createQueryCount(elements, scanLimit, countVar, outputVar, [groupVar], false); 
+                
+                return countQuery;
+		    });
+		    
+		    // For each union query group...		    
+		    var finalQuery;
+		    if(unionMembers.length > 1) {
+		        var unionElements = _(unionMembers).map(function(query) {
+		            var r = new sparql.ElementSubQuery(query);
+		            return r;
+		        });
+		        
+		        var elementUnion = new sparql.ElementUnion(unionElements);		    
+		        
+                finalQuery = new sparql.Query();
+		        finalQuery.getProjectVars().add(groupVar);
+		        finalQuery.getProjectVars().add(outputVar);
+
+		        var finalElements = finalQuery.getElements();
+                finalQuery.getElements().push(elementUnion);
+		    }
+		    else if(unionMembers.length === 1) {
+		        finalQuery = unionMember[0];
+		    }
+		    else {
+		        console.log('Should not happen');
+		        throw 'Should not happen';
+		    }
+		    
+		    var querySpec = {
+		        query: finalQuery,
+		        groupVar: groupVar,
+		        //countVar: outputVar
+		        outputVar: outputVar
+		    };
+		    
+		    var result = [querySpec];
+		    
+		    return result;
+		},
+		
+		processQuerySpecsFacetValueCounts: function(path, isInverse, properties, querySpecs) {
+            var nameToItem = {};
+            
+            _(properties).each(function(property) {
+                var propertyName = property.getUri();
+                
+                nameToItem[propertyName] = {
+                    property: property,
+                    distinctValueCount: 0
+                }
+            });
+
+            var self = this;
+            var promises = _(querySpecs).map(function(querySpec) {
+                
+                //var facetConcept = item.getFacetConcept();
+                
+                var query = querySpec.query;
+                var groupVar = querySpec.groupVar;
+                //var countVar = querySpec.countVar;
+                var outputVar = querySpec.outputVar;
+                
+                var qe = self.sparqlService.createQueryExecution(query);
+                
+                
+                var promise = qe.execSelect().pipe(function(rs) {
+                    
+                    // Overwrite entries based on the result set
+                    while(rs.hasNext()) {
+                        var binding = rs.nextBinding();
+                        
+                        var property = binding.get(groupVar);
+                        var propertyName = property.getUri();
+                        
+                        var distinctValueCount = binding.get(outputVar).getLiteralValue();
+                                            
+                        nameToItem[propertyName] = {
+                            property: property,
+                            distinctValueCount: distinctValueCount
+                        }
+                    }
+                });
+                
+                //console.log("Test: " + query);
+                return promise;
+            });
+
+            var d = $.Deferred();
+            $.when.apply(window, promises).done(function() {
+                
+                // Create the result                    
+                var r = _(properties).map(function(property) {
+                    var propertyName = property.getUri();
+                    var item = nameToItem[propertyName];
+
+                    var distinctValueCount = item.distinctValueCount;
+                    
+                    var step = new ns.Step(propertyName, isInverse);
+                    var childPath = path.copyAppendStep(step);
+                    var tmp = new ns.FacetItem(childPath, property, distinctValueCount);
+                    return tmp
+                });
+                
+                //return r;
+
+                
+//              var r = [];
+//              
+//              for(var i = 0; i < arguments.length; ++i) {
+//                  var items = arguments[i];
+//                  //alert(items);
+//                  
+//                  r.push.apply(r, items);
+//              }
+
+                d.resolve(r);
+            }).fail(function() {
+                d.fail();
+            })
+
+            return d.promise();
+
+		},
+		
+		
 		//elements, limit, variable, outputVar, groupVars, useDistinct, options
 		/**
 		 * Returns the distinctValueCount for a set of properties at a given path
 		 * 
+		 * Creates a query of the form
+		 * Select ?p Count(*) As ?c {
+		 *     { /facet constraints with some var such as ?s/ }
+		 *     ?s ?p ?o .
+		 *     Filter(?p In (/given list of properties/))
+		 * }
+		 * 
 		 */
 		fetchFacetValueCounts: function(path, isInverse, properties, isNegated) {
+		    //var result = fetchFacetValueCountsFull(path, isInverse, properties, isNegated);
+		    var result = this.fetchFacetValueCountsThresholded(path, isInverse, properties, isNegated);
+		    
+		    return result;
+		},
+		
+		fetchFacetValueCountsFull: function(path, isInverse, properties, isNegated) {
 			var facetConceptItems = this.facetConceptGenerator.createConceptFacetValues(path, isInverse, properties, isNegated);
 			
 
