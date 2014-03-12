@@ -4,7 +4,7 @@
 
 	<groupId>org.aksw.jassa</groupId>
 	<artifactId>jassa-parent</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.2</version>
 	<packaging>pom</packaging>
 
 	<name>Jassa - Parent</name>
@@ -64,7 +64,7 @@
 		<!-- developerConnection></developerConnection -->
 		<!-- url>https://my-project.googlecode.com/svn</url -->
 		<connection>scm:git:git@github.com:GeoKnow/Jassa.git</connection>
-		<tag>HEAD</tag>
+		<tag>jassa-parent-0.0.2</tag>
 	</scm>
 
 
