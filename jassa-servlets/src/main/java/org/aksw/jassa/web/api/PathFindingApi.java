@@ -15,10 +15,16 @@ import org.aksw.jassa.sparql_path.core.algorithm.ConceptPathFinder;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
 import org.aksw.jassa.sparql_path.core.domain.Path;
 import org.aksw.jena_sparql_api.core.QueryExecutionFactory;
+import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
+import org.aksw.jena_sparql_api.utils.SparqlFormatterUtils;
+import org.apache.jena.atlas.json.io.JsonWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Model;
 
 
@@ -45,6 +51,7 @@ public class PathFindingApi {
             @QueryParam("target-var") String targetVar,
             @QueryParam("js-service-uri") String joinSummaryServiceUri,
             @QueryParam("js-graph-uri") List<String> joinSummaryGraphUris,
+            @QueryParam("query") String queryString,
             @QueryParam("n-paths") Integer nPaths,
             @QueryParam("max-hops") Integer maxHops
     )
@@ -74,13 +81,32 @@ public class PathFindingApi {
         
         List<Path> paths = ConceptPathFinder.findPaths(sparqlService, sourceConcept, targetConcept, nPaths, maxHops, joinSummaryModel);
         
-        List<String> tmp = new ArrayList<String>();
-        for(Path path : paths) {
-            tmp.add(path.toPathString());
+        String result;
+        
+        // if there is a queryString, we will use sparql mode, otherwise, we will just return the json
+        
+        if(queryString != null && !queryString.isEmpty()) {
+            
+            Model model = ConceptPathFinder.createModel(paths);
+            QueryExecutionFactoryModel pathSparqlService = new QueryExecutionFactoryModel(model);
+            QueryExecution qe = pathSparqlService.createQueryExecution(queryString);
+            ResultSet rs = qe.execSelect();
+            
+            result = SparqlFormatterUtils._formatJson(rs);
+//            Writer writer = new JsonWriter();
+//            writer.wr
+            
+        }
+        else {
+            List<String> tmp = new ArrayList<String>();
+            for(Path path : paths) {
+                tmp.add(path.toPathString());
+            }
+            
+            Gson gson = new Gson();
+            result = gson.toJson(tmp);
         }
         
-        Gson gson = new Gson();
-        String result = gson.toJson(tmp);
         return result;
     
     }

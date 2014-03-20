@@ -1,6 +1,8 @@
 (function($) {
     
+    var service = Jassa.service;
     var ns = Jassa.client;
+
 
     /**
      * Client wrapper for an API that searches for property paths
@@ -20,25 +22,42 @@
             this.joinSummaryServiceIri = joinSummaryServiceIri;
             this.joinSummaryGraphIris = joinSummaryGraphIris;
         },
-    
+
+        createAjaxConfig: function() {
+			var result = {
+                'service-uri': this.sparqlServiceIri,
+                'default-graph-uri': this.defaultGraphIris,
+                'source-element': sourceConcept.getElement().toString(),
+                'source-var':  sourceConcept.getVar().getName(),
+                'target-element': targetConcept.getElement().toString(),
+                'target-var': targetConcept.getVar().getName(),
+                'js-service-uri': this.joinSummaryServiceIri,
+                'js-graph-uri': this.joinSummaryGraphIris
+                //'n-paths': this.nPaths,
+                //'max-hops': this.maxHops
+            };
+
+			return result;
+        },
+
+        createSparqlService: function() {
+			var data = this.createAjaxConfig();
+
+            // TODO How can we turn the ajax spec into a (base) URL?
+
+			var result = new service.SparqlServiceHttp(this.apiUrl, [], null, data);
+			return result;
+        },
+
         findPaths: function(sourceConcept, targetConcept) {
+			var data = this.createAjaxConfig();
+
             var ajaxSpec = {
                 url: this.apiUrl,
                 dataType: 'json',
                 crossDomain: true,
                 traditional: true, // Serializes JSON arrays by repeating the query string paramater
-                data: {
-                    'service-uri': this.sparqlServiceIri,
-                    'default-graph-uri': this.defaultGraphIris,
-                    'source-element': sourceConcept.getElement().toString(),
-                    'source-var':  sourceConcept.getVar().getName(),
-                    'target-element': targetConcept.getElement().toString(),
-                    'target-var': targetConcept.getVar().getName(),
-                    'js-service-uri': this.joinSummaryServiceIri,
-                    'js-graph-uri': this.joinSummaryGraphIris
-                    //'n-paths': this.nPaths,
-                    //'max-hops': this.maxHops
-                }
+				data: data
             };
 
             //console.log('[DEBUG] Path finding ajax spec', ajaxSpec);

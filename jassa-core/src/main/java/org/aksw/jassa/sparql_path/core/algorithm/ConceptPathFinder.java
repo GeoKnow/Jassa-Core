@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.aksw.commons.util.strings.StringUtils;
 import org.aksw.jassa.sparql_path.core.PathConstraint;
 import org.aksw.jassa.sparql_path.core.VocabPath;
 import org.aksw.jassa.sparql_path.core.domain.Concept;
@@ -20,7 +21,6 @@ import org.aksw.jena_sparql_api.model.QueryExecutionFactoryModel;
 import org.aksw.jena_sparql_api.utils.GeneratorBlacklist;
 import org.jgrapht.GraphPath;
 import org.jgrapht.alg.DijkstraShortestPath;
-import org.jgrapht.alg.KShortestPaths;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.GraphPathImpl;
@@ -33,10 +33,12 @@ import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sdb.core.Generator;
@@ -54,6 +56,7 @@ import com.hp.hpl.jena.sparql.syntax.ElementTriplesBlock;
 import com.hp.hpl.jena.sparql.syntax.PatternVars;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 
 class GraphPathComparator<V, E>
     implements Comparator<GraphPath<V, E>> {
@@ -395,4 +398,30 @@ public class ConceptPathFinder {
 		return result;
 	}
 
+    
+    /**
+     * Create a model with an RDF description of the found paths -
+     * Used for SPARQL support
+     * 
+     * @param paths
+     * @return
+     */
+    public static Model createModel(List<Path> paths) {
+        Model result = ModelFactory.createDefaultModel();
+        
+        Resource Path = ResourceFactory.createResource("http://ns.aksw.org/jassa/ontology/Path");
+        
+        int i = 0;
+        for(Path path : paths) {
+            String pathStr = path.toPathString();
+            
+            Resource s = result.createResource("http://example.org/" + StringUtils.urlEncode(pathStr));
+            Literal o = result.createLiteral(pathStr);
+            
+            result.add(s, RDF.type, Path);
+            result.add(s, RDFS.label, o);
+        }
+        
+        return result;
+    }
 }

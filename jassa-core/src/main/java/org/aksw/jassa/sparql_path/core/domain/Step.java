@@ -48,7 +48,11 @@ public class Step {
 
 	@Override
 	public String toString() {
-		return "Step [propertyName=" + propertyName + ", isInverse="
-				+ isInverse + "]";
+	    String result = (isInverse ? "<" : "") + propertyName;
+	    return result;
+	    
+//		return "Step [propertyName=" + propertyName + ", isInverse="
+//				+ isInverse + "]";
+				
 	}
 }

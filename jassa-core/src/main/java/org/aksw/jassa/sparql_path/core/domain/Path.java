@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.google.common.base.Joiner;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.sdb.core.Generator;
@@ -110,6 +111,10 @@ public class Path {
 	}
 	
 	public String toPathString() {
+	    String result = Joiner.on(' ').join(steps);
+	    return result;
+
+	    /*
 		String result = "";
 		
 		for(Step step : steps) {
@@ -126,5 +131,6 @@ public class Path {
 		
 		
 		return result;
+		*/
 	}
 }

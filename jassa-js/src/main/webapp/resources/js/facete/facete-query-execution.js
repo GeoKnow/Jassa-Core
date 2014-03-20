@@ -688,7 +688,7 @@
                 finalQuery.getElements().push(elementUnion);
 		    }
 		    else if(unionMembers.length === 1) {
-		        finalQuery = unionMember[0];
+		        finalQuery = unionMembers[0];
 		    }
 		    else {
 		        console.log('Should not happen');

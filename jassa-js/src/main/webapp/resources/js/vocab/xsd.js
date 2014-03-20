@@ -10,6 +10,7 @@
 		xboolean: p + "boolean",
 		xint: p + "int",
 		xinteger: p + "integer",
+		xlong: p + "long",
 		decimal: p + "decimal",
 		xfloat: p + "float",
 		xdouble: p + "double",

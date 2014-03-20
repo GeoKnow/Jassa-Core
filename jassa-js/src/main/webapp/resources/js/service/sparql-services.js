@@ -1,8 +1,9 @@
 (function($) {
 
+    var util = Jassa.util;
 	var ns = Jassa.service;
 
-	
+
 	ns.SparqlService = Class.create({
 		getServiceId: function() {
 		    console.log('[ERROR] Method not overridden');
@@ -35,14 +36,14 @@
 			
 			return result;
 		},
-		
+
 		createQueryExecutionObj: function(queryObj) {
 			var queryStr = "" + queryObj;
 			var result = this.createQueryExecutionStr(queryStr);
 			
 			return result;
 		},
-		
+
 		createQueryExecutionStr: function(queryStr) {
 			throw "Not implemented";
 		}
@@ -79,8 +80,10 @@
 //			
 //			var result = JSON.stringify(idState);
 
-			var result = JSON.stringify(this.defaultGraphUris);
+			var result = JSONCanonical.stringify(this.defaultGraphUris);
 			
+			result += JSONCanonical.stringify(this.httpArgs);
+
 			return result;
 		},
 		
