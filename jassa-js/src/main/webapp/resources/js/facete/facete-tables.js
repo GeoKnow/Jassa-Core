@@ -413,6 +413,25 @@
             else {
                 this.tableMod.removeColumn(varName);
             }
+        },
+        
+        createDataConcept: function() {
+            var emptyPath = new ns.Path();
+            var paths = this.paths.getArray().slice(0);
+
+            if(!this.paths.contains(emptyPath)) {
+                paths.push(emptyPath);
+            }
+            
+            var dataElementFactory = new ns.ElementFactoryFacetPaths(this.facetConfig, paths);
+            var dataElement = dataElementFactory.createElement();
+            
+            var rootFacetNode = this.facetConfig.getRootFacetNode();
+            var dataVar = rootFacetNode.getVar();
+            
+            var result = new ns.Concept(dataElement, dataVar);
+
+            return result;
         }
         
     /*
