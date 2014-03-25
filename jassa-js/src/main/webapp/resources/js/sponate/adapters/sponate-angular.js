@@ -22,15 +22,34 @@
 	
 
 
+	/**
+	 * @Deprecated
+	 * 
+	 * use $q.when(jQueryPromise) wrapper
+	 */
 	ns.bridgePromise = function(jqPromise, ngDeferred, ngScope, fn) {
 		jqPromise.done(function(data) {
 			
 			var d = fn ? fn(data) : data;
+//			ngScope.$apply(function() {
 			ngDeferred.resolve(d);
+//			});
 
-		    if (ngScope && ngScope.$root.$$phase != '$apply' && ngScope.$root.$$phase != '$digest') {
-		        ngScope.$apply();
-		    }
+			
+			
+			var doRefresh = function() {
+			
+    		    //if (ngScope && ngScope.$root.$$phase != '$apply' && ngScope.$root.$$phase != '$digest') {
+    			//if (ngScope && !ngScope.$root.$$phase) {
+    			if (ngScope && !ngScope.$$phase && !ngScope.$root.$$phase) {
+    		        ngScope.$apply();
+    		    }
+    			else {
+    			    setTimeout(doRefresh, 25);
+    			}
+			}
+			
+			doRefresh();
 			
 		}).fail(function(data) {
 			ngDeferred.reject(data);

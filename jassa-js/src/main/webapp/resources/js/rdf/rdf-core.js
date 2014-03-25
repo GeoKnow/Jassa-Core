@@ -12,6 +12,8 @@
 	 * TODO Clarify who is responsible for .equals() (just do it like in Jena - Is it the base class or its derivations?)
 	 */
 	ns.Node = Class.create({
+        classLabel: 'Node',
+	    
 		getUri: function() {
 			throw "not a URI node";
 		},
@@ -110,6 +112,8 @@
 	
 
 	ns.Node_Concrete = Class.create(ns.Node, {
+        classLabel: 'Node_Concrete',
+
 		isConcrete: function() {
 			return true;
 		}
@@ -117,6 +121,8 @@
 
 
 	ns.Node_Uri = Class.create(ns.Node_Concrete, {
+	    classLabel: 'Node_Uri',
+	    
 		initialize: function(uri) {
 			this.uri = uri;
 		},
@@ -135,6 +141,8 @@
 	});
 	
 	ns.Node_Blank = Class.create(ns.Node_Concrete, {
+        classLabel: 'Node_Blank',
+
 		// Note: id is expected to be an instance of AnonId
 		initialize: function(anonId) {
 			this.anonId = anonId;
@@ -162,12 +170,16 @@
     // I don't understand the purpose of this class right now
 	// i.e. how it is supposed to differ from ns.Var
 	ns.Node_Variable = Class.create(ns.Node_Fluid, {
+        classLabel: 'Node_Variable',
+
 		isVariable: function() {
 			return true;
 		}
 	});
 
 	ns.Var = Class.create(ns.Node_Variable, {
+        classLabel: 'Var',
+
 		initialize: function(name) {
 			this.name = name;
 		},
@@ -183,6 +195,8 @@
 
 	
 	ns.Node_Literal = Class.create(ns.Node_Concrete, {
+        classLabel: 'Node_Literal',
+	    
 		initialize: function(literalLabel) {
 			this.literalLabel = literalLabel;
 		},
@@ -235,6 +249,8 @@
 	 *   - No getDatatypeUri method, as there is dtype.getUri() 
 	 */
 	ns.LiteralLabel = Class.create({
+        classLabel: 'LiteralLabel',
+	    
 		/**
 		 * Note: The following should hold:
 		 * dtype.parse(lex) == val
@@ -295,6 +311,8 @@
 	});
 	
 	ns.AnonIdStr = Class.create(ns.AnonId, {
+        classLabel: 'AnonIdStr',
+
 		initialize: function(label) {
 			this.label = label;
 		},
@@ -321,6 +339,8 @@
 	
 	
 	ns.DatatypeLabelInteger = Class.create(ns.DatatypeLabel, {
+        classLabel: 'DatatypeLabelInteger',
+	    
 		parse: function(str) {
 			var result = parseInt(str, 10);
 			return result;
@@ -332,7 +352,9 @@
 	});
 
 	ns.DatatypeLabelFloat = Class.create(ns.DatatypeLabel, {
-		parse: function(str) {
+        classLabel: 'DatatypeLabelFloat',
+
+        parse: function(str) {
 			var result = parseFloat(str);
 			return result;
 		},
@@ -343,6 +365,8 @@
 	});
 	
 	ns.DatatypeLabelString = Class.create(ns.DatatypeLabel, {
+        classLabel: 'DatatypeLabelString',
+
 		parse: function(str) {
 			return str
 		},
@@ -354,6 +378,8 @@
 
 	
 	ns.RdfDatatype = Class.create({
+        classLabel: 'RdfDatatype',
+
 		getUri: function() {
 			throw "Not implemented";
 		},
@@ -373,6 +399,8 @@
 
 
 	ns.RdfDatatypeBase = Class.create(ns.RdfDatatype, {
+        classLabel: 'RdfDatatypeBase',
+
 		initialize: function(uri) {
 			this.uri = uri;
 		},
@@ -383,6 +411,8 @@
 	});
 	
 	ns.RdfDatatype_Label = Class.create(ns.RdfDatatypeBase, {
+        classLabel: 'RdfDatatype_Label',
+
 		initialize: function($super, uri, datatypeLabel) {
 			$super(uri);
 			
@@ -750,6 +780,9 @@
 	};
 	
 	ns.Triple = Class.create({
+	    
+        classLabel: 'Triple',
+
 		initialize: function(s, p, o) {
 			this.s = s;
 			this.p = p;
@@ -787,7 +820,7 @@
 			var result = [];
 			ns.Triple.pushVar(result, this.s);
 			ns.Triple.pushVar(result, this.p);
-			ns.Triple.pushVar(result, this.o);	
+			ns.Triple.pushVar(result, this.o);
 			return result;
 		}
 	});
@@ -797,7 +830,7 @@
 		
 		if(node.isVariable()) {
 		    var c = _(array).some(function(item) {
-		        node.equals(item);
+		        return node.equals(item);
 		    });
 		    
 		    if(!c) {
@@ -812,178 +845,3 @@
 	
 })();
 
-
-
-
-//
-//
-//// This node approach is broken...
-//// I thought I could get away with something cheap because this is JavaScript,
-//// but it turns out that good engineering stays good regardless of the target language.
-//
-//ns.Node = function(type, value, language, datatype) {
-//	this.type = type;
-//	this.value = value;
-//	this.language = language;
-//	this.datatype = datatype;
-//};
-//
-//
-//ns.Node.classLabel = 'Node';
-//
-//ns.Node.prototype = {
-//		getValue: function() {
-//			return this.value;
-//		},
-//
-//		getType: function() {
-//			return this.type;
-//		},
-//
-//		getLanguage: function() {
-//			return this.language;
-//		},
-//
-//		getDatatype: function() {
-//			return this.datatype;
-//		},
-//		
-//		equals: function(that) {
-//			var result = _.isEqual(this, that);
-//			return result;
-//		},
-//		
-//		/**
-//		 * Warning: If fnNodeMap does not return a copy, the node will not be copied.
-//		 * In general, Node should be considered immutable!
-//		 * 
-//		 * @param fnNodeMap
-//		 * @returns
-//		 */
-//		copySubstitute: function(fnNodeMap) {
-//			var sub = fnNodeMap(this);		 
-//			var result = (sub == undefined || sub == null) ? this : sub;
-//			return result;
-//		},
-//		
-//		toString: function() {
-//			switch(this.type) {
-//			case -1: return "?" + this.value;
-//			case 0: return "_:" + this.value;
-//			case 1: return "<" + this.value + ">";
-//			case 2: return "\"" + this.value + "\"" + (this.language ? "@" + this.language : "");
-//			case 3: return "\"" + this.value + "\"" + (this.datatype ? "^^<" + this.datatype + ">" : "");
-//			}
-//		},
-//		
-//		isVar: function() {
-//			return this.type === -1;
-//		},
-//		
-//		isUri: function() {
-//			return this.type === ns.Node.Type.Uri;
-//		},
-//		
-//		toJson: function() {
-//			throw "Not implemented yet";
-//		}
-//};
-//
-//
-//ns.Node.Type = {};
-//ns.Node.Type.Variable = -1;
-//ns.Node.Type.BlankNode = 0;
-//ns.Node.Type.Uri = 1;
-//ns.Node.Type.PlainLiteral = 2;
-//ns.Node.Type.TypedLiteral = 3;
-//
-//ns.Node.fromJson = function(talisJson) {
-//	return ns.Node.fromTalisJson(talisJson);
-//};
-//
-//ns.Node.fromTalisJson = function(talisJson) {
-//	var result = new ns.Node();
-//	
-//	if(!talisJson || typeof(talisJson.type) === 'undefined') {
-//		throw "Invalid node: " + JSON.stringify(talisJson);
-//	}
-//	
-//	var type;
-//	switch(talisJson.type) {
-//	case 'bnode': type = 0; break;
-//	case 'uri': type = 1; break;
-//	case 'literal': type = 2; break;
-//	case 'typed-literal': type = 3; break;
-//	default: console.log("Unknown type: '" + talisJson.type + "'");
-//	}
-//	
-//	result.type = type;
-//	result.value = talisJson.value;
-//	result.language = talisJson.lang ? talisJson.lang : "";
-//	result.datatype = talisJson.datatype ? talisJson.datatype : "";
-//
-//	// TODO I thought it happened that a literal hat a datatype set, but maybe I was imaginating things
-//	if(result.datatype) {
-//		result.type = 3;
-//	}
-//	
-//	return result;
-//	/*
-//	var type = -2;
-//	if(node.type == "uri") {
-//		
-//	}*/
-//};
-//
-//ns.Node.isNode = function(candidate) {
-//	return candidate && (candidate instanceof ns.Node);
-//};
-//
-//ns.Node.isUri = function(candidate) {
-//	return ns.Node.isNode(candidate) && candidate.isUri();		
-//};
-//
-//
-//ns.Node.parse = function(str) {
-//	var str = str.trim();
-//	
-//	if(strings.startsWith(str, '<') && strings.endsWith(str, '>')) {		
-//		return ns.Node.uri(str.substring(1, str.length - 1));
-//	} else {
-//		throw "Node.parse not implemented for argument: " + str;
-//	}
-//};
-//
-//ns.Node.uri = function(str) {
-//	return new ns.Node(1, str, null, null);
-//};
-//	
-//ns.Node.v = function(name) {
-//	return new ns.Node(-1, name, null, null);
-//};
-//
-////ns.Node.blank = function(id) {
-////	return new ns.Node(0, id, null, null);
-////};
-////
-////ns.Node.plainLit = function(value, language) {
-////	return new ns.Node(2, value, language, null);
-////};
-////
-////ns.Node.typedLit = function(value, datatype) {
-////	return new ns.Node(3, value, null, datatype);
-////};
-//
-//ns.Node.forValue = function(value) {
-//	var dt = typeof value;		
-//	if(dt === "number") {
-//		return ns.Node.typedLit(value, "http://www.w3.org/2001/XMLSchema#double");
-//	} else {
-//		console.error("No handling for datatype ", td);
-//	}
-//	
-//	//alert(dt);		
-//};
-//
-//
-//// BAM! Overwrite the node class

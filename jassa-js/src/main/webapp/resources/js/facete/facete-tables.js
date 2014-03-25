@@ -381,24 +381,23 @@
 
     
     ns.FacetTableConfig = Class.create({
-        initialize: function(facetConfig, paths, tableMod) {
+        initialize: function(facetConfig, tableMod, paths) {
             this.facetConfig = facetConfig;
-            this.paths = paths || new util.ArrayList();
             this.tableMod = tableMod || new ns.TableMod();
+            this.paths = paths || new util.ArrayList();
         },
         
         getFacetConfig: function() {
             return this.facetConfig;
         },
-        
-        getPaths: function() {
-            return this.paths;
-        },
-        
+
         getTableMod: function() {
             return this.tableMod;
         },
-        
+
+        getPaths: function() {
+            return this.paths;
+        },        
 
         togglePath: function(path) {
             // Updates the table model accordingly

@@ -149,81 +149,97 @@
 //	    }
 //	});
 
-
+	
 	/**
 	 * A query execution that does simple caching based on the query strings.
 	 * 
 	 * 
 	 */
     ns.QueryExecutionCache = Class.create(ns.QueryExecution, {
-         initialize: function(queryExecution, cacheKey, requestCache) {
-             this.queryExecution = queryExecution;
+        initialize: function(queryExecution, cacheKey, requestCache) {
+            this.queryExecution = queryExecution;
              
-             this.cacheKey = cacheKey;
-             this.requestCache = requestCache;
-         },
+            this.cacheKey = cacheKey;
+            this.requestCache = requestCache;
+        },
          
-         setTimeout: function(timeoutInMillis) {
-             this.queryExecution.setTimeout(timeoutInMillis);
-         },
-         
-         execSelect: function() {
-             var cacheKey = this.cacheKey;
-             
-             var requestCache = this.requestCache;
-             var resultCache = requestCache.getResultCache();
-             var executionCache = requestCache.getExecutionCache();
+        setTimeout: function(timeoutInMillis) {
+            this.queryExecution.setTimeout(timeoutInMillis);
+        },
 
-             // Check the cache whether the same query is already running
-             // Re-use its promise if this is the case
+        execSelect: function() {
+            var cacheKey = this.cacheKey;
              
-             // TODO Reusing promises must take timeouts into account
-             
-             var result = executionCache[cacheKey];
-             
-             if(!result) {
+            var requestCache = this.requestCache;
+            var resultCache = requestCache.getResultCache();
+            var executionCache = requestCache.getExecutionCache();
 
-                 // Check if there is an entry in the result cache
-                 var cacheData = resultCache.getItem(cacheKey);
-                 if(cacheData) {                     
-                     //console.log('[DEBUG] QueryCache: Reusing cache entry for cacheKey: ' + cacheKey);
-                     var deferred = $.Deferred();
-                     //var cacheData = JSON.parse(rawData);
-                     
-                     var itBinding = new util.IteratorArray(cacheData.bindings);
-                     var varNames = cacheData.varNames;
-                     var rs = new ns.ResultSetArrayIteratorBinding(itBinding, varNames);
-                     
-                     
-                     deferred.resolve(rs);
-                     result = deferred.promise();
-                 }
-                 else {
-                     var request = this.queryExecution.execSelect();
-                     
-                     executionCache[cacheKey] = request;
-                     
-                     result = request.pipe(function(rs) {
-                         delete executionCache[cacheKey]; 
+            // Check the cache whether the same query is already running
+            // Re-use its promise if this is the case
+             
+            // TODO Reusing promises must take timeouts into account
+             
+            var executionPromise = executionCache[cacheKey];
 
-                         var cacheData = {
-                             bindings: rs.getBindings(),
-                             varNames: rs.getVarNames()
-                         };
+            if(!executionPromise) {
+                 
+                // Check if there is an entry in the result cache
+                var cacheData = resultCache.getItem(cacheKey);
+                if(cacheData) {                     
+                    var deferred = $.Deferred();
+                    deferred.resolve(cacheData);
+                    executionPromise = deferred.promise();
+                }
+                else {
+                    var request = this.queryExecution.execSelect();
+                     
+                    var trans = request.pipe(function(rs) {
+                        var cacheData = {
+                            bindings: rs.getBindings(),
+                            varNames: rs.getVarNames()
+                        };
                          
+                        return cacheData;
+                    });
+
+
+                    var skipInsert = false;
+
+                    executionPromise = trans.pipe(function(cacheData) {
+                        skipInsert = true;
+
+                        delete executionCache[cacheKey]; 
+                        resultCache.setItem(cacheKey, cacheData);
                          
-                         //var str = JSONCanonical.stringify(arr); //JSON.stringify(arr);
+                        return cacheData;
+                    });
 
-                         resultCache.setItem(cacheKey, cacheData);
-                     
-                         return rs;
-                     });
-                 }
-             }
-             
-             return result;
-         } 
-     });
+                    if(!skipInsert) {
+                        executionCache[cacheKey] = executionPromise;
+                    }
+                }
+            }
+            else {
+                // Note: Multiple query execution could happen from angular apply loops that execute too often
+                // So this could indicate performance issues
+                console.log('[INFO] Joined query execution for: ' + cacheKey);
+            }
 
+            var result = executionPromise.pipe(function(cacheData) {
+                var rs = ns.QueryExecutionCache.createResultSetFromCacheData(cacheData);
+                return rs;
+            });
+            
+            return result;
+        } 
+    });
+
+    ns.QueryExecutionCache.createResultSetFromCacheData = function(cacheData) {
+        var itBinding = new util.IteratorArray(cacheData.bindings);
+        var varNames = cacheData.varNames;
+        var rs = new ns.ResultSetArrayIteratorBinding(itBinding, varNames);
+
+        return rs;
+    };
 	
 })(jQuery);

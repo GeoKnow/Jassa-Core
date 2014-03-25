@@ -61,7 +61,9 @@
 								<param>util/collections.js</param>
 								<param>util/trees.js</param>
 								<param>util/json-utils.js</param>
-														
+
+								<param>util/serializer.js</param>
+
 
 							    <param>rdf/rdf-core.js</param>
 							    <param>vocab/util.js</param>

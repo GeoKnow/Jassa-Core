@@ -15,19 +15,28 @@
         },
         
         applyTags: function(facetNode) {
-            var pathTagger = this.pathTagger;
             
+            ns.FacetTreeUtils.applyTags(this.pathTagger, facetNode);
+            
+            return facetNode;
+        }
+    });
+    
+
+    ns.FacetTreeUtils = {
+        //TODO Probably not used anymore
+        applyTags: function(pathTagger, facetNode) {
             var facetNodes = util.TreeUtils.flattenTree(facetNode, 'children');
-            
+        
             _(facetNodes).each(function(node) {
                 var path = node.item.getPath();
                 var tags = pathTagger.createTags(path);
                 _(node).extend(tags);
-                
-                //console.log('tagging: ' + path, tags, node);
             });
+            
+            return facetNode;
         }
-    });
+    };
     
     
     /**
@@ -89,8 +98,22 @@
      * Item Tagger for paths of whether they are linked as a table column
      * 
      */
-    ns.ItemTaggerTablePath = Class.create(ns.ItemTagger, {
-        initialize: function(tableMod) {
+    ns.ItemTaggerMembership = Class.create(ns.ItemTagger, {
+        initialize: function(collection) {
+            this.collection = collection;
+        },
+        
+        createTags: function(item) {
+            var isContained = this.collection.contains(item);
+            
+            var result = { isContained: isContained };
+            //console.log('table: ' + path, isContained);
+            return result;
+        }
+    });
+    /*
+    ns.PathTaggerFacetTableConfig = Class.create(ns.ItemTagger, {
+        initialize: function(tableConfig) {
             this.tableMod = tableMod;
         },
         
@@ -103,6 +126,7 @@
             return result;
         }
     });
+    */
     
     
     

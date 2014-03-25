@@ -8,7 +8,10 @@
 	var ns = Jassa.facete;
 	
 	
-	
+	/**
+	 * TODO: Actually this object could take the FacetTreeConfig as its sole config argument (the other arg would be the service)
+	 * 
+	 */
 	ns.FacetTreeServiceImpl = Class.create({
 		initialize: function(facetService, expansionSet, expansionMap, facetStateProvider, pathToFilterString) { //facetStateProvider) {
 			this.facetService = facetService;
@@ -30,10 +33,13 @@
                 parentFacetItem = new ns.FacetItem(path, rdf.NodeFactory.createUri(path.getLastStep().getPropertyName()), null);                
             }
 
+            // Apply tags for the root element
 		    
 			var result = this.fetchFacetTreeRec(path, parentFacetItem);
 			
-			result.done(function(facetTree) { console.log("FacetTree: ", facetTree); });
+			result.done(function(facetTree) {
+			    console.log("FacetTree: ", facetTree);
+			});
 			
 			return result;
 		},
@@ -335,10 +341,11 @@
 	
 	
 	ns.FacetItem = Class.create({
-		initialize: function(path, node, distinctValueCount) {
+		initialize: function(path, node, distinctValueCount, tags) {
 			this.path = path;
 			this.node = node;
 			this.distinctValueCount = distinctValueCount;
+			this.tags = tags || {};
 		},
 
 //		getUri: functino() {
@@ -354,6 +361,14 @@
 		
 		getDistinctValueCount: function() {
 			return this.distinctValueCount;
+		},
+		
+		getTags: function() {
+		    return this.tags;
+		},
+		
+		setTags: function(tags) {
+		    this.tags = tags;
 		}
 	});
 	
@@ -366,10 +381,11 @@
 
 
 	ns.FacetServiceImpl = Class.create(ns.FacetService, {
-		initialize: function(sparqlService, facetConceptGenerator, labelMap) {
+		initialize: function(sparqlService, facetConceptGenerator, labelMap, pathTaggerManager) {
 			this.sparqlService = sparqlService;
 			this.facetConceptGenerator = facetConceptGenerator;
 			this.labelMap = labelMap;
+			this.pathTaggerManager = pathTaggerManager;
 		},
 
 /*		
@@ -467,6 +483,32 @@
 
                 return r;
             });
+            
+
+            // Apply tags
+            var tmp = this.pipeTagging(result);
+            return tmp;
+            
+            //result = this.pipeTagging(result);
+            //return result;
+		},
+		
+		
+		pipeTagging: function(promise) {
+		    var self = this;
+		    
+            var result = promise.pipe(function(items) {
+                //ns.FacetTreeUtils.applyTags(items, self.pathTagger);
+                
+                _(items).each(function(item) {
+                    //self.pathTaggerManager.applyTags(item);
+                    //ns.FacetTreeUtils.applyTags(self.pathTaggerManager, item);
+                    var tags = self.pathTaggerManager.createTags(item.getPath());
+                    item.setTags(tags);
+                });
+                
+                return items;
+            });
 
             return result;
 		},
@@ -503,7 +545,12 @@
 	           deferred.fail();
 	        });
 	        
-	        return deferred.promise(); 
+            // Apply tags
+	        var tmp = this.pipeTagging(deferred);
+	        return tmp.promise();
+
+            //deferred = this.pipeTagging(deferred);
+	        //return deferred.promise(); 
 		},
 		
 		/**
@@ -567,8 +614,14 @@
 		    
 		    var self = this;
 		    promise.done(function(facetItems) {
-		        var selectiveItems = _(facetItems).filter(function(x) { return x.getDistinctValueCount() < scanLimit; });
-		        var selectiveProperties = _(selectiveItems).map(function(x) { return x.getNode(); });
+		        var selectiveItems = _(facetItems).filter(function(x) {
+		            return x.getDistinctValueCount() < scanLimit;
+		        });
+
+		        var selectiveProperties = _(selectiveItems).map(function(x) {
+		            return x.getNode();
+		        });
+
                 // Check which properties had scan counts below the threshold
 		        
 		        var p = self.fetchFacetValueCountsFull(path, isInverse, selectiveProperties, isNegated, scanLimit);
@@ -604,7 +657,12 @@
 		        result.fail.apply(this, arguments);
 		    });
 		    
-		    return result;
+            // Apply tags
+		    var tmp = this.pipeTagging(result);
+		    return tmp;
+		    
+            //result = this.pipeTagging(result);
+		    //return result;
 		},
 		
 		/**

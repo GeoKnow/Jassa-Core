@@ -9,10 +9,12 @@
     var ns = Jassa.facete;
     
     ns.FacetConfig = Class.create({
-        initialize: function(baseConcept, rootFacetNode, constraintManager) {
+        initialize: function(baseConcept, rootFacetNode, constraintManager, pathTaggerManager) {
             this.baseConcept = baseConcept;
             this.rootFacetNode = rootFacetNode;
             this.constraintManager = constraintManager;
+            
+            this.pathTaggerManager = pathTaggerManager || new ns.ItemTaggerManager();
         },
         
         getBaseConcept: function() {
@@ -37,6 +39,10 @@
         
         setConstraintManager: function(constraintManager) {
             this.constraintManager = constraintManager;
+        },
+        
+        getPathTaggerManager: function() {
+            return this.pathTaggerManager;
         },
 
         /**
@@ -76,7 +82,8 @@
     ns.FacetTreeConfig = Class.create({
         initialize: function(facetConfig, labelMap, expansionSet, expansionMap, facetStateProvider, pathToFilterString) {
             this.facetConfig = facetConfig || ns.FacetConfig.createDefaultFacetConfig();
-            this.labelMap = labelMap; // TODO Use some default
+
+            this.labelMap = labelMap; // TODO Use some default (shouldn't the label map be part of the facetConfig???)
             this.expansionSet = expansionSet || new util.HashSet();
             this.expansionMap = expansionMap || new util.HashMap();
             this.facetStateProvider = facetStateProvider || new ns.FacetStateProviderImpl(10);
@@ -158,7 +165,7 @@
 
                 labelMap = labelMap || new sponate.SponateUtils.createDefaultLabelMap();
                 
-                var facetService = new ns.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap);
+                var facetService = new ns.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap, facetConfig.getPathTaggerManager());
 
                 return facetService;
             },
