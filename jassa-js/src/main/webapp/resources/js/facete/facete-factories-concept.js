@@ -1,7 +1,29 @@
 (function() {
 
+    
+    var sparql = Jassa.sparql;
+    
 	var ns = Jassa.facete;
 
+	
+	/**
+	 * Wrapper that returns the element of 'factored' concepts
+	 */
+	ns.ElementFactoryConceptFactory = Class.create(sparql.ElementFactory, {
+	    initialize: function(conceptFactory) {
+	        this.conceptFactory = conceptFactory;
+	    },
+	    
+	    createElement: function() {
+	        var concept = this.conceptFactory.createConcept();
+	        var result = concept ? concept.getElement() : null;
+	        
+	        return result;
+	    }
+	});
+	    
+
+	
 	ns.ConceptFactory = Class.create({
 		createConcept: function() {
 			throw "not overridden";
@@ -26,8 +48,7 @@
 			return this.concept;
 		}
 	});
-	
-	
+		
 	ns.ConceptFactoryFacetConfig = Class.create(ns.ConceptFactory, {
 	    initialize: function(facetConfig, path, excludeSelfConstraints) {
 	        this.facetConfig = facetConfig;
@@ -55,6 +76,22 @@
         
         getPath: function() {
             return this.path;
+        },
+        
+        getFacetTreeConfig: function() {
+            return this.facetTreeConfig;
+        },
+        
+        setFacetTreeConfig: function(facetTreeConfig) {
+            this.facetTreeConfig = facetTreeConfig;
+        },
+
+        isExcludeSelfConstraints: function() {
+            return this.excludeSelfConstraints;
+        },
+        
+        setExcludeSelfConstraints: function(excludeSelfConstraints) {
+            this.excludeSelfConstraints = excludeSelfConstraints;
         },
         
         createConcept: function() {

@@ -180,6 +180,65 @@
 	});
 	
 	
+    /**
+     * Element factory that simplify combines the elements of its sub element factories.
+     * Does not do any variable renaming
+     * 
+     * options: {
+     *     simplify: Perform some transformations, such as removing duplicates
+     *     forceGroup: always return an instance of ElementGroup, even if it would have only a single member
+     * }
+     * 
+     * 
+     * @param options
+     * @param elementFactories: Array of elementFactories
+     */
+    ns.ElementFactoryCombine = Class.create(ns.ElementFactory, {
+        initialize: function(simplify, elementFactories, forceGroup) {
+            this.simplify = simplify;
+            this.elementFactories = elementFactories;
+            this.forceGroup = forceGroup;
+        },
+        
+        isSimplify: function() {
+            return this.simplify;
+        },
+        
+        getElementFactories: function() {
+            return this.elementFactories;
+        },
+        
+        isForceGroup: function() {
+            return this.forceGroup;
+        },
+        
+        createElement: function() {
+            var elements = _(this.elementFactories).chain().map(function(elementFactory) {
+                var r = elementFactory.createElement();
+                return r;
+            }).filter(function(x) {
+                return x != null;
+            }).value();
+            
+            var result = new sparql.ElementGroup(elements);
+            
+            // Simplify the element
+            if(this.simplify) {
+                result = result.flatten();
+            }
+
+            // Remove unneccesary ElementGroup unless it is enforced
+            if(!this.forceGroup) {
+                var members = result.getArgs(); 
+                if(members.length === 1) {
+                    result = members[0];
+                }
+            }
+
+            return result;
+        }
+    });	
+	
 	/**
 	 * This factory creates an element Based on two elements (a, b) and corresponding join variables.
 	 * 

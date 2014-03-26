@@ -26,14 +26,22 @@
 	 * @param cefRegistry A Map<String, ConstraintElementFactory>
 	 */
 	ns.ConstraintManager = Class.create({
-		initialize: function(cefRegistry) {
+		initialize: function(cefRegistry, constraints) {
 			
 			if(!cefRegistry) {
 				cefRegistry = ns.createDefaultConstraintElementFactories(); 
 			}
 			
 			this.cefRegistry = cefRegistry;
-			this.constraints = [];
+			this.constraints = constraints || [];
+		},
+		
+		/**
+		 * Returns a new constraintManager with a new array of the original constraints
+		 */
+		shallowClone: function() {
+		    var result = new ns.ConstraintManager(this.cefRegistry, this.constraints.slice(0));
+		    return result;
 		},
 		
 		getCefRegistry: function() {
