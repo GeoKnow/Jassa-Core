@@ -194,7 +194,28 @@
 	    
 	};
 		
-	testCount();
+	//testCount();
+	
+	
+	var testSerialize = function() {
+	    var serializer = new Jassa.util.Serializer();
+	    
+	    serializer.indexClasses(Jassa.rdf);
+	    serializer.indexClasses(Jassa.sparql);
+	    serializer.indexClasses(Jassa.facete);
+	    
+	    
+	    var vs = rdf.NodeFactory.createVar('s');
+	    var concept = facete.ConceptUtils.createSubjectConcept(vs);
+
+	    var foo = { a: concept, b: concept, c: concept, d: 'yay'};
+	    
+	    var data = serializer.serialize(foo);
+	    
+	    alert(JSON.stringify(data));
+	};
+	
+	testSerialize();
 	
 	
 	

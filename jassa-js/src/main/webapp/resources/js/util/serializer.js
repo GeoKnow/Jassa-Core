@@ -10,8 +10,10 @@
      */
     ns.SerializationContext = Class.create({
         initialize: function() {
+            this._nextId = 1;
+            
             // A hash map that compares keys by reference equality
-            this.idToState = new ns.HashMap(
+            this.objToId = new ns.HashMap(
                     function(a, b) {
                         return a == b;
                     }, function(obj) {
@@ -20,10 +22,20 @@
             );
             
             
+            this.idToState = {};
+        },
+        
+        nextId: function() {
+            var result = '' + this._nextId++;
+            return result;
         },
         
         getIdToState: function() {
             return this.idToState;
+        },
+        
+        getObjToId: function() {
+            return this.objToId;
         }
             
             
@@ -38,22 +50,34 @@
 
     ns.Serializer = Class.create({
         initialize: function() {
-            this.labelToClass = {};
+            /**
+             * A map from class label to the class object
+             * 
+             */
+            this.classNameToClass = {};
+                        
+            /**
+             * A map from class label to serialization function  
+             */
+            this.classNameToFnSerialize = {};
             
             
-            this.labelToFnSerialize = {};
-            this.labelToFnDeserialize = {};
+            /**
+             * A map from class label to deserialization function 
+             */
+            this.classNameToFnDeserialize = {};
             
-            
-            // A map from class name to a prototype instance
-            // (i.e. an instance of the class without any ctor arguments passed in)
-            // This is a 'cache' attribute; prototypes are created on demand
+            /**
+             * A map from class name to a prototype instance
+             * (i.e. an instance of the class without any ctor arguments passed in)
+             * This is a 'cache' attribute; prototypes are created on demand
+             */
             this.classNameToPrototype = {};
         },
     
         registerOverride: function(classLabel, fnSerialize, fnDeserialize) {
-            this.labelToFnSerialize[classLabel] = fnSerialize;
-            this.labelToFnDeserialize[classLabel] = fnDeserialize;
+            this.classNameToFnSerialize[classLabel] = fnSerialize;
+            this.classNameToFnDeserialize[classLabel] = fnDeserialize;
         },
         
         
@@ -64,7 +88,7 @@
         indexClasses: function(ns) {
             var tmp = this.findClasses(ns);
             
-            _(this.labelToClass).extend(tmp);
+            _(this.classNameToClass).extend(tmp);
             
             return tmp;
         },
@@ -73,8 +97,9 @@
         findClasses: function(ns) {
             var result = {};
             
-            _(ns).each(function(k) {            
-                var classLabel = k.classLabel;
+            _(ns).each(function(k) {
+                // TODO Use custom function to obtain class names
+                var classLabel = k.classLabel || (k.prototype ? k.prototype.classLabel : null);
                 if(classLabel) {
                     result[classLabel] = k;
                 }           
@@ -92,7 +117,7 @@
             var objProto = Object.getPrototypeOf(obj);
             
             var result;
-            _(this.labelToClass).find(function(ctor, classLabel) {
+            _(this.classNameToClass).find(function(ctor, classLabel) {
                 if(objProto == ctor.prototype) {
                     result = classLabel;
                     return true;
@@ -105,7 +130,7 @@
 
         getClassForLabel: function(classLabel) {
             var result;
-            _(this.labelToClass).find(function(ctor, cl) {
+            _(this.classNameToClass).find(function(ctor, cl) {
                 if(cl === classLabel) {
                     result = ctor
                     return true;
@@ -117,23 +142,66 @@
 
 
         serialize: function(obj, context) {
-            var result;
+            if(!context) {
+                context = new ns.SerializationContext();
+            }
             
-            if(_(obj).isFunction()) {
+            var data = this.serializeRec(obj, context);
+            
+            var result = {
+                root: data,
+                idToState: context.getIdToState()
+            };
+            
+            
+            return result;
+        },
+        
+        serializeRec: function(obj, context) {
+            var result;
+
+
+            //var id = context.getOrCreateId(obj);
+            
+            // Get or create an ID for the object
+            var objToId = context.getObjToId();
+            var id = objToId.get(obj);
+            
+            if(!id) {
+                id = context.nextId();
+            }
+
+            objToId.put(id, obj);
+            
+            
+            var idToState = context.getIdToState();
+            var state = idToState[id];
+            
+            if(state) {
+                result = {
+                    ref: id
+                };
+            }            
+            else if(_(obj).isFunction()) {
                 result = undefined;
             }
             else if(_(obj).isArray()) {
                 var self = this;
                 
-                result = _(obj).map(function(item) {
-                    var r = self.serialize(item);
+                var items = _(obj).map(function(item) {
+                    var r = self.serializeRec(item, context);
                     return r;
                 });
+                
+                result = {
+                    items: items
+                };
             }
             else if(_(obj).isObject()) {
+            
+                result = {};
+                
                 // Try to figure out the class of the object
-                
-                
                 //var objClassLabel = obj.classLabel;
                 
                 var classLabel = this.getLabelForClass(obj);
@@ -159,47 +227,78 @@
                         }
                     }                        
                 }
+
+                if(!proto) {
+                    proto = {};
+                }
+
+                
+                /*
+                var objChainItem = obj;
+                
+                while(objChainItem != null) {
+                    var propNames = protoChainItem.getOwnPropertyNames();
                     
+                    
+                    objChainItem = obj.prototype;
+                    protoChainItem = proto ? proto.prototype;
+                }
+                */
                 
 //              if(obj.toJson) {
 //                  // TODO: There must also be a fromJson method
 //                  result = obj.toJson();
 //              } else {
 
-                result = {}; 
+                data = {}; 
                 
                 var self = this;
                 _(obj).each(function(v, k) {
                     
                     
-                    var val = self.serialize(v);
+                    var val = self.serializeRec(v, context);
                     
-                    if(proto) {
-                        var compVal = proto[k];
-                        var isEqual = _(val).isEqual(compVal) || (val == null && compVal == null); 
-                        //console.log('is equal: ', isEqual, 'val: ', val, 'compVal: ', compVal);
-                        if(isEqual) {
-                            return;
-                        }
+                    var compVal = proto[k];
+                    var isEqual = _(val).isEqual(compVal) || (val == null && compVal == null); 
+                    //console.log('is equal: ', isEqual, 'val: ', val, 'compVal: ', compVal);
+                    if(isEqual) {
+                        return;
                     }
                     
                     if(!_(val).isUndefined()) {
-                        result[k] = val;
+                        data[k] = val;
                     }
                     //serialize(clazz, k, v);
                 });
 
 //              }
-                
+
+                var x = {
+                    attrs: data
+                };
+
                 if(classLabel) {
-                    result['classLabel'] = classLabel;
+                    x.classLabel = classLabel;
                 }
+                
+                
+                idToState[id] = x;
+
+                result = {
+                    ref: id
+                };
+                
             }
             else {
-                result = obj;
+                //result = {type: 'literal', 'value': obj};//null; //obj;
+                result = {
+                    value: obj
+                };
                 //throw "unhandled case for " + obj;
             }
 
+            
+            //return result;
             return result;
         },
 
