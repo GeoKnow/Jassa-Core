@@ -1,6 +1,6 @@
 {
   "name": "jassa",
-  "version": "0.0.1-SNAPSHOT",
+  "version": "0.0.2-SNAPSHOT",
   "homepage": "https://github.com/GeoKnow/Jassa",
   "authors": [
     "Claus Stadler <cstadler@informatik.uni-leipzig.de>"
@@ -8,9 +8,9 @@
   "description": "JAvascript Suite for Sparql Access",
   "main": "jassa.js",
   "dependencies": {
-    "jquery": "~1.9.1",
-    "underscore": ">=1.6.0",
-    "underscore.string": "~2.3.0",
+    "jquery": "1.9.1",
+    "underscore": "1.6.0",
+    "underscore.string": "2.3.2",
     "jscache": ""
   },
   "keywords": [
