@@ -2,6 +2,29 @@
 	
 	var ns = Jassa.util;
 	
+	ns.MapUtils = {
+	    indexBy: function(arr, keyOrFn, result) {
+	        result = result || new ns.HashMap();
+
+	        var fnKey;
+
+            if(_(keyOrFn).isString()) {
+                fnKey = function(obj) {
+                    return obj[keyOrFn];
+                }
+            } else {
+                fnKey = keyOrFn;
+            }
+
+	        _(arr).each(function(item) {
+	            var key = fnKey(item);
+	            result.put(key, item);
+	        });
+	        
+	        return result;
+	    }
+	};
+	
 	ns.MultiMapUtils = {
 	    get: function(obj, key) {
             return (key in obj)

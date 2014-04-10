@@ -1234,7 +1234,7 @@ alert(str);
 
         
         refresh = function() {
-            var bounds = ns.MapUtils.getExtent($scope.map)
+            var bounds = ns.MapUtilsOpenLayers.getExtent($scope.map)
             //console.log('extent', bounds);
             
 //             if(viewStateCtrl == null) {

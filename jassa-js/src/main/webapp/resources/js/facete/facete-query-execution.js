@@ -3,8 +3,9 @@
 	
 	var service = Jassa.service;
 	var rdf = Jassa.rdf;
-    var sponate = Jassa.sponate;
-	
+    var sponate = Jassa.sponate;	
+    var util = Jassa.util;
+
 	var ns = Jassa.facete;
 	
 	
@@ -341,11 +342,17 @@
 	
 	
 	ns.FacetItem = Class.create({
-		initialize: function(path, node, distinctValueCount, tags) {
+	    /**
+	     * doc: The json document returned via the sponate mapping of the labelMap.
+	     * Should at least contain the fields 'displayLabel' and 'hiddenLabels'.
+	     * 
+	     */
+		initialize: function(path, node, distinctValueCount, tags, doc) {
 			this.path = path;
 			this.node = node;
 			this.distinctValueCount = distinctValueCount;
 			this.tags = tags || {};
+			this.doc = doc || {};
 		},
 
 //		getUri: functino() {
@@ -357,6 +364,14 @@
 		
 		getPath: function() {
 			return this.path;
+		},
+		
+		getDoc: function() {
+		    return this.doc;
+		},
+
+		setDoc: function(doc) {
+		    this.doc = doc;
 		},
 		
 		getDistinctValueCount: function() {
@@ -525,6 +540,7 @@
 	                return rdf.NodeFactory.parseRdfTerm(doc.id);
 	            });
 	            */
+	            var map = util.MapUtils.indexBy(docs, 'id');
 	            var properties = _(docs).pluck('id');
 
 	            if(properties.length === 0) {
@@ -536,6 +552,13 @@
 
                 promise.done(function(r) {
                     console.log('PropertyCounts', r);
+                    
+                    // This feels a bit hacky, as it sets an attribute on another functions result
+                    _(r).each(function(item) {
+                        var doc = map.get(item.getNode());
+                        item.setDoc(doc);
+                    });
+                    
                     deferred.resolve(r);
                 }).fail(function() {
                     deferred.fail();

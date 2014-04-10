@@ -53,8 +53,12 @@
         
         var i = Math.max(a, b);
 
-        var result = (i == str.length) ? str : str.substring(i + 1); 
+        var result = (i === str.length) ? str : str.substring(i + 1); 
 
+        if(result === '') {
+            result = str; // Rather show the URI than an empty string
+        }
+        
         return result;
     }
     
@@ -112,6 +116,9 @@
             var label = this.exprEvaluator.eval(this.labelExpr, binding);
             var subject = this.exprEvaluator.eval(this.subjectExpr, binding);
            
+            if(this.bestMatchNode == null && subject.isConstant()) {
+                this.bestMatchNode = subject.getConstant().asNode();
+            }
             
             // Determine the score vector for the property and the language
             var propertyScore = -1;
@@ -165,8 +172,16 @@
         
         getJson: function() {
             var result = null;
-            if(this.bestMatchNode) {
-                result = this.bestMatchNode.getLiteralValue();
+            var bestMatchNode = this.bestMatchNode;
+            
+            if(bestMatchNode) {
+                if(bestMatchNode.isUri()) {
+                    var uri = bestMatchNode.getUri();
+                    result = ns.extractLabelFromUri(uri);
+                }
+                else {
+                    result = bestMatchNode.getLiteralValue();
+                }
             }
 
             return result;
