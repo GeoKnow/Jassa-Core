@@ -14,7 +14,6 @@ import com.hp.hpl.jena.sparql.syntax.ElementBind;
 import com.hp.hpl.jena.sparql.syntax.ElementData;
 import com.hp.hpl.jena.sparql.syntax.ElementDataset;
 import com.hp.hpl.jena.sparql.syntax.ElementExists;
-import com.hp.hpl.jena.sparql.syntax.ElementFetch;
 import com.hp.hpl.jena.sparql.syntax.ElementFilter;
 import com.hp.hpl.jena.sparql.syntax.ElementGroup;
 import com.hp.hpl.jena.sparql.syntax.ElementMinus;
@@ -283,10 +282,10 @@ public class ElementTreeAnalyser implements ElementVisitor {
         throw new RuntimeException("Not implemented");
     }
 
-    @Override
-    public void visit(ElementFetch el) {
-        throw new RuntimeException("Not implemented");
-    }
+//    @Override
+//    public void visit(ElementFetch el) {
+//        throw new RuntimeException("Not implemented");
+//    }
 
     @Override
     public void visit(ElementSubQuery el) {
