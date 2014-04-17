@@ -117,6 +117,16 @@
 		},
 		
 		/**
+		 * Specify a set of nodes for which to perform the lookup
+		 * 
+		 * Use of .concept(...) and .nodes(..) is mutually exclusive
+		 * 
+		 */
+		nodes: function(_nodes) {
+		    // TODO Implement me
+		},
+		
+		/**
 		 * find().nodes(someNodes).asList();
 		 */
 		/*

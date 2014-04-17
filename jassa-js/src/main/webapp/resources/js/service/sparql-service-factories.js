@@ -42,8 +42,8 @@
         },
         
         createSparqlService: function(sparqlServiceIri, defaultGraphIris) {
-            var tmp = new service.SparqlServiceHttp(sparqlServiceIri, defaultGraphIris);
-            tmp = new service.SparqlServiceCache(tmp);
+            var tmp = new ns.SparqlServiceHttp(sparqlServiceIri, defaultGraphIris);
+            tmp = new ns.SparqlServiceCache(tmp);
             
             var hash = tmp.getStateHash();
             

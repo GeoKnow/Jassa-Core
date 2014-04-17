@@ -96,6 +96,7 @@
 								<param>service/query-execution-utils.js</param>
 								<param>service/query-execution-joins.js</param>
 								<param>service/sparql-service-factories.js</param>
+								<param>service/sparql-table-service.js</param>
 
 								<param>sparql/sparql-expr-eval.js</param>
 
