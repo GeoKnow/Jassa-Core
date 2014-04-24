@@ -15,6 +15,8 @@
 	 * 
 	 */
 	ns.SparqlString = Class.create({
+	    classLabel: 'jassa.sparql.SparqlString',
+	    
 		initialize: function(value, varsMentioned) {			
 			this.value = value;
 			this.varsMentioned = varsMentioned ? varsMentioned : [];
@@ -765,6 +767,8 @@
 
 
 	ns.ExprString = Class.create(ns.Expr, {
+	    classLabel: 'jassa.sparql.ExprString',
+	    
 		initialize: function(sparqlString) {
 			this.sparqlString = sparqlString;
 		},

@@ -142,9 +142,7 @@
 
 
         serialize: function(obj, context) {
-            if(!context) {
-                context = new ns.SerializationContext();
-            }
+            context = context || new ns.SerializationContext();
             
             var data = this.serializeRec(obj, context);
             
@@ -160,7 +158,6 @@
         serializeRec: function(obj, context) {
             var result;
 
-
             //var id = context.getOrCreateId(obj);
             
             // Get or create an ID for the object
@@ -169,9 +166,8 @@
             
             if(!id) {
                 id = context.nextId();
+                objToId.put(obj, id);
             }
-
-            objToId.put(id, obj);
             
             
             var idToState = context.getIdToState();
@@ -185,18 +181,6 @@
             else if(_(obj).isFunction()) {
                 result = undefined;
             }
-            else if(_(obj).isArray()) {
-                var self = this;
-                
-                var items = _(obj).map(function(item) {
-                    var r = self.serializeRec(item, context);
-                    return r;
-                });
-                
-                result = {
-                    items: items
-                };
-            }
             else if(_(obj).isObject()) {
             
                 result = {};
@@ -206,6 +190,32 @@
                 
                 var classLabel = this.getLabelForClass(obj);
 
+                
+                // TODO Source of Confusion: We use proto to refer toa prototypal instance of some class for the sake of
+                // getting the default values as well as an JavaScript's object prototype... Fix the naming.
+                
+                // TODO Not sure how stable this proto stuff is across browsers
+                var isPrimitiveObject = function(obj) {
+                    var result = _(obj).isUndefined() || _(obj).isNull() || _(obj).isBoolean() || _(obj).isNumber() || _(obj).isDate() || _(obj).isString() || _(obj).isRegExp(); 
+                    return result;
+                };
+                
+                var isSimpleMap = function(obj) {
+                    var objProto = obj.prototype || obj.__proto__;
+                    
+                    var isObject = _(obj).isObject && !isPrimitiveObject(obj);
+ 
+                    var result = isObject && (objProto == null || objProto == Object.__proto__.__proto__);
+                    
+                    return result;
+                };
+                
+                var isSimpleObject = isPrimitiveObject(obj) || isSimpleMap(obj) || _(obj).isArray();
+                
+                if(classLabel == null && !isSimpleObject) {
+                    console.log('Failed to serialize instance without class label', obj);
+                    throw 'Failed to serialize instance without class label';
+                }
                 
                 var proto;
                 if(classLabel) {
@@ -232,25 +242,9 @@
                     proto = {};
                 }
 
-                
-                /*
-                var objChainItem = obj;
-                
-                while(objChainItem != null) {
-                    var propNames = protoChainItem.getOwnPropertyNames();
-                    
-                    
-                    objChainItem = obj.prototype;
-                    protoChainItem = proto ? proto.prototype;
-                }
-                */
-                
-//              if(obj.toJson) {
-//                  // TODO: There must also be a fromJson method
-//                  result = obj.toJson();
-//              } else {
 
-                data = {}; 
+                /*
+                var data = {}; 
                 
                 var self = this;
                 _(obj).each(function(v, k) {
@@ -270,24 +264,48 @@
                     }
                     //serialize(clazz, k, v);
                 });
+                */
+                var data = this.serializeAttrs(obj, context, proto);
 
 //              }
 
-                var x = {
-                    attrs: data
-                };
-
+                var x = {};
+                
                 if(classLabel) {
                     x.classLabel = classLabel;
                 }
-                
-                
+
+                if(_(data).keys().length > 0) {
+                    x['attrs'] = data.attrs;
+
+                    if(data.parent != null) {
+                        x['parent'] = data.parent;
+                    }
+                }
+                    
+
+                // If the object is also an array, serialize its members
+                // Array members are treated just like objects
+                /*
+                var self = this;
+                if(_(obj).isArray()) {
+                    var items = _(obj).map(function(item) {
+                        var r = self.serializeRec(item, context);
+                        return r;
+                    });
+                    
+                    x['items'] = items;
+                }                  
+                */
+                if(_(obj).isArray()) {
+                    x['length'] = obj.length;
+                }
+
                 idToState[id] = x;
 
                 result = {
                     ref: id
-                };
-                
+                };                
             }
             else {
                 //result = {type: 'literal', 'value': obj};//null; //obj;
@@ -303,52 +321,179 @@
         },
 
         
-        deserialize: function(obj) {
-            var result;
-            
-            if(_(obj).isArray()) {
-                result = _(obj).map(function(item) {
-                    var r = this.deserialize(item);
-                    return r;
-                });                
-            }
-            else if(_(obj).isObject()) {
+        /**
+         * Serialize an object's state, thereby taking the prototype chain into account
+         * 
+         * TODO: We assume that noone messed with the prototype chain after an instance of
+         * an 'conceptual' class has been created.
+         * 
+         */
+        serializeAttrs: function(obj, context, proto) {
 
-                var classLabel = obj.classLabel;
-                
-                if(classLabel) {
-                    var classFn = this.getClassForLabel(classLabel);
-                    
-                    if(!classFn) {
-                        throw 'Unknown class label encountered in deserialization: ' + classLabel;
-                    }
-                    
-                    result = new classFn();
-                } else {
-                    result = {};
-                }
-                
+
+            var current = obj;
+            var result = {};
+            var parent = result;
             
+//            while(current != null) {
+                var data = parent['attrs'] = {};
+
+                
                 var self = this;
-                _(obj).each(function(v, k) {
+
+                var keys = _(obj).keys(); 
+                _(keys).each(function(k) {
+                    var v = obj[k];
+
+                //_(obj).each(function(v, k) {
                     
-                    if(k === 'classLabel') {
+                    // Only traverse own properties
+//                    if(!_(obj).has(k)) {
+//                        return;
+//                    }
+                    
+                    var val = self.serializeRec(v, context);
+                    
+                    var compVal = proto[k];
+                    var isEqual = _(val).isEqual(compVal) || (val == null && compVal == null); 
+                    //console.log('is equal: ', isEqual, 'val: ', val, 'compVal: ', compVal);
+                    if(isEqual) {
                         return;
                     }
                     
-                    var val = self.deserialize(v);
+                    if(!_(val).isUndefined()) {
+                        data[k] = val;
+                    }
+                    //serialize(clazz, k, v);
+                });
+
+//                current = current.__proto__;
+//                if(current) {
+//                    parent = parent['parent'] = {};
+//                }
+//            };
+            
+            return result;
+        },
+        
+        
+        /**
+         * @param graph: Object created by serialize(foo)
+         * 
+         */
+        deserialize: function(graph, context) {
+            //context = context || new ns.SerializationContext();
+            
+            var ref = graph.root;
+            var idToState = graph.idToState;
+            var idToObj = {};
+                        
+            var result = this.deserializeRef(ref, idToState, idToObj);
+            
+            return result;
+        },
+        
+        deserializeRef: function(attr, idToState, idToObj) {
+            var ref = attr.ref;
+            var value = attr.value;
+            
+            var result;
+            
+            if(ref != null) {
+                var objectExists = ref in idToObj;
+
+                if(objectExists) {
+                    result = idToObj[ref];
+                }
+                else {
+                    result = this.deserializeState(ref, idToState, idToObj);
+                    
+//                    if(result == null) {
+//                        console.log('Could not deserialize: ' + JSON.stringify(state) + ' with context ' + idToState);
+//                        throw 'Deserialization error';
+//                    }
+                }
+            }
+            else {
+                result = value;
+            }
+            /*
+            else if(!_(value).isUndefined()) {
+                result = value;
+            }
+            else if(_(value).isUndefined()) {
+                // Leave the value 
+            }
+            else {
+                console.log('Should not come here');
+                throw 'Should not come here';
+            }
+            */
+            return result;
+        },
+
+        deserializeState: function(id, idToState, idToObj) {
+            
+            var result;
+            
+            var state = idToState[id];
+
+            if(state == null || !_(state).isObject()) {
+                console.log('State must be an object, was: ', state);
+                throw 'Deserialization error';
+            }
+
+            var attrs = state.attrs;
+            //var items = state.items;
+            var classLabel = state.classLabel;
+            var length = state.length;
+            
+            if(classLabel) {
+                var classFn = this.getClassForLabel(classLabel);
+                
+                if(!classFn) {
+                    throw 'Unknown class label encountered in deserialization: ' + classLabel;
+                }
+                
+                result = new classFn();
+            } else if(length != null) { //items != null) {
+                result = [];
+            } else {
+                result = {};
+            }
+            
+            // TODO get the id
+            idToObj[id] = result;
+            
+        
+            var self = this;
+            if(attrs != null) {
+                var keys = _(attrs).keys(); 
+                _(keys).each(function(k) {
+                    var ref = attrs[k];
+
+                    var val = self.deserializeRef(ref, idToState, idToObj);
                     
                     result[k] = val;
                 });
-
-
-            } else {
-                result = obj;
             }
             
+            if(length != null) {
+                result.length = length;
+            }
+            /*
+            if(items != null) {
+                _(items).each(function(item) {
+                    var r = self.deserializeRef(item, idToState, idToObj);
+
+                    result.push(r);
+                });                
+            }
+            */
         
             return result;
         }
+        
     });
     
     ns.Serializer.singleton = new ns.Serializer();

@@ -196,23 +196,101 @@
 		
 	//testCount();
 	
+	/*
+	var Boat = Class.create({
+	    classLabel: 'BoatClass',
+	    initialize: function() {
+	        this.baseName = 'B';
+	    }
+	});
+	
+	
+	var MotorBoat = Class.create(Boat, {
+	    classLabel: 'MotorBoatClass',
+	    initialize: function($super) {
+	        $super();
+	        this.name = 'MB';
+	    }
+	});
+	
+	var boat = {
+		name: 'B'
+	};
+	
+	var motorBoat = {
+		name: 'MB'
+	};
+	
+	//motorBoat.prototype = boat;
+	motorBoat.__proto__ = boat;
+	*/
+
 	
 	var testSerialize = function() {
 	    var serializer = new Jassa.util.Serializer();
 	    
+	    /*
+	    var arr = ['a', 'b', 'c'];
+	    arr['foo'] = 'bar';
+	    arr['1'] = 'x';
+	    arr['1000'] = 'moo';
+	    arr.length = 5000;
+	    console.log('FFS', arr.length);
+	    
+	    _(arr).chain().pairs().each(function(v, k) {
+	       console.log(k + ': ' + typeof(k)); 
+	    });
+	    
+	    alert(JSON.stringify(_(arr).keys()));
+	    */
+	    
 	    serializer.indexClasses(Jassa.rdf);
 	    serializer.indexClasses(Jassa.sparql);
 	    serializer.indexClasses(Jassa.facete);
+	    serializer.indexClasses(Jassa.sponate);
 	    
+	    //var motorBoat = new MotorBoat();
+	    //console.log('MotorBoat', motorBoat.name, motorBoat.baseName);
+	    //motorBoat.prototype.name = 'B';
+	    //motorBoat.baseName = 'B';
+	    //motorBoat.name = 'D';
+	    var ZZZ = Class.create({
+	        
+	    });
+	    
+	    var YYY = function() {
+	        
+	    };
+	    
+	    var zzz = new ZZZ();
+	    var yyy = new YYY();
+	    
+	    var xxx = {'a':'b'};
+	    console.log(zzz, yyy, xxx, xxx.prototype, xxx.__proto, Object);
 	    
 	    var vs = rdf.NodeFactory.createVar('s');
 	    var concept = facete.ConceptUtils.createSubjectConcept(vs);
 
-	    var foo = { a: concept, b: concept, c: concept, d: 'yay'};
+	    //var foo = { a: concept, b: concept, c: concept, d: 'yay'};
+	    var foo = new facete.FacetTreeConfig();
+
+	    //var foo = {a: vs, b: vs};
+	    //alert(foo.a.getElement() + ' --- ' + foo.a.getVar());
+	    //var foo = Jassa.geo.GeoMapFactoryUtils.wgs84MapFactory;
 	    
+	    console.log('Foo', foo, typeof foo);
 	    var data = serializer.serialize(foo);
 	    
+	    //var data = serializer.serialize(motorBoat);
+	    
 	    alert(JSON.stringify(data));
+	    
+	    var bar = serializer.deserialize(data);
+	    
+	    //alert(JSON.stringify(data) + '\n' + JSON.stringify(bar));
+	    alert(JSON.stringify(bar));
+	    //alert(bar.a.getElement() + ' --- ' + bar.a.getVar());
+	    //alert(bar.a.getElement() + ' --- ' + bar.a.getVar());
 	};
 	
 	testSerialize();

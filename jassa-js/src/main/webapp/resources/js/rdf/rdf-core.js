@@ -781,7 +781,7 @@
 	
 	ns.Triple = Class.create({
 	    
-        classLabel: 'Triple',
+        classLabel: 'jassa.rdf.Triple',
 
 		initialize: function(s, p, o) {
 			this.s = s;

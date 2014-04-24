@@ -3,6 +3,8 @@
     var ns = Jassa.sponate;
 
     ns.GeoMapFactory = Class.create({
+        classLabel: 'GeoMapFactory',
+        
         initialize: function(baseSponateView, bboxExprFactory) {
             //this.template = template;
             //this.baseElement = baseElement;

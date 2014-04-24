@@ -67,6 +67,8 @@
 	});
 	
 	ns.ConstraintSpecPathValue = Class.create(ns.ConstraintSpecSinglePath, {
+        classLabel: 'jassa.facete.ConstraintSpecPathValue',
+
 		initialize: function($super, name, path, value) {
 			$super(name, path);
 			this.value = value;
@@ -106,6 +108,8 @@
 	 * 
 	 */
 	ns.ConstraintSpecExpr = Class.create(ns.ConstraintSpec, {
+        classLabel: 'jassa.facete.ConstraintSpecExpr',
+
 		/**
 		 * expr: sparql.Expr
 		 * varToPath: util.Map<Var, Path>

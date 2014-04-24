@@ -9,6 +9,8 @@
 	
 	
 	ns.Mapping = Class.create({
+	    classLabel: 'jassa.sponate.Mapping',
+	    
 		initialize: function(name, pattern, elementFactory, patternRefs) {
 			// TODO Remove the name attribute
 		    this.name = name;

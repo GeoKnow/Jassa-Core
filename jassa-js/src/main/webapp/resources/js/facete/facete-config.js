@@ -9,6 +9,8 @@
     var ns = Jassa.facete;
     
     ns.FacetConfig = Class.create({
+        classLabel: 'jassa.facete.FacetConfig',
+        
         initialize: function(baseConcept, rootFacetNode, constraintManager, pathTaggerManager) {
             this.baseConcept = baseConcept;
             this.rootFacetNode = rootFacetNode;
@@ -80,6 +82,8 @@
      * 
      */
     ns.FacetTreeConfig = Class.create({
+        classLabel: 'jassa.facete.FacetTreeConfig',
+        
         initialize: function(facetConfig, labelMap, expansionSet, expansionMap, facetStateProvider, pathToFilterString) {
             this.facetConfig = facetConfig || ns.FacetConfig.createDefaultFacetConfig();
 

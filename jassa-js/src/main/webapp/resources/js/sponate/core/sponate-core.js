@@ -9,6 +9,8 @@
 	
 	
     ns.AccumulatorFactoryFn = Class.create({
+        classLabel: 'AccumulatorFactoryFn',
+        
         initialize: function(fn, referencedVars) {
             this.fn = fn;
             this.referencedVars = referencedVars;
@@ -25,6 +27,8 @@
     });
     
     ns.AccumulatorFn = Class.create({
+        classLabel: 'AccumulatorFn',
+        
         initialize: function(fn) {
             this.fn = fn;
             // TODO Is this really a node, or an arbitrary object?
@@ -61,6 +65,8 @@
 	 * 
 	 */
 	ns.AttrPath = Class.create({
+        classLabel: 'AttrPath',
+
 		initialize: function(steps) {
 			this.steps = steps ? steps : [];
 		},
@@ -172,6 +178,8 @@
 	 * 
 	 */
 	ns.Pattern = Class.create({
+        classLabel: 'Pattern',
+
 		callVisitor: function(name, self, args) {
 			var result = ns.callVisitor(name, self, args);
 			return result;
@@ -316,26 +324,28 @@
 	};
 	
 	ns.PatternCustomAgg = Class.create(ns.Pattern, {
-	   initialize: function(customAggFactory) {
-	       this.customAggFactory = customAggFactory;
-	   },
-	
-	   getCustomAggFactory: function() {
-	       return this.customAggFactory;
-	   },
-	   
-	   getClassName: function() {
-	       return 'PatternCustomAgg';
-	   },
-	   
-       getVarsMentioned: function() {
-           var result = this.customAggFactory.getVarsMentioned();
-           return result;
-       },
+	    classLabel: 'PatternCustomAgg',
+    
+	    initialize: function(customAggFactory) {
+	        this.customAggFactory = customAggFactory;
+	    },
+    
+	    getCustomAggFactory: function() {
+	        return this.customAggFactory;
+	    },
        
-       getSubPatterns: function() {
-           return [];
-       }
+	    getClassName: function() {
+	        return 'PatternCustomAgg';
+	    },
+       
+	    getVarsMentioned: function() {
+	        var result = this.customAggFactory.getVarsMentioned();
+	        return result;
+	    },
+       
+	    getSubPatterns: function() {
+	        return [];
+	    }
 	});
 	
 	/**
@@ -346,6 +356,8 @@
 	 * 
 	 */
 	ns.PatternLiteral = Class.create(ns.Pattern, {
+	    classLabel: 'PatternLiteral',
+
 		initialize: function(expr, aggregatorName) {
 			this.expr = expr;
 			this.aggregatorName = aggregatorName;
@@ -384,6 +396,8 @@
 	 * 
 	 */
 	ns.PatternObject = Class.create(ns.Pattern, {
+	    classLabel: 'PatternObject',
+
 		initialize: function(attrToPattern) {
 
 		    //console.log('attrToPattern', attrToPattern);
@@ -494,6 +508,9 @@
 	 * 
 	 */
 	ns.PatternMap = Class.create(ns.Pattern, {
+	    classLabel: 'PatternMap',
+
+	    
 		initialize: function(keyExpr, subPattern, isArray) {
 			this.keyExpr = keyExpr;
 			this.subPattern = subPattern;
@@ -552,6 +569,8 @@
 	 * 
 	 */
 	ns.PatternRef = Class.create(ns.Pattern, {
+	    classLabel: 'PatternRef',
+
 		initialize: function(stub) {
 			this.stub = stub;
 			this.refSpec = null;
@@ -761,6 +780,9 @@
 	 */
 		
 	ns.Aggregator = Class.create({
+	    classLabel: 'Aggregator',
+
+	    
 		getPattern: function() {
 			throw new 'override me';
 		},
@@ -772,26 +794,31 @@
 
 	
 	ns.AggregatorCustomAgg = Class.create(ns.Aggregator, {
-	   initialize: function(patternCustomAgg, customAgg) {
-	       this.customAgg = customAgg;
-	   },
+	    classLabel: 'AggregatorCustomAgg',
+	    
+	    
+	    initialize: function(patternCustomAgg, customAgg) {
+	        this.customAgg = customAgg;
+	    },
 	   
-	   getPattern: function() {
-	       return this.pattenCustomAgg;
-	   },
+	    getPattern: function() {
+	        return this.pattenCustomAgg;
+	    },
 	   
-	   process: function(binding, context) {
-	       this.customAgg.processBinding(binding);
-	   },
+	    process: function(binding, context) {
+	        this.customAgg.processBinding(binding);
+	    },
 	   
-	   getJson: function(retainRdfNodes) {
-	       var result = this.customAgg.getJson(retainRdfNodes);
-	       return result;
-	   }
+	    getJson: function(retainRdfNodes) {
+	        var result = this.customAgg.getJson(retainRdfNodes);
+	        return result;
+	    }
 	});
 	
 	
 	ns.AggregatorLiteral = Class.create(ns.Aggregator, {
+	    classLabel: 'AggregatorLiteral',
+
 		initialize: function(patternLiteral) {
 			this.patternLiteral = patternLiteral;
 			
@@ -868,7 +895,8 @@
 	});
 	
 	ns.AggregatorObject = Class.create(ns.Aggregator, {
-		
+	    classLabel: 'AggregatorObject',
+
 		/**
 		 * An aggregator factory must have already taken
 		 * care of initializing the attrToAggr map.
@@ -902,6 +930,8 @@
 	
 	
 	ns.AggregatorMap = Class.create(ns.Aggregator, {
+	    classLabel: 'AggregatorMap',
+
 		initialize: function(patternMap) {
 			this.patternMap = patternMap;
 			
@@ -1006,6 +1036,8 @@
 	 * 
 	 */
 	ns.AggregatorRef = Class.create(ns.Aggregator, {
+	    classLabel: 'AggregatorRef',
+
 		initialize: function(patternRef) {
 			// th
 			this.name = '' + (ns.AggregatorRefCounter++);
@@ -1064,6 +1096,8 @@
 	 * 
 	 */
 	ns.AggregatorFactory = Class.create({
+	    classLabel: 'AggregatorFactory',
+
 		initialize: function() {
 			//this.pattern = pattern;
 			

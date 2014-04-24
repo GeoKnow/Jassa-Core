@@ -351,14 +351,15 @@
 	    
 
 	
-	ns.ElementNamedGraph = function(element, namedGraphNode) {
-		this.element = element;
-		this.namedGraphNode = namedGraphNode;
-	};
-
-	ns.ElementNamedGraph.classLabel = 'ElementNamedGraph';
+	ns.ElementNamedGraph = Class.create(ns.Element, {
+	    
+	    classLabel: 'jassa.sparql.ElementNamedGraph',
+	    
+	    initialize: function(element, namedGraphNode) {
+	        this.element = element;
+	        this.namedGraphNode = namedGraphNode;
+	    },
 	
-	ns.ElementNamedGraph.prototype = {
 		getArgs: function() {
 			return [this.element];
 		},
@@ -394,7 +395,7 @@
 		flatten: function() {
 			return new ns.ElementNamedGraph(this.element.flatten(), this.namedGraphNode);
 		}
-	};
+	});
 	
 
 		
@@ -406,6 +407,8 @@
 	 * 
 	 */
 	ns.ElementString = Class.create(ns.Element, {
+	    classLabel: 'jassa.sparql.ElementString',
+	    
 		initialize: function(sparqlString) {
 //			if(_(sparqlString).isString()) {
 //				debugger;
@@ -463,14 +466,14 @@
 	*/
 	
 	
-	ns.ElementSubQuery = function(query) {
-		this.query = query;
-	};
-	
-	ns.ElementSubQuery.classLabel = "ElementSubQuery";
-	
-	ns.ElementSubQuery.prototype = {
-		getArgs: function() {
+	ns.ElementSubQuery = Class.create(ns.Element, {
+	    classLabel: 'jassa.sparql.ElementSubQuery',
+
+	    initialize: function(query) {
+	        this.query = query;
+	    },
+
+	    getArgs: function() {
 			return [];
 		},
 	
@@ -499,20 +502,20 @@
 		getVarsMentioned: function() {
 		    return this.query.getVarsMentioned();
 		}
-	};
+	});
 	
-	ns.ElementFilter = function(expr) {
-	    if(_(expr).isArray()) {
-	        console.log('[WARN] Array argument for filter is deprecated');
-	        expr = ns.andify(expr);
-	    }
-	    
-		this.expr = expr;
-	};
-	
-	ns.ElementFilter.classLabel = 'ElementFilter';
+	ns.ElementFilter = Class.create(ns.Element, {
+	    classLabel: 'jassa.sparql.ElementFilter',
 
-	ns.ElementFilter.prototype = {
+	    initialize: function(expr) {
+    	    if(_(expr).isArray()) {
+    	        console.log('[WARN] Array argument for filter is deprecated');
+    	        expr = ns.andify(expr);
+    	    }
+    	    
+    		this.expr = expr;
+	    },
+	
 		getArgs: function() {
 			return [];
 		},
@@ -556,16 +559,16 @@
 			
 			return "Filter(" + this.expr + ")";
 		}
-	};
+	});
 	
 	
-	ns.ElementOptional = function(element) {
-		this.optionalPart = element;
-	};
+	ns.ElementOptional = Class.create(ns.Element, {
+	    classLabel: 'jassa.sparql.ElementOptional',
+	    
+	    initialize: function(element) {
+	        this.optionalPart = element;
+	    },
 	
-	ns.ElementOptional.classLabel = 'ElementOptional';
-
-	ns.ElementOptional.prototype = {
 		getArgs: function() {
 			return [this.optionalPart];
 		},
@@ -595,16 +598,16 @@
 		toString: function() {
 			return "Optional {" + this.optionalPart + "}";
 		}
-	};
+	});
 	
 	
-	ns.ElementUnion = function(elements) {
-		this.elements = elements ? elements : [];
-	};
+	ns.ElementUnion = Class.create(ns.Element, {
+	    classLabel: 'jassa.sparql.ElementUnion',
 
-	ns.ElementUnion.classLabel = 'ElementUnion';
+	    initialize: function(elements) {
+	        this.elements = elements ? elements : [];
+	    },
 
-	ns.ElementUnion.prototype = {
 		getArgs: function() {
 			return this.elements;
 		},
@@ -637,17 +640,17 @@
 		toString: function() {
 			return "{" + this.elements.join("} Union {") + "}";
 		}
-	};
+	});
 
 	
-	ns.ElementTriplesBlock = function(triples) {
-		this.triples = triples ? triples : [];
-	};
-	
-	ns.ElementTriplesBlock.classLabel = 'ElementTriplesBlock';
-	
-	ns.ElementTriplesBlock.prototype = {
-		getArgs: function() {
+	ns.ElementTriplesBlock = Class.create(ns.Element, {
+	    classLabel: 'jassa.sparql.ElementTriplesBlock',
+
+	    initialize: function(triples) {
+	        this.triples = triples ? triples : [];
+	    },
+
+	    getArgs: function() {
 			return [];
 		},
 
@@ -694,10 +697,12 @@
 		toString: function() {
 			return this.triples.join(" . ");
 		}
-	};
+	});
 	
 
 	ns.ElementGroup = Class.create(ns.Element, {
+	    classLabel: 'jassa.sparql.ElementGroup',
+
 	    initialize: function(elements) {
 		    this.elements = elements ? elements : [];
 	    },
@@ -743,8 +748,6 @@
 		}
 	});
 	
-	ns.ElementGroup.classLabel = 'ElementGroup';
-
 	
 
 	
@@ -879,12 +882,14 @@
 //	};
 //	
 	
-	ns.VarExprList = function() {
-		this.vars = [];
-		this.varToExpr = {};
-	};	
-	
-	ns.VarExprList.prototype = {
+	ns.VarExprList = Class.create({
+	    classLabel: 'jassa.sparql.VarExprList',
+
+	    initialize: function() {
+	        this.vars = [];
+	        this.varToExpr = {};
+	    },
+
 		getVarList: function() {
 			return this.vars;
 		},
@@ -964,45 +969,49 @@
 			var result = arr.join(" ");
 			return result;
 		}
-	};
+	});
 	
 	
-	ns.SortCondition = function(expr, direction) {
-		this.expr = expr;
-		this.direction = direction;
-	};
-	
-	ns.SortCondition.prototype = {
-			getExpr: function() {
-				return this.expr;
-			},
-			
-			getDirection: function() {
-				return this.direction;
-			},
-			
-			toString: function() {
-				var result;
-				if(this.direction >= 0) {
-					result = "Asc(" + this.expr + ")";
-				} else if(this.direction < 0) {
-					result = "Desc(" + this.expr + ")";
-				}
-				
-				return result;
-			},
-			
-			copySubstitute: function(fnNodeMap) {
-				var exprCopy = this.expr.copySubstitute(fnNodeMap);
-				
-				var result = new ns.SortCondition(exprCopy, this.direction);
-				
-				return result;
+	ns.SortCondition = Class.create({
+	    classLabel: 'jassa.sparql.SortCondition',
+	    
+	    initialize: function(expr, direction) {
+	        this.expr = expr;
+	        this.direction = direction;
+	    },
+
+		getExpr: function() {
+			return this.expr;
+		},
+		
+		getDirection: function() {
+			return this.direction;
+		},
+		
+		toString: function() {
+			var result;
+			if(this.direction >= 0) {
+				result = "Asc(" + this.expr + ")";
+			} else if(this.direction < 0) {
+				result = "Desc(" + this.expr + ")";
 			}
-	};
+			
+			return result;
+		},
+		
+		copySubstitute: function(fnNodeMap) {
+			var exprCopy = this.expr.copySubstitute(fnNodeMap);
+			
+			var result = new ns.SortCondition(exprCopy, this.direction);
+			
+			return result;
+		}
+	});
 	
 	
 	ns.Query = Class.create({
+	    classLabel: 'jassa.sparql.Query',
+	    
 		initialize: function() {
 			this.type = 0; // select, construct, ask, describe
 			
