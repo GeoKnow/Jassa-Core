@@ -5,6 +5,7 @@
 	var rdf = Jassa.rdf;
     var sponate = Jassa.sponate;	
     var util = Jassa.util;
+    var sparql = Jassa.sparql;
 
 	var ns = Jassa.facete;
 	
