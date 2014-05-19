@@ -17,6 +17,8 @@
 	var xsd = Jassa.vocab.xsd;
 
 	
+	var util = Jassa.util;
+
 	var ns = Jassa.sparql;
 
 	
@@ -881,7 +883,8 @@
 //		return result;
 //	};
 //	
-	
+
+	// http://jena.apache.org/documentation/javadoc/arq/com/hp/hpl/jena/sparql/core/VarExprList.html
 	ns.VarExprList = Class.create({
 	    classLabel: 'jassa.sparql.VarExprList',
 
@@ -890,8 +893,14 @@
 	        this.varToExpr = {};
 	    },
 
+	    
+	    // TODO Deprecate
 		getVarList: function() {
 			return this.vars;
+		},
+		
+		getVars: function() {
+		    return this.vars;  
 		},
 			
 		getExprMap: function() {
@@ -899,11 +908,25 @@
 		},
 
 		add: function(v, expr) {
+		    if(this.contains(v)) {
+		       console.log('VarExprList already contained ' + v);
+		       throw 'Bailing out';
+		    }
+		    
 			this.vars.push(v);
 			
 			if(expr) {
 				this.varToExpr[v.getName()] = expr;
 			}
+		},
+		
+		contains: function(v) {
+		    var result = _(this.vars).some(function(item) {
+		        var r = v.equals(item);
+		        return r;
+		    });
+		    
+		    return result;
 		},
 		
 		getExpr: function(v) {
@@ -913,9 +936,23 @@
 		    return result;
 		},
 		
-		
+		// TODO Remove this method - add all is for another varExprList
+		/*
 		addAll: function(vars) {
+		    console.log('DEPRECATED - DONT USE');
 			this.vars.push.apply(this.vars, vars);
+		},
+		*/
+		
+		// Addition will overwrite existing vars
+		addAll: function(varExprList) {
+		    var vs = varExprList.getVars();
+		    
+		    var self = this;
+		    _(vs).each(function(v) {
+		        var expr = varExprList.getExpr(v);
+		        self.add(v, expr);
+		    });		    
 		},
 		
 		entries: function() {
@@ -1018,8 +1055,9 @@
 			this.distinct = false;
 			this.reduced = false;
 			
-			this._isResultStar = false;
+			this.resultStar = false;
 			
+			// TODO Rename to project(ion)
 			this.projectVars = new ns.VarExprList();
 			//this.projectVars = []; // The list of variables to appear in the projection
 			//this.projectExprs = {}; // A map from variable to an expression
@@ -1041,25 +1079,41 @@
 		},
 	
 		isResultStar: function() {
-		    return this._isResultStar;
+		    return this.resultStar;
 		},
 		
-		setResultStar: function(_isResultStar) {
-		  this._isResultStar =  _isResultStar;
+		setResultStar: function(enable) {
+	        this.resultStar = (enable === true) ? true : false;
 		},
 		
+		getQueryPattern: function() {
+		    return this.elements[0];
+		},
+		
+		setQueryPattern: function(element) {
+		    util.ArrayUtils.clear(this.elements);
+		    this.elements.push(element);
+		},
+		
+		// TODO Deprecate
 		getElements: function() {
 			return this.elements;
 		},
 				
+		// TODO This should only return the variables!!
 		getProjectVars: function() {
 			return this.projectVars;
 		},
 
+		// TODO Remove this method
 		setProjectVars: function(projectVars) {
 			this.projectVars = projectVars;
 		},
 		
+		getProject: function() {
+		    return this.projectVars;
+		},
+
 		getGroupBy: function() {
 			return this.groupBy;
 		},
@@ -1136,7 +1190,7 @@
 			result.type = this.type;
 			result.distinct = this.distinct;
 			result.reduced = this.reduced;
-			result._isResultStar = this._isResultStar;
+			result.resultStar = this.resultStar;
 			result.limit = this.limit;
 			result.offset = this.offset;
 	 				
@@ -1216,8 +1270,21 @@
 			}
 		},
 		
+		isDistinct: function() {
+		    return this.distinct;
+		},
+		
+		
 		setDistinct: function(enable) {
 			this.distinct = (enable === true) ? true : false;
+		},
+		
+		isReduced: function() {
+		    return this.reduced;
+		},
+		
+		setReduced: function(enable) {
+            this.reduced = (enable === true) ? true : false;		    
 		},
 
 		toString: function() {
@@ -1230,7 +1297,7 @@
 
 			
 		toStringProjection: function() {
-			if(this._isResultStar) {
+			if(this.resultStar) {
 				return "*";
 			}
 

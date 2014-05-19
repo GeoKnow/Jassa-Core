@@ -255,7 +255,12 @@
 	ns.createQuerySelectElement = function(element, vars, options) {
 		var result = new sparql.Query();
 		
-		result.projectVars.addAll(vars);
+		_(vars).each(function(v)) {
+		    result.getProject().add(v);
+		});
+		//result.projectVars.addAll(vars);
+		
+		
 		result.elements.push(element);
 
 		ns.applyQueryOptions(result, options);
@@ -366,7 +371,9 @@
 		var hasValue = sparql.Node.v("hasValue");
 		//var isValueOf = sparql.Node.v("isValueOf");
 		
-		result.projectVars.addAll([property, hasValue]); //, isValueOf]);
+		//result.projectVars.addAll([property, hasValue]); //, isValueOf]);
+		result.getProject().add(property);
+		result.getProject().add(hasValue);
 		
 		var evProperty = new sparql.ExprVar(property);
 		var evHasValue = new sparql.ExprVar(hasValue);

@@ -10,12 +10,13 @@
 
 	
 	ns.MapParser = Class.create({
-	    initialize: function(prefixMap, patternParser) {
+	    initialize: function(prefixMapping, patternParser) {
+	        this.prefixMapping = prefixMapping;
 	        this.patternParser = patternParser || new ns.ParserPattern();
 	    },
 	    
 	    parseMap: function(spec) {
-	        var result = ns.SponateUtils.parseMap(spec, this.prefixMap, this.patternParser);
+	        var result = ns.SponateUtils.parseMap(spec, this.prefixMapping, this.patternParser);
 	        return result;
 	    }
 	});
@@ -27,7 +28,7 @@
 	     * 
 	     * TODO Add fallback to default patternParser if none provided
 	     */
-	    parseMap: function(spec, prefixMap, patternParser) {
+	    parseMap: function(spec, prefixMapping, patternParser) {
             var name = spec.name;
 
             var jsonTemplate = spec.template;
@@ -42,8 +43,8 @@
                 
                 var elementStr = from;
                 
-                if(prefixMap != null) {
-                    var prefixes = prefixMap.getJson();
+                if(prefixMapping != null) {
+                    var prefixes = prefixMapping.getNsPrefixMap();
                     //var vars = sparql.extractSparqlVars(elementStr);
                     var str = sparql.expandPrefixes(prefixes, elementStr);
                 }

@@ -37,7 +37,34 @@
 			return result;
 		}
 	});
+
 	
+    ns.ConstraintElementFactoryRegex = Class.create(ns.ConstraintElementFactory, {
+        createElementsAndExprs: function(rootFacetNode, constraintSpec) {
+            var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
+
+            var pathVar = facetNode.getVar();
+            var exprVar = new sparql.ExprVar(pathVar);
+            
+            //var elements = [new sparql.ElementTriplesBlock(facetNode.getTriples())];
+            var elements = sparql.ElementUtils.createElementsTriplesBlock(facetNode.getTriples());
+    
+            //var valueExpr = constraintSpec.getValue();
+            //var valueExpr = sparql.NodeValue.makeNode(constraintSpec.getValue());
+            
+            // NOTE Value is assumed to be node holding a string, maybe check it here
+            var val = constraintSpec.getValue().getLiteralValue();
+    
+    
+            var exprs = [new sparql.E_Regex(exprVar, val, 'i')];
+            
+            var result = new ns.ElementsAndExprs(elements, exprs);
+            
+            //console.log('constraintSpec.getValue() ', constraintSpec.getValue());
+            return result;
+        }
+    });
+
 	
 	/**
 	 * constraintSpec.getValue() must return an instance of sparql.NodeValue

@@ -2,6 +2,12 @@
 
 [![Build Status](http://ci.aksw.org/jenkins/job/Jassa/badge/icon)](http://ci.aksw.org/jenkins/job/Jassa/)
 
+## Important Notes about current Work in Progress
+
+* We are refactoring this repository to contain the JavaScript components of Jassa only. This means, that the Java modules will be moved.
+* The concept path finder is now part of the [jena-sparql-api-concepts](https://github.com/AKSW/jena-sparql-api/tree/master/jena-sparql-api-concepts) - DO NOT USE the copy which is currently still part of this repository!
+
+
 This repository contains several tools for JavaScript based Sparql access. It works both from the client side from the browser and server side with nodejs.
 
 The highlights of this repository are:

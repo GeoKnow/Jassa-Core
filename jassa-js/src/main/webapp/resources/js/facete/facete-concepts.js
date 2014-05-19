@@ -93,7 +93,7 @@
 			var result = new sparql.Query();
 			result.setDistinct(true);
 			
-			result.getProjectVars().add(concept.getVar());
+			result.getProject().add(concept.getVar());
 			var resultElements = result.getElements();
 			var conceptElements = concept.getElements();
 
@@ -113,7 +113,7 @@
             /*
             var subQuery = new sparql.Query();
             
-            subQuery.getProjectVars().add(concept.getVar());
+            subQuery.getProject().add(concept.getVar());
             subQuery.setDistinct(true);
 
             var subQueryElements = subQuery.getElements();
@@ -124,7 +124,7 @@
             var subQuery = ns.ConceptUtils.createQueryList(concept);
             
             var result = new sparql.Query();
-            result.getProjectVars().add(outputVar, new sparql.E_Count());
+            result.getProject().add(outputVar, new sparql.E_Count());
 
             result.getElements().push(subQuery);
  
@@ -134,7 +134,7 @@
 		createQueryCountDoesNotWorkWithVirtuoso: function(concept, outputVar) {
 			var result = new sparql.Query();
 			
-			result.getProjectVars().add(outputVar, new sparql.E_Count(new sparql.ExprVar(concept.getVar()), true));
+			result.getProject().add(outputVar, new sparql.E_Count(new sparql.ExprVar(concept.getVar()), true));
 
 			var resultElements = result.getElements();
 			var conceptElements = concept.getElements();

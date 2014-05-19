@@ -12,7 +12,7 @@
             return [];
         }
         
-        var projectVarList = query.getProjectVars().getVarList();
+        var projectVarList = query.getProjectVars(); //query.getProjectVars().getVarList();
         var projectVarNameList = sparql.VarUtils.getVarNames(projectVarList);
 
         var result = _(projectVarNameList).map(function(varName) {
@@ -101,7 +101,7 @@
             var result = qe.execSelect().pipe(function(rs) {
                 var data = [];
                 
-                var projectVarList = query.getProjectVars().getVarList();
+                var projectVarList = query.getProjectVars(); //query.getProjectVars().getVarList();
                 
                 while(rs.hasNext()) {
                     var binding = rs.next();
@@ -120,7 +120,7 @@
         getSchema: function() {
             var query = this.query;
 
-            //var projectVarList = query.getProjectVars().getVarList();
+            //var projectVarList = query.getProjectVars(); //query.getProjectVars().getVarList();
             //var projectVarNameList = sparql.VarUtils.getVarNames(projectVarList);
 
             var colDefs = ns.createNgGridOptionsFromQuery(query);

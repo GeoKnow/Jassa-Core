@@ -14,6 +14,8 @@
 		//registry.put("range", new facete.ConstaintElementFactoryRange());		
 		result.put("bbox", new ns.ConstraintElementFactoryBBoxRange());
 
+	    result.put("regex", new ns.ConstraintElementFactoryRegex());
+
 		
 		return result;
 	};

@@ -82,7 +82,8 @@
 		}
 	});
 
-	
+	// Use sparql.PrefixMapping instead
+	/*
 	ns.PrefixMap = Class.create({
 		initialize: function(prefixes) {
 			this.prefixes = prefixes ? prefixes : {};
@@ -105,6 +106,7 @@
 			return this.prefixes;
 		}
 	});
+	*/
 
 
 	/*
@@ -148,7 +150,7 @@
 		
 		initialize: function(schema) {
 			this.schema = schema ? schema : new ns.Schema();
-			this.prefixMap = new ns.PrefixMap();
+			this.prefixMapping = new sparql.PrefixMappingImpl();
 			
 			// TODO We should not map to element directly, but to ElementProvider
 			this.tableNameToElementFactory = {};
@@ -166,8 +168,8 @@
 			return this.schema;
 		},
 		
-		getPrefixMap: function() {
-			return this.prefixMap;
+		getPrefixMapping: function() {
+			return this.prefixMapping;
 		},
 		
 		getPatternParser: function() {
@@ -213,7 +215,7 @@
 		 * 
 		 */
 		createTable: function(context, name, elementStr) {
-			var prefixes = context.getPrefixMap().getJson();
+			var prefixes = context.getPrefixMapping().getNsPrefixMap();//getJson();
 
 			var vars = sparql.extractSparqlVars(elementStr);
 

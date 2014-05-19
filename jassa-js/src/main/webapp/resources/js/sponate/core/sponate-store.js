@@ -406,7 +406,7 @@
 				subQuery.setLimit(limit);
 				subQuery.setOffset(offset);
 				subQuery.setDistinct(true);
-				subQuery.getProjectVars().add(idVar);
+				subQuery.getProject().add(idVar);
 				outerElement = new sparql.ElementGroup([
 				                                   subElement,
 				                                   oe]);
@@ -479,7 +479,7 @@
 			// Query generation
 			var query = new sparql.Query();
 			query.getElements().push(outerElement);
-			_(vars).each(function(v) { query.getProjectVars().add(v); });
+			_(vars).each(function(v) { query.getProject().add(v); });
 			if(idExpr != null) {
 				//console.log('Expr' + JSON.stringify(idExpr));
 				

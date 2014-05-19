@@ -542,11 +542,11 @@
                     
                     ev = aggExpr;
 
-                    result.getProjectVars().add(v, ev);
+                    result.getProject().add(v, ev);
                     
                 } else {
                     nonAggColumnIds.push(columnId);
-                    result.getProjectVars().add(v);
+                    result.getProject().add(v);
                 }
                 
                 

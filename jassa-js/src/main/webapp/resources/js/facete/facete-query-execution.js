@@ -468,7 +468,7 @@
             
             var query = ns.QueryUtils.createQueryCount(elements, null, countVar, outputVar, [groupVar], true);
             
-            var countExpr = query.getProjectVars().getExpr(outputVar);
+            var countExpr = query.getProject().getExpr(outputVar);
             //console.log('sort cond: ' + countExpr);
             query.getOrderBy().push(new sparql.SortCondition(countExpr, -1));
             
@@ -725,8 +725,8 @@
                 var limitQuery = new sparql.Query();
                 var limitElements = limitQuery.getElements();
 
-                limitQuery.getProjectVars().add(groupVar);
-                limitQuery.getProjectVars().add(countVar);
+                limitQuery.getProject().add(groupVar);
+                limitQuery.getProject().add(countVar);
 
                 limitElements.push.apply(limitElements, elements);
                 limitQuery.setLimit(scanLimit);
@@ -735,8 +735,8 @@
                 /*
                 var distinctQuery = new sparql.Query();
                 distinctQuery.setDistinct(true);
-                distinctQuery.getProjectVars().add(groupVar);
-                distinctQuery.getProjectVars().add(countVar);
+                distinctQuery.getProject().add(groupVar);
+                distinctQuery.getProject().add(countVar);
                 distinctQuery.getElements().push(new sparql.ElementSubQuery(limitQuery));
                 distinctQuery.setLimit(limit);
                 */
@@ -762,8 +762,8 @@
 		        var elementUnion = new sparql.ElementUnion(unionElements);		    
 		        
                 finalQuery = new sparql.Query();
-		        finalQuery.getProjectVars().add(groupVar);
-		        finalQuery.getProjectVars().add(outputVar);
+		        finalQuery.getProject().add(groupVar);
+		        finalQuery.getProject().add(outputVar);
 
 		        var finalElements = finalQuery.getElements();
                 finalQuery.getElements().push(elementUnion);

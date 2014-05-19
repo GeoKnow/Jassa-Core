@@ -68,7 +68,7 @@
 			this.service = service;
 
 			this.context = new ns.Context();
-			this.context.getPrefixMap().addJson(prefixes);
+			this.context.getPrefixMapping().setNsPrefixes(prefixes);
 		},
 
 		addMap: function(obj, name) {
@@ -96,7 +96,7 @@
 		 * 
 		 */
 		addMapSpec: function(spec) {
-		    var map = ns.SponateUtils.parseMap(spec, this.context.getPrefixMap(), this.context.getPatternParser());
+		    var map = ns.SponateUtils.parseMap(spec, this.context.getPrefixMapping(), this.context.getPatternParser());
 	            
 		    var name = spec.name; //mapping.getName();
 

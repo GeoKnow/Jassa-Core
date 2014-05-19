@@ -39,7 +39,7 @@
 			}
 			
 			//var varsMentioned = query.getVarsMentioned();
-			var varsMentioned = query.getProjectVars().getVarList();
+			var varsMentioned = query.getProject();//.getVarList();
 			
 
 			var varNames = _.map(varsMentioned, function(v) {

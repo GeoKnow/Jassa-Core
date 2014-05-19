@@ -937,7 +937,18 @@
 		},
 		
 		makeNode: function(node) {
-			return new ns.NodeValueNode(node);
+		    var result = new ns.NodeValueNode(node);
+		    return result;
+
+		    /*
+		    var result;
+		    if(node.isVariable()) {
+		        return new ns.ExprVar(node);
+ 		    } else {
+ 		        result = new ns.NodeValueNode(node);
+ 		    }
+		    return result;
+		    */
 		}
 
 		

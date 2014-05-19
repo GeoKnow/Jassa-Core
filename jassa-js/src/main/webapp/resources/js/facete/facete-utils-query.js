@@ -149,7 +149,7 @@
 
             if(groupVars) {
                 _(groupVars).each(function(groupVar) {
-                    varQuery.getProjectVars().add(groupVar);
+                    varQuery.getProject().add(groupVar);
                     //varQuery.getGroupBy().push(new sparql.ExprVar(groupVar));
                 });
             }
@@ -157,7 +157,7 @@
             
             varQuery.setDistinct(useDistinct);
             if(variable) {
-                varQuery.getProjectVars().add(variable)
+                varQuery.getProject().add(variable)
             } else {
                 varQuery.setResultStar(true);
             }
@@ -168,12 +168,12 @@
             
             if(groupVars) {
                 _(groupVars).each(function(groupVar) {
-                    result.getProjectVars().add(groupVar);
+                    result.getProject().add(groupVar);
                     result.getGroupBy().push(new sparql.ExprVar(groupVar));
                 });
             }
             
-            result.getProjectVars().add(outputVar, new sparql.E_Count());
+            result.getProject().add(outputVar, new sparql.E_Count());
             result.getElements().push(elementVarQuery);
             
             //exp, new sparql.E_Count(exprVar, useDistinct));
@@ -230,12 +230,12 @@
 			//result.groupBy.push(outputVar);
 			if(groupVars) {
 				_(groupVars).each(function(groupVar) {
-					result.getProjectVars().add(groupVar);
+					result.getProject().add(groupVar);
 					result.getGroupBy().push(new sparql.ExprVar(groupVar));
 				});
 			}
 			
-			result.getProjectVars().add(outputVar, new sparql.E_Count(exprVar, useDistinct));
+			result.getProject().add(outputVar, new sparql.E_Count(exprVar, useDistinct));
 			//ns.applyQueryOptions(result, options);
 			
 	//debugger;
