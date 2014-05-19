@@ -68,6 +68,8 @@
 			this.service = service;
 
 			this.context = new ns.Context();
+
+			prefixes = prefixes || {};
 			this.context.getPrefixMapping().setNsPrefixes(prefixes);
 		},
 
