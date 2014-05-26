@@ -11,11 +11,12 @@
     ns.FacetConfig = Class.create({
         classLabel: 'jassa.facete.FacetConfig',
         
-        initialize: function(baseConcept, rootFacetNode, constraintManager, pathTaggerManager) {
+        initialize: function(baseConcept, rootFacetNode, constraintManager, labelMap, pathTaggerManager) {
             this.baseConcept = baseConcept;
             this.rootFacetNode = rootFacetNode;
             this.constraintManager = constraintManager;
             
+            this.labelMap = labelMap || sponate.SponateUtils.createDefaultLabelMap(); 
             this.pathTaggerManager = pathTaggerManager || new ns.ItemTaggerManager();
         },
         
@@ -41,6 +42,14 @@
         
         setConstraintManager: function(constraintManager) {
             this.constraintManager = constraintManager;
+        },
+        
+        getLabelMap: function() {
+            return this.labelMap;
+        },
+        
+        setLabelMap: function() {
+            this.labelMap = labelMap;
         },
         
         getPathTaggerManager: function() {
@@ -87,7 +96,7 @@
         initialize: function(facetConfig, labelMap, expansionSet, expansionMap, facetStateProvider, pathToFilterString) {
             this.facetConfig = facetConfig || ns.FacetConfig.createDefaultFacetConfig();
 
-            this.labelMap = labelMap; // TODO Use some default (shouldn't the label map be part of the facetConfig???)
+            //this.labelMap = labelMap; // TODO Use some default (shouldn't the label map be part of the facetConfig???)
             this.expansionSet = expansionSet || new util.HashSet();
             this.expansionMap = expansionMap || new util.HashMap();
             this.facetStateProvider = facetStateProvider || new ns.FacetStateProviderImpl(10);
@@ -98,9 +107,13 @@
             return this.facetConfig;
         },
         
-        getLabelMap: function() {
-            return this.labelMap;
+        setFacetConfig: function(facetConfig) {
+            this.facetConfig = facetConfig;
         },
+        
+//        getLabelMap: function() {
+//            return this.labelMap;
+//        },
         
         getExpansionSet: function() {
             return this.expansionSet;
@@ -164,22 +177,22 @@
 //                var result = this.createFacetService2(facetConfig.);
 //            },
 //            
-            createFacetService: function(sparqlService, facetConfig, labelMap) {
+            createFacetService: function(sparqlService, facetConfig) {
                 var facetConceptGenerator = this.createFacetConceptGenerator(facetConfig);
 
-                labelMap = labelMap || new sponate.SponateUtils.createDefaultLabelMap();
+                //labelMap = labelMap || sponate.SponateUtils.createDefaultLabelMap();
                 
-                var facetService = new ns.FacetServiceImpl(sparqlService, facetConceptGenerator, labelMap, facetConfig.getPathTaggerManager());
+                var facetService = new ns.FacetServiceImpl(sparqlService, facetConceptGenerator, facetConfig.getLabelMap(), facetConfig.getPathTaggerManager());
 
                 return facetService;
             },
             
             
             
-            createFacetTreeService: function(sparqlService, facetTreeConfig, labelMap) {
+            createFacetTreeService: function(sparqlService, facetTreeConfig) {
 
 
-                var facetService = this.createFacetService(sparqlService, facetTreeConfig.getFacetConfig(), labelMap);
+                var facetService = this.createFacetService(sparqlService, facetTreeConfig.getFacetConfig());
                 
                 var expansionSet = facetTreeConfig.getExpansionSet();
                 var expansionMap = facetTreeConfig.getExpansionMap();

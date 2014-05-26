@@ -38,7 +38,28 @@
 		}
 	});
 
-	
+
+    ns.ConstraintElementFactoryLang = Class.create(ns.ConstraintElementFactory, {
+        createElementsAndExprs: function(rootFacetNode, constraintSpec) {
+            var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
+
+            var pathVar = facetNode.getVar();
+            var exprVar = new sparql.ExprVar(pathVar);
+
+            var elements = sparql.ElementUtils.createElementsTriplesBlock(facetNode.getTriples());
+
+            // NOTE Value is assumed to be node holding a string, maybe check it here
+            var val = constraintSpec.getValue().getLiteralValue();
+
+            var exprs = [new sparql.E_LangMatches(new sparql.E_Lang(exprVar), val)];
+            
+            var result = new ns.ElementsAndExprs(elements, exprs);
+            
+            //console.log('constraintSpec.getValue() ', constraintSpec.getValue());
+            return result;
+        }
+    });
+
     ns.ConstraintElementFactoryRegex = Class.create(ns.ConstraintElementFactory, {
         createElementsAndExprs: function(rootFacetNode, constraintSpec) {
             var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());

@@ -1102,7 +1102,8 @@
 				
 		// TODO This should only return the variables!!
 		getProjectVars: function() {
-			return this.projectVars;
+		    var result = this.projectVars ? this.projectVars.getVars() : null;
+			return result;
 		},
 
 		// TODO Remove this method

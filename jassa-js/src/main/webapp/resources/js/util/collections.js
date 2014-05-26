@@ -578,6 +578,49 @@
 		}
 	});
 	
+	
+	/**
+	 * Note: this is a read only collection
+	 * 
+	 */
+	ns.NestedList = Class.create({
+	    classLabel: 'jassa.util.NestedList',
+	    
+	    initialize: function() {
+	        this.subLists = [];
+	    },
+
+	    /**
+	     * Returns an array with the concatenation of all items
+	     */
+	    getArray: function() {
+	        // tmp is an array of arrays
+	        var tmp = _(this.subLists).each(function(subList) {
+	            return subList.getArray();
+	        });
+	        
+	        var result = _(tmp).flatten(true);
+	        
+	        return result;
+	    },
+	    
+	    contains: function(item) {
+	        var found = _(this.subLists).find(function(subList) {
+	            var r = subList.contains(item);
+	            return r;
+	        });
+	
+	        var result = !!found;
+	        return result;
+	    },
+	    
+	    /*
+	    get: function(index) {
+	        
+	    },
+	    */
+	});
+	
 	ns.ArrayList = Class.create({
 	   initialize: function(fnEquals) {
 	       this.items = [];
@@ -647,6 +690,10 @@
        
 	   removeByIndex: function(index) {
 	       this.items.splice(index, 1);
+	   },
+	   
+	   size: function() {
+	       return this.items.length;
 	   }
 	});
 	
