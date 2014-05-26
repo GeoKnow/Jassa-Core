@@ -59,7 +59,38 @@
         ogcVirtMapFactory: new sponate.GeoMapFactory(
                 ns.GeoMapUtils.ogcGeoView,
                 new ns.BBoxExprFactoryWkt(vw, intersectsFnName, geomFromTextFnName)
-        )
+        ),
+        
+        // TODO Replace defaults with geosparql rather than virtuoso bifs
+        createWktMapFactory: function(wktPredicateName, intersectsFnName, geomFromTextFnName) {
+            wktPredicateName = wktPredicateName || 'http://www.opengis.net/ont/geosparql#asWKT';
+            intersectsFnName = intersectsFnName || 'bif:st_intersects';
+            geomFromTextFnName = geomFromTextFnName || 'bif:st_geomFromText'; 
+           
+            var predicate = rdf.NodeFactory.createUri(wktPredicateName);
+            
+            var geoConcept = new facete.Concept(
+                new sparql.ElementTriplesBlock([new rdf.Triple(vs, predicate, vw)]),
+                vs
+            );
+
+            var baseMap = mapParser.parseMap({
+                name: 'geoMap-' + wktPredicateName,
+                template: [{
+                    id: geoConcept.getVar(),
+                    wkt: vw
+                }],
+                from: geoConcept.getElement()
+            });
+            
+            
+            var result = new sponate.GeoMapFactory(
+                    baseMap,
+                    new ns.BBoxExprFactoryWkt(vw, intersectsFnName, geomFromTextFnName)
+            );
+            
+            return result;
+        }
     };
 
 })();
