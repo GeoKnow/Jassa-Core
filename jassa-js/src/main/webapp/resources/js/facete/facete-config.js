@@ -48,7 +48,7 @@
             return this.labelMap;
         },
         
-        setLabelMap: function() {
+        setLabelMap: function(labelMap) {
             this.labelMap = labelMap;
         },
         
