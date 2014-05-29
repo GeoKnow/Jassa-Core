@@ -35,13 +35,17 @@
                 parentFacetItem = new ns.FacetItem(path, rdf.NodeFactory.createUri(path.getLastStep().getPropertyName()), null);                
             }
 
+            parentFacetItem.setDoc({
+                displayLabel: 'Items'
+            });
+            
             // Apply tags for the root element
 		    
 			var result = this.fetchFacetTreeRec(path, parentFacetItem);
 			
-			result.done(function(facetTree) {
-			    console.log("FacetTree: ", facetTree);
-			});
+//			result.done(function(facetTree) {
+//			    console.log("FacetTree: ", facetTree);
+//			});
 			
 			return result;
 		},

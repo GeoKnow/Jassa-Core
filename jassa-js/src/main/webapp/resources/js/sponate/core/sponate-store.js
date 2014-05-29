@@ -118,8 +118,9 @@
 		
 		/**
 		 * Specify a set of nodes for which to perform the lookup
+		 * If concept is specified, nodes will be applied to the concept
 		 * 
-		 * Use of .concept(...) and .nodes(..) is mutually exclusive
+		 * //Use of .concept(...) and .nodes(..) is mutually exclusive
 		 * 
 		 */
 		nodes: function(_nodes) {
