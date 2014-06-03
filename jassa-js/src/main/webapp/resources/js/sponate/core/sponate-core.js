@@ -777,6 +777,7 @@
 
 	/*
 	 * Aggregators
+	 *     TODO: Possibly rename aggregators to accumulators and pattern to aggregators.
 	 */
 		
 	ns.Aggregator = Class.create({

@@ -13,6 +13,9 @@
         
         initialize: function(baseConcept, rootFacetNode, constraintManager, labelMap, pathTaggerManager) {
             this.baseConcept = baseConcept;
+            
+            // TODO ISSUE: We may modify the rootFacetNode during an update cycle, which triggers a new cycle, and thus
+            // negatively impacts performance. The easiest solution would be to exclude this method from the watch list.
             this.rootFacetNode = rootFacetNode;
             this.constraintManager = constraintManager;
             
@@ -62,7 +65,13 @@
          * 
          */
         hashCode: function() {
-            var result = util.ObjectUtils.hashCode(this, true);
+            
+            // We omit the facetNode attribute, as this one should not be changed 'on the outside' anyway;
+            // internal changes cause angular's digest loop to execute twice
+            // TODO HACK We shouldn't abuse hashCode() for hacking about issues which are specific to how we do things with angular
+            var shallowCopy = _(this).omit('rootFacetNode');
+            
+            var result = util.ObjectUtils.hashCode(shallowCopy, true);
             return result;
         }
         

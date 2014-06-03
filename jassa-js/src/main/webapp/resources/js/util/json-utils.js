@@ -31,7 +31,7 @@
 
         /**
          * Recursively iterate the object tree and use a .hashCode function if available
-         * 
+         * TODO Add support to exclude attributes
          */
         hashCode: function(obj, skipOnce) {
 

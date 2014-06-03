@@ -10,7 +10,7 @@
  * (modules are just namespaces, and it feels pretty obstrusive writing them in upper camel case)
  * 
  */
-var Jassa = {
+var jassa = {
 	vocab: {
 		util: {},
 		xsd: {},
@@ -45,6 +45,9 @@ var Jassa = {
 	}
 };
 
+// Upper case version for legacy code 
+var Jassa = jassa;
+
 // Export for nodejs
 var module;
 
@@ -52,6 +55,6 @@ if(!module) {
     module = {};
 }
 
-module["exports"] = Jassa;
+module["exports"] = jassa;
 
 

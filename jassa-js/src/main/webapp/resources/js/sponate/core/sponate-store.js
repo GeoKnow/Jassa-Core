@@ -11,7 +11,7 @@
 	
 	
 	ns.QueryConfig = Class.create({
-		initialize: function(criteria, limit, offset, concept, _isLeftJoin) {
+		initialize: function(criteria, limit, offset, concept, _isLeftJoin, nodes) {
 			this.criteria = criteria;
 			this.limit = limit;
 			this.offset = offset;
@@ -19,26 +19,58 @@
 			// HACK The following two attributes belong together, factor them out into a new class
 			this.concept = concept;
 			this._isLeftJoin = _isLeftJoin;
+			
+			// Note: For each element in the nodes array, corresponding data will be made available.
+			// Thus, if nodes is an empty array, no results will be fetched; set to null to ignore the setting
+			this.nodes = nodes;
 		},
 		
 		getCriteria: function() {
-			return this.criteria;
+			return this.criteria;		
+		},
+		
+		setCriteria: function(criteria) {
+		    this.criteria = criteria;
 		},
 		
 		getLimit: function() {
 			return this.limit;
 		},
 		
+		setLimit: function(limit) {
+		    this.limit = limit;
+		},
+		
 		getOffset: function() {
 			return this.offset;
+		},
+		
+		setOffset: function(offset) {
+		    this.offset = offset;
 		},
 		
 		getConcept: function() {
 		    return this.concept;
 		},
 		
+		setConcept: function(concept) {
+		    this.concept = concept;
+		},
+		
 		isLeftJoin: function() {
 		    return this._isLeftJoin;
+		},
+		
+		setLeftJoin: function(isLeftJoin) {
+		    this._isLeftJoin = isLeftJoin;
+		},
+		
+		getNodes: function() {
+		    return this.nodes;
+		},
+		
+		setNodes: function(nodes) {
+		    this.nodes = nodes;
 		}
 	});
 	
@@ -96,22 +128,17 @@
 	ns.QueryFlow = Class.create({
 		initialize: function(store, criteria) {
 			this.store = store;
-			this.config = {};
+			this.config = new ns.QueryConfig();
 			
-			this.config.criteria = criteria;
-//			this.criteria = criteria;
-//			
-//			this.limit = null;
-//			this.offset = null;
+			this.config.setCriteria(criteria);
 		},
 		
 		/**
 		 * Join the lookup with the given concept
 		 */
 		concept: function(_concept, isLeftJoin) {
-		    var join = this.config.join = {};
-		    join.concept = _concept;
-		    join.isLeftJoin = isLeftJoin;
+		    this.config.setConcept(_concept);
+		    this.config.setLeftJoin(isLeftJoin);
 		    
 		    return this;
 		},
@@ -124,36 +151,22 @@
 		 * 
 		 */
 		nodes: function(_nodes) {
-		    // TODO Implement me
-		},
-		
-		/**
-		 * find().nodes(someNodes).asList();
-		 */
-		/*
-		nodes: function(ns) {
+		    this.config.setNodes(_nodes);
 		    
+		    return this;
 		},
-		*/
 		
 		skip: function(offset) {
-			this.config.offset = offset;
+			this.config.setOffset(offset);
 			
 			return this;
 		},
 		
 		limit: function(limit) {
-			this.config.limit = limit;
+			this.config.setLimit(limit);
 			
 			return this;
-		},
-		
-		/*
-		find: function(criteria) {
-			this.criteria = criteria;
-			return this;
-		},
-		*/
+		},		
 		
 		asList: function(retainRdfNodes) {
 			var promise = this.execute(retainRdfNodes);
@@ -182,27 +195,12 @@
 		
 		// TODO This is a hack right now - not sure how to design the execution yet
 		execute: function(retainRdfNodes) {
-//			var config = {
-//				criteria: this.criteria,
-//				limit: this.limit,
-//				offset: this.offset
-//			};
-		    var c = this.config;
-		    var j = this.config.join || {};
-		    
-			var config = new ns.QueryConfig(c.criteria, c.limit, c.offset, j.concept, j.isLeftJoin);
-			
-			var result = this.store.execute(config, retainRdfNodes);
+			var result = this.store.execute(this.config, retainRdfNodes);
 			return result;
 		},
 		
         count: function() {
-            var c = this.config;
-            var j = this.config.join || {};
-            
-            var config = new ns.QueryConfig(c.criteria, c.limit, c.offset, j.concept, j.isLeftJoin);
-            
-            var result = this.store.executeCount(config);
+            var result = this.store.executeCount(this.config);
             return result;          
         }		
 	});

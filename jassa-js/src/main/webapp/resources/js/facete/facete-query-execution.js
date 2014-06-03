@@ -38,8 +38,10 @@
             parentFacetItem.setDoc({
                 displayLabel: 'Items'
             });
-            
+    
             // Apply tags for the root element
+            var tags = this.facetService.getTags(path);
+            parentFacetItem.setTags(tags);
 		    
 			var result = this.fetchFacetTreeRec(path, parentFacetItem);
 			
@@ -407,6 +409,19 @@
 			this.labelMap = labelMap;
 			this.pathTaggerManager = pathTaggerManager;
 		},
+		
+		getTags: function(path) {
+            var result = this.pathTaggerManager.createTags(path);
+            return result;
+		},
+		
+		/*
+		getFacetConfig: function() {
+		    var result = new facete.FacetConfig();
+		    result.setPathTaggerManager(this.pathTaggerManager);
+		    return result;
+		},
+		*/
 
 /*		
 		createConceptFacetValues: function(path, excludeSelfConstraints) {
@@ -581,6 +596,36 @@
 	        //return deferred.promise(); 
 		},
 		
+		
+		/**
+		 * Retrieve information about a single facet instead of its children
+		 */
+		fetchFacet: function(path) {
+		    var scanLimit = 1000;
+
+		    var outputVar = rdf.NodeFactory.createVar();
+		    var concept = this.facetConceptGenerator.createConceptResources(path, false, scanLimit);
+		    // TODO Thresholded count
+            //var countQuery = ns.QueryUtils.createQueryCount(concept.getElements(), scanLimit, concept.getVar(), outputVar, null, false);
+            var query = ns.ConceptUtils.createQueryCount(concept, outputVar); // scanLimit
+            var qe = this.sparqlService.createQueryExecution(query);
+            var promise = service.ServiceUtils.fetchInt(qe, outputVar);
+            
+            var self = this;
+            var p2 = promise.pipe(function(count) {
+                var node = path.isEmpty() ? rdf.NodeFactory.createUri('http://root') : rdf.NodeFactory.createUri(path.getLastStep().getPropertyName());
+                var r = new ns.FacetItem(path, node, count, null, null);
+
+                var tags = self.pathTaggerManager.createTags(item.getPath());
+                item.setTags(tags);
+                
+                return r;
+            });
+            
+            return p2;		    
+		},
+
+		
 		/**
 		 * TODO Superseded by fetchFacetsFromFlow
 		 * 
@@ -633,7 +678,7 @@
 		
 		
 		fetchFacetValueCountsThresholded: function(path, isInverse, properties, isNegated, scanLimit, maxQueryLength) {
-		    scanLimit = 1000;
+		    scanLimit = 10000;
 		    // Check the scan counts (i.e. how many triples we would have to scan in order to compute the counts of distinct values)
 		    var querySpecs = this.createQuerySpecsFacetValueScanCounts(path, isInverse, properties, isNegated, scanLimit, maxQueryLength);
 		    var promise = this.processQuerySpecsFacetValueCounts(path, isInverse, properties, querySpecs);
@@ -751,7 +796,12 @@
                 //var subElement = new sparql.ElementSubQuery(distinctQuery);
                 
                 //var countQuery = ns.QueryUtils.createQueryCount([subElement], null, countVar, outputVar, [groupVar], false);
-                var countQuery = ns.QueryUtils.createQueryCount(elements, scanLimit, countVar, outputVar, [groupVar], false); 
+                var countQuery = ns.QueryUtils.createQueryCount(elements, scanLimit, countVar, outputVar, [groupVar], false);
+                
+                // TODO: The count is just a check for the scan counts, but not for the distinct values...
+                // This means, for each p1 that is below the scan limit, we can do another query
+                
+                //var countQuery = ns.QueryUtils.createQueryCount(elements, null, countVar, outputVar, [groupVar], true);
                 
                 return countQuery;
 		    });

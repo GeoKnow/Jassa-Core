@@ -103,8 +103,8 @@
 		},
 
 		
-		createQueryCount: function(concept, outputVar) {
-		    var result = ns.QueryUtils.createQueryCount(concept.getElements(), null, concept.getVar(), outputVar, null, true);
+		createQueryCount: function(concept, outputVar, scanLimit) {
+		    var result = ns.QueryUtils.createQueryCount(concept.getElements(), scanLimit, concept.getVar(), outputVar, null, true);
 		    
 		    return result;
 		},

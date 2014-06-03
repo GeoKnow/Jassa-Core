@@ -5,6 +5,160 @@
 	
 	var ns = Jassa.facete;
 
+    /**
+     * ConstraintSpecs can be arbitrary objects, however they need to expose the
+     * declared paths that they affect.
+     * DeclaredPaths are the ones part of spec, affectedPaths are those after considering the constraint's sparql element. 
+     * 
+     */
+    ns.Constraint = Class.create({
+        getName: function() {
+            console.log('[ERROR] Override me');         
+            throw 'Override me';
+        },
+        
+        getDeclaredPaths: function() {
+            console.log('[ERROR] Override me');
+            throw 'Override me';
+        },
+        
+        createElementsAndExprs: function(facetNode) {
+            console.log('[ERROR] Override me');
+            throw 'Override me';            
+        },
+        
+        equals: function() {
+              console.log('[ERROR] Override me');
+            throw 'Override me';
+        },
+        
+        hashCode: function() {
+            console.log('[ERROR] Override me');
+            throw 'Override me';
+        }
+    });
+    
+
+    /**
+     * The class of constraint specs that are only based on exactly one path.
+     * 
+     * Offers the method getDeclaredPath() (must not return null)
+     * Do not confuse with getDeclaredPaths() which returns the path as an array
+     * 
+     */
+    ns.ConstraintBasePath = Class.create(ns.Constraint, {
+        initialize: function(name, path) {
+            this.name = name;
+            this.path = path;
+        },
+        
+        getName: function() {
+            return this.name;
+        },
+        
+        getDeclaredPaths: function() {
+            return [this.path];
+        },
+        
+        getDeclaredPath: function() {
+            return this.path;
+        }
+    });
+
+
+    /*
+    ns.ConstraintBasePath = Class.create(ns.ConstraintBaseSinglePath, {
+        initialize: function($super, name, path) {
+            $super(name, path);
+        }
+    });
+    */
+    
+    ns.ConstraintBasePathValue = Class.create(ns.ConstraintBasePath, {
+        //classLabel: 'jassa.facete.ConstraintSpecPathValue',
+
+        initialize: function($super, name, path, value) {
+            $super(name, path);
+            this.value = value;
+        },
+
+        getValue: function() {
+            return this.value;
+        },
+        
+        equals: function(that) {
+            if(!that instanceof ns.ConstraintBasePathValue) {
+                return false;
+            }
+            
+            var a = this.name == that.name;
+            var b = this.path.equals(that.path);
+            var c = this.value.equals(that.value);
+            
+            var r = a && b &&c;
+            return r;
+        },
+        
+        hashCode: function() {
+            var result = util.ObjectUtils.hashCode(this, true);
+            return result;
+        }
+    });
+	
+
+    ns.ConstraintExists = Class.create(ns.ConstraintBasePath, {
+        classLabel: 'jassa.facete.ConstraintExists',
+
+        initialize: function($super, path) {
+            $super('exists', path);
+        },
+        
+        createElementsAndExprs: function(facetNode) {
+            var result = ns.ConstraintUtils.createConstraintExists(facetNode, this.path);
+            return result;
+        }
+    });
+
+    
+    ns.ConstraintLang = Class.create(ns.ConstraintBasePathValue, {
+        classLabel: 'jassa.facete.ConstraintLang',
+        
+        initialize: function($super, path, langStr) {
+            $super('lang', path, langStr);
+        },
+        
+        createElementsAndExprs: function(facetNode) {
+            var result = ns.ConstraintUtils.createConstraintLang(facetNode, this.path, this.value);
+            return result;
+        }
+    });
+
+    ns.ConstraintEquals = Class.create(ns.ConstraintBasePathValue, {
+        classLabel: 'jassa.facete.ConstraintEquals',
+        
+        initialize: function($super, path, node) {
+            $super('equals', path, node);
+        },
+        
+        createElementsAndExprs: function(facetNode) {
+            var result = ns.ConstraintUtils.createConstraintEquals(facetNode, this.path, this.value);
+            return result;
+        }
+    });
+    
+    ns.ConstraintRegex = Class.create(ns.ConstraintBasePathValue, {
+        classLabel: 'jassa.facete.ConstraintRegex',
+        
+        initialize: function($super, path, regexStr) {
+            $super('regex', path, regexStr);
+        },
+        
+        createElementsAndExprs: function(facetNode) {
+            var result = ns.ConstraintUtils.createConstraintRegex(facetNode, this.path, this.regexStr);
+            return result;
+        }
+    });
+    
 	
 	
 	// The three basic constraint types: mustExist, equals, and range.
@@ -27,18 +181,15 @@
 //			throw "Override me";
 //		}
 //	});
-
+/*
 	ns.ConstraintElementFactoryExist = Class.create(ns.ConstraintElementFactory, {
 		createElementsAndExprs: function(rootFacetNode, constraintSpec) {
-			var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
-			var elements = sparql.ElementUtils.createElementsTriplesBlock(facetNode.getTriples());
-			var triplesAndExprs = new ns.ElementsAndExprs(elements, []);
-			
-			return result;
+		    var result = ns.ConstraintUtils.createExists(rootFacetNode, constraint)
 		}
 	});
+*/
 
-
+	/*
     ns.ConstraintElementFactoryLang = Class.create(ns.ConstraintElementFactory, {
         createElementsAndExprs: function(rootFacetNode, constraintSpec) {
             var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
@@ -59,7 +210,8 @@
             return result;
         }
     });
-
+*/
+	/*
     ns.ConstraintElementFactoryRegex = Class.create(ns.ConstraintElementFactory, {
         createElementsAndExprs: function(rootFacetNode, constraintSpec) {
             var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
@@ -85,12 +237,13 @@
             return result;
         }
     });
-
+*/
 	
 	/**
 	 * constraintSpec.getValue() must return an instance of sparql.NodeValue
 	 * 
 	 */
+/*	
 	ns.ConstraintElementFactoryEqual = Class.create(ns.ConstraintElementFactory, {
 		createElementsAndExprs: function(rootFacetNode, constraintSpec) {
 			var facetNode = rootFacetNode.forPath(constraintSpec.getDeclaredPath());
@@ -113,7 +266,7 @@
 			return result;
 		}
 	});
-	
+*/	
 	
 //	ns.ConstraintElementSparqlExpr = Class.create(ns.ConstraintElementFactory, {
 //		createElement: function(rootFacetNode, constraintSpec) {
