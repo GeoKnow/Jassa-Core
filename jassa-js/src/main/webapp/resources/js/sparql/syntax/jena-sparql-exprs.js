@@ -400,7 +400,8 @@
 			},
 	
 			copy: function(args) {
-				var result = newUnaryExpr(ns.E_Like, args);
+
+				var result = ns.newUnaryExpr(ns.E_Like, args);
 				return result;
 			},
 	
@@ -526,7 +527,7 @@
 			},
 			
 			copy: function(args) {
-				var result = newUnaryExpr(ns.E_Lang, args);
+				var result = ns.newUnaryExpr(ns.E_Lang, args);
 				return result;
 			},
 			
@@ -553,7 +554,7 @@
 			},
 			
 			copy: function(args) {
-				var result = newUnaryExpr(ns.E_Bound, args);
+				var result = ns.newUnaryExpr(ns.E_Bound, args);
 				return result;
 			},
 			
@@ -859,7 +860,7 @@
 		        if(node.getLiteralDatatypeUri() === xsd.xstring.getUri()) {
 		            result = '"' + node.getLiteralLexicalForm() + '"'; 
 		        }
-		        else if(node.datatype === xsd.xdouble.value) {
+		        else if(node.dataType === xsd.xdouble.value) {
 		            // TODO This is a hack - why is it here???
 		            return parseFloat(this.node.value);		            
 		        }
@@ -1057,7 +1058,7 @@
 	};
 	
 	ns.datatypeFragment = function(node) {
-		return node.datatype ? '^^<' + node.datatype + '>' : "";
+		return node.dataType ? '^^<' + node.datatype + '>' : "";
 	};
 	
 

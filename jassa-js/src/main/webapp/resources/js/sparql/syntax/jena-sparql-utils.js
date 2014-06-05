@@ -155,7 +155,7 @@
 			}, []);
 			
 			return result;
-		},
+		}
 	};
 
 	
@@ -422,6 +422,7 @@
 			}
 
 			// Rename all variables that are in common
+      // FIXME: fnNodeEquals is not defined (commented out in sponate-utils.js as of 2014-06-05)
 			var result = new util.HashBidiMap(ns.fnNodeEquals);
 			//var rename = {};
 
@@ -493,7 +494,7 @@
 			var newElement = element.copySubstitute(fnSubst);
 			
 			return newElement;
-		},
+		}
 
 		
 		/**
@@ -594,7 +595,7 @@
                 
                 var nodeValue = sparql.NodeValue.makeNode(node);
                 
-                var expr = new sparql.E_Equal(exprVar, nodeValue);
+                var expr = new sparql.E_Equals(exprVar, nodeValue);
                 
                 return expr;
             });
