@@ -21,7 +21,8 @@
 		
 		execute: function(bindings) {
 		    var sparqlService = this.sparqlService; 
-		    
+
+      // FIXME: query not defined
 			var copy = query.clone();
 			
 		}

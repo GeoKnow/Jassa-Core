@@ -63,13 +63,14 @@
 		},
 		
 		createQueryCache: function(sparqlService, query, indexExpr) {
+      // FIXME: SparqlService.getServiceState() not defined
 			var key = 'cache:/' + sparqlService.getServiceId() + '/' + sparqlService.getServiceState() + '/' + query + '/' + indexExpr;
 			
 			console.log('cache requested with id: ' + key);
 			
 			var cache = this.keyToCache.getItem(key);
 			if(cache == null) {
-				cache = new ns.QueryCacheBindingHashSingle(sparqlService, query, indexExpr)
+				cache = new ns.QueryCacheBindingHashSingle(sparqlService, query, indexExpr);
 				this.keyToCache.addItem(key, cache);
 			}
 			
