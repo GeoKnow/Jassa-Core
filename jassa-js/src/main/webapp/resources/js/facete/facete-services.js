@@ -28,7 +28,7 @@
             var store = new sponate.StoreFacade(this.sparqlService);
             var labelMap = sponate.SponateUtils.createDefaultLabelMap();
             store.addMap(labelMap, 'labels');
-            labelsStore = store.labels;
+            var labelsStore = store.labels;
             
             var criteria = {};
             if(filterText) {

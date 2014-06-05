@@ -77,6 +77,7 @@
 	 * @param json
 	 */
 	ns.Step.fromJson = function(json) {
+    // FIXME: checkNotNull cannot be resolved
 		var propertyName = checkNotNull(json.propertyName);
 		var isInverse = json.IsInverse();
 		
@@ -92,7 +93,7 @@
 			result = new ns.Step(str, false);
 		}
 		return result;
-	},
+	};
 
 	
 	/**

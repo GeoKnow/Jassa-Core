@@ -2,7 +2,7 @@
 	
 	var vocab = Jassa.vocab;
 	var sparql = Jassa.sparql;
-	
+	var xsd = Jassa.xsd;
 	var ns = Jassa.facete;
 
     /**
@@ -278,7 +278,7 @@
 	ns.ConstraintElementFactoryBBoxRange = Class.create(ns.ConstraintElementFactory, {
 		initialize: function() {
 			this.stepX = new ns.Step(vocab.wgs84.str.lon);
-			this.stepY = new ns.Step(vocab.wgs84.str.la);
+			this.stepY = new ns.Step(vocab.wgs84.str.lat);
 		},
 		
 		createElementsAndExprs: function(rootFacetNode, spec) {
@@ -299,7 +299,7 @@
 			var varX = fnX.getVar();
 			var varY = fnY.getVar();
 			
-			var expr = ns.createWgsFilter(vX, vY, this.bounds, xsd.xdouble);
+			var expr = ns.createWgsFilter(varX, varY, this.bounds, xsd.xdouble);
 			
 			var elements = [new sparql.ElementTriplesBlock(triples)];
 			var exprs = [expr];

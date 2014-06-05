@@ -662,6 +662,7 @@
 			//checkNotNull(node);
 			
 			var nodeValue = sparql.NodeValue.makeNode(node);
+      // FIXME: createEquals is not defined in ConstraintUtils
 			var result = ns.ConstraintUtils.createEquals(this.facetNode.getPath(), nodeValue);
 			
 			return result;
@@ -682,6 +683,7 @@
 		
 		removeConstraint: function(json) {
 			var constraint = this.createConstraint(json);
+      // FIXME: ConstraintManager class has no method moveConstraint (only removeConstraint)
 			this.constraintManager.moveConstraint(constraint);				
 		},
 		

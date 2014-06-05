@@ -56,6 +56,7 @@
 
 
 	ns.QueryFactoryFacets.create = function(subQueryFactory, rootVarName, generator) {
+    // FIXME: facets.GenSym cannot be resolved
 		generator = generator ? generator : new facets.GenSym("fv");
 		var rootFacetNode = facets.FacetNode.createRoot(rootVarName, generator);
 		
