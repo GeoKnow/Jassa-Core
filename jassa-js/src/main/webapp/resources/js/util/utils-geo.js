@@ -1,6 +1,7 @@
 (function() {
 
 	var ns = Jassa.util.geo;
+  var sparql = Jassa.sparql;
 
 	/**
 	 * @param varX The SPARQL variable that corresponds to the longitude
@@ -14,13 +15,19 @@
 		
 		// Cast the variables if requested
 		if(castNode) {
+      // FIXME: E_Cast not defined
 			lon = new sparql.E_Cast(lon, castNode);
+      // FIXME: E_Cast not defined
 			lat = new sparql.E_Cast(lat, castNode);
 		}
-		
+
+    // FIXME: forValue not defined
 		var xMin = sparql.NodeValue.makeNode(sparql.Node.forValue(bounds.left));
+    // FIXME: forValue not defined
 		var xMax = sparql.NodeValue.makeNode(sparql.Node.forValue(bounds.right));
+    // FIXME: forValue not defined
 		var yMin = sparql.NodeValue.makeNode(sparql.Node.forValue(bounds.bottom));
+    // FIXME: forValue not defined
 		var yMax = sparql.NodeValue.makeNode(sparql.Node.forValue(bounds.top));
 
 		var result = //new sparql.ElementFilter(
@@ -41,8 +48,8 @@
 		var wktStr = ns.boundsToWkt(bounds);
 		
 		// FIXME: Better use typeLit with xsd:string
-		var nodeValue = new sparql.NodeValue(sparql.Node.plainLit(wktStr));
-		
+		var nodeValue = new sparql.NodeValue(sparql.NodeFactory.createPlainLiteral(wktStr));
+
 		var result =
 			new sparql.E_Function(
 				ogc + "intersects",
