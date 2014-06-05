@@ -1,6 +1,7 @@
 (function($) {
     
     var ns = Jassa.geo;
+    var xsd = Jassa.xsd;
 
     var defaultDocWktExtractorFn = function(doc) {
         var wktStr = doc.wkt;
@@ -12,14 +13,15 @@
     };
 
     var number = '(\\d+(\\.\\d*)?)';
-    var nonNumber = '[^\\d]*'
+    var nonNumber = '[^\\d]*';
     ns.pointRegexPattern = new RegExp(nonNumber + '(' + number + '\\s+' + number + nonNumber + ')');
 
     ns.WktUtils = {
 
         extractPointsFromWkt: function(wktStr) {
             var result = [];
-            
+
+            var match;
             while (match = ns.pointRegexPattern.exec(wktStr)) {
                 var strX = match[2];
                 var strY = match[4];
@@ -90,8 +92,8 @@
         initialize: function(sparqlService, geoMapFactory, concept, fnGetBBox, options) {
             this.sparqlService = sparqlService;
             
-            var maxBounds = new geo.Bounds(-180.0, -90.0, 180.0, 90.0);
-            this.quadTree = new geo.QuadTree(maxBounds, 18, 0);
+            var maxBounds = new ns.Bounds(-180.0, -90.0, 180.0, 90.0);
+            this.quadTree = new ns.QuadTree(maxBounds, 18, 0);
         
             
             this.concept = concept;
@@ -282,7 +284,7 @@
             var countTasks = this.createCountTasks(uncountedNodes);
             
             $.when.apply(window, countTasks).done(function() {
-                nonLoadedNodes = _(nodes).filter(function(node) { return self.isLoadingNeeded(node); });
+                var nonLoadedNodes = _(nodes).filter(function(node) { return self.isLoadingNeeded(node); });
                 //console.log("# non loaded nodes", nonLoadedNodes.length, nonLoadedNodes);
                 
                 var loadTasks = self.createLoadTasks(nonLoadedNodes);
@@ -547,9 +549,12 @@
                 var databank = node.data.graph;
                 _.each(node.data.geomToFeatureCount, function(count, geom) {
                     var s = sparql.Node.uri(geom);
-                    var o = sparql.Node.typedLit(count, xsd.integer);
-                    
+                    var o = sparql.NodeFactory.createTypedLiteralFromString(count, xsd.xinteger.value);
+
+                    // FIXME: appvocab.featureCount not defined (I mean, it defined in MapView.js but I don't know if
+                    // MapView.js is loaded
                     var tripleStr = "" + s + " " + appvocab.featureCount + " " + o;
+                    // FIXME: there is Jassa.rdf.Triple(s, p, o)
                     var triple = $.rdf.triple(tripleStr);
                     
                     databank.add(triple);                   
@@ -564,9 +569,10 @@
                     
                     _.each(geomToLabel, function(label, uri) {
                         var s = sparql.Node.uri(uri);
-                        var o = sparql.Node.plainLit(label.value, label.language);
+                        var o = sparql.NodeFactory.createPlainLiteral(label.value, label.language);
                         
                         var tripleStr = "" + s + " " + rdfs.label + " " + o;
+                        // FIXME: there is Jassa.rdf.Triple(s, p, o)
                         var triple = $.rdf.triple(tripleStr);
                         
                         databank.add(triple);
@@ -576,9 +582,9 @@
                     
                     _.each(geomToPoint, function(point, uri) {
                         var s = sparql.Node.uri(uri);
-                        var oLon = sparql.Node.typedLit(point.x, xsd.xdouble.value);
-                        var oLat = sparql.Node.typedLit(point.y, xsd.xdouble.value);
-                        
+                        var oLon = sparql.NodeFactory.createTypedLiteralFromString(point.x, xsd.xdouble.value);
+                        var oLat = sparql.NodeFactory.createTypedLiteralFromString(point.y, xsd.xdouble.value);
+
                         var lonTriple = "" + s + " " + geo.lon + " " + oLon; 
                         var latTriple = "" + s + " " + geo.lat + " " + oLat;
                         
