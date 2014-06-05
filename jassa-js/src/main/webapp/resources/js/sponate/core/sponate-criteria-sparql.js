@@ -146,9 +146,10 @@
 		
 		visitEq: function(criteria, pattern, context, joinNode, result) {
 //            debugger;
-            var subPattern = pattern.findPattern(attrPath);
+            var subPattern = pattern.findPattern(this.attrPath);
 
             var expr = this.getExpr(subPattern);
+            // FIXME: ap not defined
             var e = new sparql.E_Equals(new sparql.E_Str(expr), sparql.NodeValue.makeString(ap.getValue()));
             result.push(e);
 		},
@@ -194,7 +195,7 @@
 //            debugger;
             var subPattern = pattern.findPattern(criteria.getAttrPath());
 
-            var regexStr = criteria.getRegex().toString()
+            var regexStr = criteria.getRegex().toString();
             var flagDelim = regexStr.lastIndexOf('/');
             
             var patternStr = regexStr.substring(1, flagDelim);
@@ -224,7 +225,7 @@
 
 		visitGt: function() {
 
-		},
+		}
 		
 		
 	});

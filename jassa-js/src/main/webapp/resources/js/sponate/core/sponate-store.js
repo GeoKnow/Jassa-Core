@@ -310,7 +310,7 @@
 			}
 
 			
-			var sortConditions = []
+			var sortConditions = [];
 			if(idExpr != null) {
 				//console.log('Expr' + JSON.stringify(idExpr));
 				
@@ -465,6 +465,7 @@
 		
 		executeData: function(spec, retainRdfNodes) {
 		    var outerElement = spec.outerElement;
+        // FIXME: spec.idExpr not defined
 		    var idExpr = spec.idExpr;
 		    var sortConditions = spec.sortConditions;
 		    var vars = spec.vars;
@@ -518,10 +519,10 @@
 				        filtered = json;
 				    }
 				    else {
-    					var filtered = _(json).filter(function(item) {												
+    					filtered = _(json).filter(function(item) {
     						var isMatch = criteria.match(item);
     						return isMatch;
-    					})
+    					});
     					
     					var all = json.length;
     					var fil = filtered.length;

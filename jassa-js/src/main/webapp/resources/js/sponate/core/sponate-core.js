@@ -1,13 +1,11 @@
 (function() {
 
     var rdf = Jassa.rdf;
-	var sparql = Jassa.sparql;
-	var util = Jassa.util;
+    var sparql = Jassa.sparql;
+    var util = Jassa.util;
 
-	var ns = Jassa.sponate;
-	
-	
-	
+    var ns = Jassa.sponate;
+
     ns.AccumulatorFactoryFn = Class.create({
         classLabel: 'AccumulatorFactoryFn',
         
@@ -15,7 +13,7 @@
             this.fn = fn;
             this.referencedVars = referencedVars;
         },
-        
+
         createAggregator: function() {
             var result = new ns.AccumulatorFn(this.fn, this.referencedVars);
             return result;
@@ -287,14 +285,14 @@
 			var result = [];
 			
 			var fn = function(pattern) {
-				var proceed = true
+				var proceed = true;
 				if(pattern instanceof ns.PatternRef) {
 					result.push(pattern);
 					proceed = false;
 				}
 				
 				return proceed;
-			}
+			};
 			
 			util.TreeUtils.visitDepthFirst(pattern, ns.PatternUtils.getChildren, fn);
 			
@@ -605,6 +603,7 @@
 			var result = [];
 			
 			var stub = this.stub;
+      // FIXME: joinColumn not defined
 			if(stub.joinColumn != null) {
 				// TODO HACK Use proper expression parsing here
 				var v = rdf.Node.v(stub.joinColumn.substr(1));
@@ -646,13 +645,14 @@
 		},
 		
 		getTargetColumns: function() {
-			return this.targetColumn;
+			return this.targetColumns;
 		},
 		
 		toString: function() {
 			var result
 				= '(' + this.sourceColumns.join(', ') + ') '
 				+ this.tableName
+        // FIXME: this.targetJoinColumns not defined
 				+ ' (' + this.targetJoinColumns.join() + ')';
 			
 			return result;
@@ -733,7 +733,7 @@
 		},
 		
 		toString: function() {
-			var result = this.patternRef + '/' + tableRef + '@' + attrPath;
+			var result = this.patternRef + '/' + this.tableRef + '@' + this.attrPath;
 			return result;
 		}
 	});
@@ -761,11 +761,11 @@
 		},
 		
 		isArray: function() {
-			this.isArray;
+			return this.isArray;
 		},
 		
 		getJoinTableRef: function() {
-			return this.joinTabelRef;
+			return this.joinTableRef;
 		},
 		
 		toString: function() {
@@ -785,7 +785,7 @@
 
 	    
 		getPattern: function() {
-			throw new 'override me';
+			throw 'override me';
 		},
 		
 		getJson: function(retainRdfNodes) {
@@ -800,10 +800,11 @@
 	    
 	    initialize: function(patternCustomAgg, customAgg) {
 	        this.customAgg = customAgg;
+          this.patternCustomAgg = patternCustomAgg;
 	    },
 	   
 	    getPattern: function() {
-	        return this.pattenCustomAgg;
+	        return this.patternCustomAgg;
 	    },
 	   
 	    process: function(binding, context) {
@@ -884,8 +885,8 @@
     				} else if(sparql.NodeValue.nvNothing.asNode().equals(node)) {
     				    result = null;
     				} else {
-    				    console.log('[ERROR] Unsupported node types: ', node)
-    					throw 'Unsupported node type';
+    				    console.log('[ERROR] Unsupported node types: ', node);
+              throw 'Unsupported node type';
     				}
 			    }
 			}
@@ -904,7 +905,7 @@
 		 * 
 		 */
 		initialize: function(patternObject, attrToAggr) {
-			this.pattersObject = this.patternObject;
+			this.patternObject = patternObject;
 			this.attrToAggr = attrToAggr;
 		},
 		
@@ -989,8 +990,6 @@
 		},
 		
 		getJsonArray: function(retainRdfNodes) {
-			var result = [];
-
 			var aggrs = this.keyToAggr.getItems();
 			var result = aggrs.map(function(aggr) {
 				var data = aggr.getJson(retainRdfNodes);
@@ -1007,9 +1006,11 @@
 			var keyToIndex = this.keyToAggr.getKeyToIndex();
 			
 			_(keyToIndex).each(function(index, aggr) {
-		    	var aggr = items[index];
-		    	var data = aggr.getJson(retainRdfNodes);
-		    	result[key] = data;
+          // FIXME: items not defined
+          var aggr = items[index];
+          var data = aggr.getJson(retainRdfNodes);
+          // FIXME: key not defined
+          result[key] = data;
 			});
 			
 			return result;			
@@ -1110,7 +1111,7 @@
 		    var fnName = "visit" + pattern.getClassName();
 		    var fn = this[fnName];
 		    if(!fn) {
-		        console.log('[ERROR] Function with name "' + fnName + '" not found.')
+		        console.log('[ERROR] Function with name "' + fnName + '" not found.');
 		        throw 'Bailing out';
 		    }
 			var result = fn.call(this, pattern);
@@ -1135,6 +1136,7 @@
 		},
 
 		visitPatternArray: function(pattern) {
+      // FIXME: AggregatorArray not defined
 			return ns.AggregatorArray(pattern);
 		},
 		

@@ -1,6 +1,8 @@
 (function() {
 
     var ns = Jassa.sponate;
+    var sparql = Jassa.sparql;
+    var sponate = Jassa.sponate;
 
     ns.GeoMapFactory = Class.create({
         classLabel: 'GeoMapFactory',

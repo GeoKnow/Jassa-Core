@@ -300,7 +300,7 @@
 			};
 			
 			var open = [a];
-			
+			// FIXME: open won't ever be empty here
 			while(open.isEmpty()) {
 				var sourceAlias = open.shift();
 				
@@ -308,8 +308,7 @@
 				var sourceMapping = sourceState.mapping;
 				
 				ns.ContextUtils.resolveMappingRefs(this.context, sourceMapping);
-				
-				var refs = mapping.getPatternRefs(); 
+				var refs = this.mapping.getPatternRefs();
 
 				// For each reference, if it is an immediate join, add it to the join graph
 				// TODO And what if it is a lazy join??? We want to be able to batch those.
@@ -317,9 +316,10 @@
 					var targetMapRef = ref.getTargetMapRef();
 					
 					var targetAlias = generator.next();
-					
+
 					aliasToState[targetAlias] = {
-						mapping: targetMapping	
+            // FIXME: targetMapping not defined
+						mapping: targetMapping
 					};
 				
 					var joins = aliasToJoins[sourceAlias];
@@ -373,6 +373,7 @@
 		},
 		
 		getOutgoingEdges: function() {
+      // FIXME: getEdges not defined
 			var result = this.graph.getEdges(this.id);
 			return result;
 		}
@@ -437,9 +438,9 @@
 			
 			var tmp = Array.prototype.slice.call(arguments, 0);
 			// TODO Maybe we should pass the nodes rather than the node ids
-			var xargs = [graph, nodeIdFrom, nodeIdTo].concat(tmp);
+			var xargs = [this.graph, nodeIdFrom, nodeIdTo].concat(tmp);
 
-			
+			// FIXME: this.fnEdgeNode not defined
 			var result = this.fnEdgeNode.apply(this, xargs);
 			
 			var edgeIdToEdge = this.nodeIdToEdgeIdToEdge[edges];
@@ -460,7 +461,7 @@
 	ns.NodeJoinElement = Class.create(ns.Node, {
 		initialize: function($super, graph, nodeId, element, alias) {
 			$super(graph, nodeId); 
-			http://localhost/jassa/?file=jassa-facete
+			// http://localhost/jassa/?file=jassa-facete
 			this.element = element; // TODO ElementProvider?
 			this.alias = alias;
 		},
@@ -477,6 +478,7 @@
 	
 	ns.fnCreateMappingJoinNode = function(graph, nodeId) {
 		console.log('Node arguments:', arguments);
+    // FIXME: ns.MappingJoinNode not defined
 		return new ns.MappingJoinNode(graph, nodeId);
 	};
 
