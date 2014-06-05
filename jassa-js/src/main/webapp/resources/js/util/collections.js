@@ -134,6 +134,45 @@
 	            var newArr = _(arr).filter(fn);            
 	            this.replace(arr, newArr);
 	            return arr;
+	        },
+	        
+	        indexesOf: function(arr, val, fnEquals) {
+	            fnEquals = fnEquals || ns.defaultEquals;
+	            
+	            var result = [];
+
+	            _(arr).each(function(item, index) {
+	                var isEqual = fnEquals(val, item);
+	                if(isEqual) {
+	                    result.push(index);
+	                }
+	            });
+	            
+	            return result;
+	        },
+	        
+	        copyWithoutIndexes: function(arr, indexes) {
+	            var map = {};
+	            _(indexes).each(function(index) {
+	                map[index] = true;
+	            });
+	            
+	            var result = [];
+
+	            for(var i = 0; i < arr.length; ++i) {
+	                var omit = map[i];
+	                if(!omit) {
+	                    result.push(arr[i]);
+	                }
+	            }
+	            
+	            return result;
+	        },
+	        
+	        removeIndexes: function(arr, indexes) {
+	            var tmp = this.copyWithoutIndexes(arr, indexes);	            
+	            this.replace(arr, tmp);
+	            return arr;
 	        }
 	};
 	
