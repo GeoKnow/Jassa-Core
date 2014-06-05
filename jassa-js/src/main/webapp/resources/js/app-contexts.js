@@ -1,6 +1,7 @@
     var ns = {};
 
     var facete = Jassa.facete;
+    var geo = Jassa.geo;
     
     ns.AppContext = Class.create({
         initialize: function() {
@@ -14,7 +15,9 @@
             
             workSpace.setData({
                 config: {
+                    // FIXME: sparqlServiceIri not defined
                     sparqlServiceIri: sparqlServiceIri,
+                    // FIXME: defaultGraphIris not defined
                     defaultGraphIris: defaultGraphIris 
                 }
             });
@@ -225,7 +228,7 @@
                             conceptSpace: conceptSpace.getId(),
                             path: path
                         }
-                    })
+                    });
                     
                     return r;
                 })
