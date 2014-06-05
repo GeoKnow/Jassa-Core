@@ -41,7 +41,7 @@
 			    
 			});	
 			
-			uris = _.keys(uriToEls);
+			var uris = _.keys(uriToEls);
 			//console.log("URIS", uriToEls);
 
 			
