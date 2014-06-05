@@ -17,7 +17,7 @@
 		xstring: p + "string",
 	
 		date: p + "date",
-	    dateTime: p + "dateTime"		
+	    dateTime: p + "dateTime"
 	};
 	
 	
