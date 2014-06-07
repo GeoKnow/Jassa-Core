@@ -114,7 +114,17 @@
 	
 	
 	ns.ArrayUtils = {
-	
+	        chunk: function(arr, chunkSize) {    
+                var result = [];
+                for (var i = 0; i < arr.length; i += chunkSize) {
+                    var chunk = arr.slice(i, i + chunkSize);
+        
+                    result.push(chunk);
+                }
+                
+                return result;
+	        },
+
 	        clear: function(arr) {
 	            while(arr.length > 0) {
 	                arr.pop();

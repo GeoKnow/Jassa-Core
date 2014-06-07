@@ -23,6 +23,48 @@
 	
 	ns.SponateUtils = {
 
+	    // TODO: We need to deal with references
+	    processResultSet: function(rs, pattern, retainRdfNodes, doClientFiltering) {
+            var accumulator = new ns.AggregatorFacade(pattern);
+            
+            while(rs.hasNext()) {
+                var binding = rs.nextBinding();
+                
+                accumulator.process(binding);
+            }
+            
+            var json = accumulator.getJson(retainRdfNodes);
+            
+            //console.log('Final json: ' + JSON.stringify(json));
+            
+            var result;
+            if(_(json).isArray()) {
+
+                var filtered = json;
+
+                if(doClientFiltering && !retainRdfNodes) {
+                    var filtered = _(json).filter(function(item) {                                              
+                        var isMatch = criteria.match(item);
+                        return isMatch;
+                    })
+                    
+                    var all = json.length;
+                    var fil = filtered.length;
+                    var delta = all - fil;
+
+                    console.log('[DEBUG] ' + delta + ' items filtered on the client ('+ fil + '/' + all + ' remaining) using criteria ' + JSON.stringify(criteria));
+                }
+
+                result = new util.IteratorArray(filtered);
+                
+            } else {
+                console.log('[ERROR] Implement me');
+                throw 'Implement me';
+            }
+            
+            return result;
+        },
+	        
 	    /**
 	     * Parse a sponate mapping spec JSON object and return a sponate.Mapping object 
 	     * 

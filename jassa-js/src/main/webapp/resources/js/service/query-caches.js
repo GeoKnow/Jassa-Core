@@ -78,6 +78,26 @@
 	});
 	
 	
+
+	/*
+	ns.SparqlLookpServiceCache = Class.create({
+	    initialize: function(sparqlLookupService, cache) {
+	        this.sparqlLookupService = sparqlLookupService;
+	        
+	        this.cache = cache || new Cache();
+	    },
+	    
+	    lookup: function(nodes) {
+	        // Make nodes unique
+	        var uniq = _(nodes).uniq(); // TODO equality
+	        
+	        
+	        
+	        
+	    }
+	})
+	*/
+	
 	
 	ns.QueryCacheBindingHashSingle = Class.create({
 	    initialize: function(sparqlService, query, indexExpr) {
@@ -186,7 +206,7 @@
 	     * Given an array of nodes, this method returns:
 	     * (a) the array of nodes for which cache entries exist
 	     * (b) the array of nodes for which NO cache entries exist
-	     * (c) the array of nodes for which it is know that no data exists
+	     * (c) the array of nodes for which it is known that no data exists
 	     * (c) chunked arrays of nodes for which no cache entries exist
 	     * (d) the maxChunkSize used to create the chunks
 	     * 

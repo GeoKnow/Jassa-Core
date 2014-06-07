@@ -12,7 +12,76 @@
     //ns.globalSparqlCache = {};
 
 	ns.ServiceUtils = {
-	
+
+	    // FIXME constrainQueryVar, constrainQueryExprVar, chunkQuery should go to a different place, such as sparql.QueryUtils
+	        
+	    constrainQueryVar: function(query, v, nodes) {
+            var exprVar = new sparql.ExprVar(v);
+            var result = constrainQueryExprVar(query, exprVar, nodes);
+            return result;
+	    },
+
+	    constrainQueryExprVar: function(query, exprVar, nodes) {
+            var result = query.clone();
+            var e = new sparql.ElementFilter(new sparql.E_OneOf(exprVar, nodes));
+            result.getElements().push(e);
+            
+            return result;
+	    },
+
+	    /**
+	     * Returns an array of queries where the variable v has been constraint to elements in nodes.
+	     */
+	    chunkQuery: function(query, v, nodes, maxChunkSize) {
+            var chunks = util.ArrayUtils.chunk(nodes, maxChunkSize);
+            var exprVar = new sparql.ExprVar(v);
+
+            var self = this;
+            var result = _(chunks).map(function(chunk) {
+                var r = self.constrainQueryExprVar(query, exprVar, nodes);
+                return r;
+            });
+            
+            return result;
+	    },
+
+	    mergeResultSets: function(arrayOfResultSets) {
+            var bindings = [];
+            var varNames = [];
+            _(arrayOfResultSets).each(function(rs) {
+                var vns = rs.getVarNames();
+                varNames = _(varNames).union(vns);
+                
+                var arr = rs.getIterator().getArray();
+                bindings.push.apply(bindings, arr);
+            });
+	        
+	        var itBinding = new util.IteratorArray(bindings);
+	        var result = new ns.ResultSetArrayIteratorBinding(itBinding, varNames);
+
+	        return result;
+	    },
+	    
+	    execSelectForNodes: function(sparqlService, query, v, nodes, maxChunkSize) {
+	        var queries = this.chunkQuery(query, v, nodes, maxChunkSize);
+	        
+	        var promises = _(queries).map(function(query) {
+	            var qe = sparqlService.createQueryExecution(query);
+	            var r = qe.execSelect();
+	            return r;
+	        });
+	        
+            var masterTask = jQuery.when.apply(window, promises);
+            
+            var self = this;
+            var result = masterTask.pipe(function(/* arguments will be result sets */) {
+                var r = self.mergeResultSets(arguments);
+                return r;
+            });
+
+            return result;
+	    },
+	        
 		/**
 		 * TODO Rather use .close()
 		 * 
