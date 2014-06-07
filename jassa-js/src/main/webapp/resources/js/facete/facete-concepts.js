@@ -62,8 +62,8 @@
 				e = baseElement;
 			}
 			
-			
-			var concept = new facets.ConceptInt(e, tmpConcept.getVariable());
+			// FIXME: ConceptInt class is not defined
+			var concept = new ns.ConceptInt(e, tmpConcept.getVariable());
 	
 			return concept;
 		},
@@ -138,8 +138,8 @@
 
 			var resultElements = result.getElements();
 			var conceptElements = concept.getElements();
-			resultElements.push.apply(resultElements, conceptElements)
- 
+			resultElements.push.apply(resultElements, conceptElements);
+
 			return result;			
 		}
 	};
@@ -284,7 +284,8 @@
 		createOptimizedConcept: function() {
 			var element = this.getElement();
 			var newElement = element.flatten();
-			
+
+      // FIXME: ConceptInt class is not defined
 			var result = new ns.ConceptInt(newElement, this.variable);
 
 			return result;

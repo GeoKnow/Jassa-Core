@@ -8,7 +8,7 @@
 	// String versions
 	ns.str = {
 		lon: p + "long",
-		lat: p + "lat",
+		lat: p + "lat"
 	};
 		
 	util.initNodes(ns);

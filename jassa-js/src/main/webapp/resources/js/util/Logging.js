@@ -14,7 +14,7 @@
 		console.log('[DEBUG] ')
 	}
 	
-		window.console = {
+	window.console = {
 			debug : function() {
 				console.log.apply(arguments);
 			},
@@ -28,7 +28,5 @@
 			},
 			error : function() {
 			}
-		};
-	}
-
+	};
 });

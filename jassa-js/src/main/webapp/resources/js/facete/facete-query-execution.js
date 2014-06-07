@@ -616,6 +616,7 @@
                 var node = path.isEmpty() ? rdf.NodeFactory.createUri('http://root') : rdf.NodeFactory.createUri(path.getLastStep().getPropertyName());
                 var r = new ns.FacetItem(path, node, count, null, null);
 
+                // FIXME: item cannot be resolved
                 var tags = self.pathTaggerManager.createTags(item.getPath());
                 item.setTags(tags);
                 
@@ -921,7 +922,7 @@
                 d.resolve(r);
             }).fail(function() {
                 d.fail();
-            })
+            });
 
             return d.promise();
 
@@ -1039,7 +1040,7 @@
 				d.resolve(r);
 			}).fail(function() {
 				d.fail();
-			})
+			});
 
 			return d.promise();
 		}

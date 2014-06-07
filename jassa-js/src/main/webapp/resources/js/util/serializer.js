@@ -132,7 +132,7 @@
             var result;
             _(this.classNameToClass).find(function(ctor, cl) {
                 if(cl === classLabel) {
-                    result = ctor
+                    result = ctor;
                     return true;
                 }           
             });
@@ -220,7 +220,7 @@
                 var proto;
                 if(classLabel) {
                     
-                    var proto = this.classNameToPrototype[classLabel];
+                    proto = this.classNameToPrototype[classLabel];
                         
                     if(!proto) {
                         var clazz = this.getClassForLabel(classLabel);

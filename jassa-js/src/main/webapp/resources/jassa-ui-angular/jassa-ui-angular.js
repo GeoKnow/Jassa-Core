@@ -8,6 +8,7 @@ angular.module('ui.jassa', [])
     var updateFacetTreeService = function() {
         var isConfigured = $scope.sparqlService && $scope.facetTreeConfig;
         //debugger;
+        // FIXME: labelMap not defined!!
         $scope.facetTreeService = isConfigured ? facete.FaceteUtils.createFacetTreeService($scope.sparqlService, $scope.facetTreeConfig, labelMap) : null; 
     };
     

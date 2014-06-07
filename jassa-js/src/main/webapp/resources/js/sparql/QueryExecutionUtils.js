@@ -26,7 +26,7 @@
 	
 	
 	ns.fetchStatementsBySubjects = function(service, uriStrs) {		
-		
+		// FIXME: filterUrisValidate not defined
 		uriStrs = uriUtils.filterUrisValidate(uriStrs);
 		
 		if(uriStrs.length === 0) {
@@ -43,7 +43,7 @@
 
 	ns.fetchDefaultGraphs = function(sparqlService) {
         var g = sparql.Node.v('g');
-        var query = queryUtils.createQueryGetNamedGraphs(g);
+        var query = ns.createQueryGetNamedGraphs(g);
 
         var result = ns.fetchList(sparqlService, query, g);
         return result;
@@ -86,10 +86,12 @@
 		var autoFacetVar = 1;
 		
 		var s = config.conceptVar;
-		
-		q = ns.FacetUtils.createQueryLoadDefaults(config);
+
+		// FIXME: createQueryLoadDefaults not defined
+		var q = ns.FacetUtils.createQueryLoadDefaults(config);
 		
 		if(!callback) {
+      // FIXME: DummyCallback not defined
 			callback = ns.DummyCallback;
 		}
 		
@@ -99,6 +101,7 @@
 			failue: function() { callback.failure(); },
 			success: function(jsonRs) {
 				// Update the model (and thereby the view)
+        // FIXME: jsonRdfResultSetToMap not defined
 				var map = jsonRdfResultSetToMap(jsonRs, "__p", "__c");
 
 				for(var propertyName in map) {
@@ -117,9 +120,11 @@
 					*/
 					
 					var element = new sparql.ElementTriplesBlock([new rdf.Triple(s, propertyNode, objectNode)]);
-					
+
+          // FIXME: Facet not defined
 					var newFacet = new ns.Facet(config.getRoot(), propertyNode.value, element, s.value);
-					
+
+          // FIXME: addFacet not defined
 					config.addFacet(newFacet);
 					
 					//self.knownFacets.push(facetDesc);
@@ -139,7 +144,8 @@
 	ns.processFacets = function(state, jsonRs, labelFetcher, callback) {
 		//console.log("Facet result set", jsonRs);
 		
-		var result = state; 
+		var result = state;
+    // FIXME: jsonRdfResultSetToMap not defined
 		var map = jsonRdfResultSetToMap(jsonRs, "__p", "__c");
 	
 		//console.log("labelFetcher", $.ssb);
@@ -178,18 +184,22 @@
 	ns.fetchFacetValues = function(sparqlService, queryFactory, path, searchString) {
 		
 		// Create a query factory without constraints for the given path
+    // FIXME: copyExcludeConstraint not defined
 		var qf = queryFactory.copyExcludeConstraint(path);
 		
 		// Navigate to the given path
+    // FIXME: copyNavigate not defined
 		qf = queryFactory.copyNavigate(path);
 		
-		//  
+		// FIXME: getDriver not defined
 		var concept = qf.getDriver();
 		
 		var baseElement = concept.element;
 		
 		var countVar = sparql.Node.v("__c");
 		var facetVar = concept.variable;//sparql.Node.v(breadcrumb.targetNode.variable);
+    // FIXME: breadcrumb not defined
+    // FIXME: state not defined
 		var query = ns.createQueryFacetValuesCountedFiltered(baseElement, breadcrumb, state.config.sampleSize, searchString, countVar);
 
 		console.log("Query data", "" + query);
@@ -206,7 +216,8 @@
 		// The result is a list of facet values:
 		// (valueNode, label, count)
 		var result = {}; //[];
-		
+
+    // FIXME: executeSelect not defined
 		return sparqlService.executeSelect(query.toString()).pipe(function(jsonRs) {
 				//console.debug("Binding", jsonRs);
 				
@@ -219,7 +230,8 @@
 					
 					var valueNode = sparql.Node.fromTalisJson(val);
 					var count = binding[countVar.value].value;// TODO Maybe parse as int
-					
+
+          // FIXME: couldn't find FacetValue constructor
 					var facetValue = new facets.FacetValue(valueNode, count);
 					result[valueNode] = facetValue;
 					//result.push();
@@ -233,7 +245,7 @@
 				//var map = jsonRdfResultSetToMap(jsonRs, "var1", "__c");
 		
 				var uris = [];
-				for(key in result) {
+				for(var key in result) {
 					var node = result[key].node;
 
 					if(node.isUri()) {						
@@ -244,6 +256,7 @@
 				//console.debug("Value URIs", uris, result);
 				
 				//var labelFetcher = new labelUtils.LabelFetcher(sparqlService);
+        // FIXME: labelFetcher not defined
 				return labelFetcher.fetch(uris, true).pipe(function(uriToLabel) {
 
 					//console.log("Facet value uris", uris, uriToLabel);
@@ -317,7 +330,8 @@
 		// The result is a list of facet values:
 		// (valueNode, label, count)
 		var result = {}; //[];
-		
+
+    // FIXME: executeSelect not defined
 		return sparqlService.executeSelect(query.toString()).pipe(function(jsonRs) {
 				//console.debug("Binding", jsonRs);
 				
@@ -330,7 +344,8 @@
 					
 					var valueNode = sparql.Node.fromTalisJson(val);
 					var count = binding[countVar.value].value;// TODO Maybe parse as int
-					
+
+          // FIXME: could not find FacetValue constructor
 					var facetValue = new facets.FacetValue(valueNode, count);
 					result[valueNode] = facetValue;
 					//result.push();
@@ -344,7 +359,7 @@
 				//var map = jsonRdfResultSetToMap(jsonRs, "var1", "__c");
 		
 				var uris = [];
-				for(key in result) {
+				for(var key in result) {
 					var node = result[key].node;
 
 					if(node.isUri()) {						
@@ -417,9 +432,11 @@
 		
 		//var self = this;
 		var concept = facetState.concept;
+    // FIXME: createFacetQueryCount not defined
 		var query = ns.createFacetQueryCount(concept.element, concept.variable);
 
 		// Return a promise so we can react if the callback finishes
+    // FIXME: executeSelect not defined
 		var result = sparqlService.executeSelect(query.toString()).pipe(function(jsonRs) {
 
 				console.log("fetchFacetCountsGeomRec Query", query.toString());
@@ -455,6 +472,7 @@
 
 	
 	ns.fetchList = function(sparqlService, query, variable) {
+    // FIXME: executeSelect not defined
 		var result = sparqlService.executeSelect(query).pipe(function(data) {
 			//console.debug("fetchList got data:", "" + query, data);
 			var list = [];
@@ -465,7 +483,7 @@
 				var node = sparql.Node.fromTalisJson(item);
 				
 				list.push(node);
-			};
+			}
 			
 			return list;
 		});
@@ -479,7 +497,8 @@
 	 * 
 	 */
 	ns.fetchInt = function(sparqlService, query, variable, ajaxOptions) {
-		
+
+    // FIXME: executeSelect not defined
 		var result = sparqlService.executeSelect(query, ajaxOptions).pipe(function(data) {
 			var count = parseInt(data.results.bindings[0][variable.value].value);
 			

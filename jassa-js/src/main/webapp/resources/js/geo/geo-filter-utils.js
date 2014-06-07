@@ -17,6 +17,7 @@
             // Cast the variables if requested
             // TODO E_Cast should not be used - use E_Function(castNode.getUri(), lon) instead - i.e. the cast type equals the cast function name
             if(castNode) {
+                // FIXME: E_Cast not defined
                 lon = new sparql.E_Cast(lon, castNode);
                 lat = new sparql.E_Cast(lat, castNode);
             }

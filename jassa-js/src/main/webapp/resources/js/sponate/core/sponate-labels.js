@@ -60,7 +60,7 @@
         }
         
         return result;
-    }
+    };
     
     ns.AggregatorFactoryLabel = Class.create({
         initialize: function(labelPrios, prefLangs, labelExpr, subjectExpr, propertyExpr) {
@@ -196,7 +196,7 @@
     
     ns.LabelUtil = Class.create({
         initialize: function(aggFactory, element) {
-            this.aggFactory = aggFactory
+            this.aggFactory = aggFactory;
             this.element = element;
         },
         

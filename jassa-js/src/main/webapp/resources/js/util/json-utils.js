@@ -13,7 +13,7 @@
                         return;
                     }
                     
-                    seen.push(val)
+                    seen.push(val);
                     
                     if(fn) {
                         val = fn(key, val);

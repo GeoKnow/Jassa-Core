@@ -8,9 +8,9 @@
 	var rdfs = Namespace("org.aksw.ssb.vocabs.rdfs");
 	var utils = Namespace("org.aksw.ssb.utils");
 
-	
 	var ns = Namespace("org.aksw.ssb.utils");
-	
+
+  var rdf = Jassa.rdf;
 	
 	
 	/**
@@ -33,7 +33,8 @@
 		this.prefixResolver = prefixResolver;
 		
 		var query = this.createQueryLabels();
-		
+
+    // FIXME: utils.QueryCacheFactory not defined
 		this.queryCacheFactory = new utils.QueryCacheFactory(sparqlService);
 		this.queryCache = this.queryCacheFactory.create(query);
 	};
@@ -60,7 +61,9 @@
 					for(var i in this.langs) {
 						var lang = this.langs[i];
 						
-						var expr = new sparql.E_LangMatches(new sparql.E_Lang(new sparql.ExprVar(l)), new sparql.NodeValue(sparql.Node.plainLiteral(lang)));
+            var expr = new sparql.E_LangMatches(
+                new sparql.E_Lang(new sparql.ExprVar(l)),
+                new sparql.NodeValue(sparql.NodeFactory.createPlainLiteral(lang)));
 						
 						ors.push(expr);
 					}
@@ -80,6 +83,7 @@
 			// TODO uris = String[]. Maybe this should be sparql.Node[]
 			fetch: function(uriStrs) {
 
+        // FIXME: filterUrisValidate not defined
 				validUriStrs = uriUtils.filterUrisValidate(uriStrs);
 				
 				var uris = _.map(validUriStrs, function(uriStr) {
@@ -100,7 +104,8 @@
 						var binding = rs.results.bindings[i];
 						
 						//console.log("Binding: ", binding);
-						
+
+            // FIXME: u not defined
 						var uri = binding.u.value;
 						var labelNode = binding.l;
 						var label = labelNode.value;
@@ -116,7 +121,7 @@
 						uriToLabel[uri] = {value: label, lang: lang};
 					}				
 					
-					result = {uris: uris, uriToLabel: uriToLabel};
+					var result = {uris: uris, uriToLabel: uriToLabel};
 					
 					return result;
 				});	
@@ -168,6 +173,7 @@
 	// A cache instance that is shared among label fetcher instances
 	// NOTE Data based on different LabelFetcher
 	// configurations will go into the same cache.
+  // FIXME: LabelCollection not defined
 	ns.LabelFetcher.defaultCache = new collections.LabelCollection();
 
 	
@@ -192,7 +198,7 @@
 				for(var j in this.langs) {
 					var lang = this.langs[j];
 					
-					if(lang in langToLabel) {				
+					if(lang in langToLabel) {
 						label = langToLabel[lang];
 						
 						entries[uri] = {value: label, lang: lang};
@@ -220,14 +226,15 @@
 		var lookupResult = this.cacheLookup(uris, includeAllUris);
 		var result = lookupResult.entries;	
 		var lookups = lookupResult.notFound;
-	
+
+    // FIXME: filterUrisValidate not defined
 		lookups = uriUtils.filterUrisValidate(lookups);
 	
 		if(lookups.length === 0) {
 //			if(callback) {				
 //				callback(result);
 //			}
-			defer = $.Deferred();
+			var defer = $.Deferred();
 			defer.resolve({uris: uris, uriToLabel: result});
 			//defer.promise();
 			return defer.promise();
@@ -263,11 +270,13 @@
 	
 		//var self = this;
 		//alert(queryString);
-		var deferred = this.sparqlService.executeSelect(queryString).pipe(function(rs) {	
+    // FIXME: executeSelect not defined
+		var deferred = this.sparqlService.executeSelect(queryString).pipe(function(rs) {
 			// Add the results to the cache
 			for(var i in rs.results.bindings) {
 				var binding = rs.results.bindings[i];
-				
+
+        // FIXME: u not defined
 				var uri = binding.u.value;
 				var labelNode = binding.l;
 				

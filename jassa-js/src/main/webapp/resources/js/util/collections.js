@@ -361,7 +361,7 @@
 		}
 		
 		return result;
-	}
+	};
 	
 	
 	/**
@@ -375,13 +375,13 @@
 	    },
 	    
 	    put: function(key, value) {
-	        var v = map.get(key);
+	        var v = this.map.get(key);
 	        if(v) {
 	            throw 'Key ' + v + ' already inserted';
 	        }
 	        
 	        this.keys.push(key);
-	        map.put(key, value);
+	        this.map.put(key, value);
 	    },
 	    
 	    get: function(key) {
@@ -522,7 +522,7 @@
 			var result = [];
 			
 			_.each(this.hashToBucket, function(bucket) {
-				var keys = _(bucket).pluck('key')
+				var keys = _(bucket).pluck('key');
 				result.push.apply(result, keys);
 			});
 			
@@ -664,7 +664,7 @@
 	
 	        var result = !!found;
 	        return result;
-	    },
+	    }
 	    
 	    /*
 	    get: function(index) {

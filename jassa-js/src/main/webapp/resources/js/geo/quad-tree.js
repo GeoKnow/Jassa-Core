@@ -205,8 +205,9 @@
 	
 	
     	addItems: function(idToPos) {
+          var id;
     	    for(id in idToPos) {
-    	        pos = idToPos[id];
+    	        var pos = idToPos[id];
 			
     	        this.addItem(id, pos);
     	    }
@@ -351,9 +352,10 @@
 	
 	
     	_findIndexPoint: function(point) {
+        // FIXME: bounds not defined
     		var center = this.getCenter(bounds);
-    		left = point.x < center.x;
-    		top = point.y > center.y;
+    		var left = point.x < center.x;
+    		var top = point.y > center.y;
     		
     		var index; 
     		if(left) {
@@ -361,13 +363,13 @@
     				index = Node.TOP_LEFT;
     			} else {
     				index = Node.BOTTOM_LEFT;
-    			};
+    			}
     		} else {
     			if(top) {
     				index = Node.TOP_RIGHT;
     			} else {
     				index = Node.BOTTOM_RIGHT;
-    			};
+    			}
     		}
     		
     		return index;	
@@ -410,6 +412,7 @@
     		var r = Math.max(w, h);
     		
     		// Stop recursion on encounter of a loaded node or leaf node or node that exceeded the depth limit
+        // FIXME: depth is not defined
     		if(this.isLoaded || !this.children || r >= depth) {
     			result.push(this);
     			return;
@@ -417,7 +420,7 @@
     		
     		for(i in this.children) {
     			var child = this.children[i];
-    			
+    			// FIXME: depth is not defined
     			child.queryRec(bounds, depth, result);
     		}	
     	},
@@ -506,7 +509,8 @@
     		if(!this.parent) {
     			return;
     		}
-    		
+
+        var i;
     		for(i in this.parent.children) {
     			var child = this.parent.children[i];
     			

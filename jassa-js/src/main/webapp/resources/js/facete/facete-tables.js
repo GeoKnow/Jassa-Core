@@ -336,7 +336,7 @@
         'count': new ns.ExprModFactoryAggCount,
         'min': new ns.ExprModFactoryAggMin,
         'max': new ns.ExprModFactoryAggMax
-    }
+    };
     
     
     ns.ElementFactoryFacetPaths = Class.create({
@@ -660,6 +660,7 @@
     ns.FaceteTable = Class.create({
         initialize: function() {
             //this.pathVarMap = pathVarMap;// Formerly called facetNode
+            // FIXME: varNode not defined!!!
             this.varNode = varNode;            
             this.paths = new util.ArrayList();
             this.tableMod = tableMod;
@@ -681,9 +682,11 @@
             var varName = target.getVarName();
             
             if(status) {
+                // FIXME: this.tableMode not defined
                 this.tableMode.addColumn(varName);
             }
             else {
+                // FIXME: this.tableMode not defined
                 this.tableMode.removeColumn(varName);
             }
         }
@@ -793,7 +796,7 @@
             if(columnId) {
                 this.removeColumn(columnId);
             } else {
-                var columnId = 'col_' + this.columnIds.length;
+                columnId = 'col_' + this.columnIds.length;
                 
                 this.putColumn(columnId, path);                
             }

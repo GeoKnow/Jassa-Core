@@ -47,7 +47,7 @@
     			else {
     			    setTimeout(doRefresh, 25);
     			}
-			}
+			};
 			
 			doRefresh();
 			

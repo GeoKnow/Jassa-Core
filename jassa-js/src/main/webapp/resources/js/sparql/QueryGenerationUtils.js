@@ -19,6 +19,7 @@
 
 	
 	ns.requireIntensionalConcept = function(concept) {
+    // FIXME: isIntensional not defined
 		if(!concept.isIntensional()) {
 			throw "Intensional concept required";
 		}
@@ -40,7 +41,7 @@
 			/*
 			 * Filter URIs
 			 */
-			
+			// FIXME: createFilterExpr not defined
 			var exprUri = createFilterExpr(new sparql.ExprVar(v), searchText);
 			finalOrs.push(exprUri);
 			
@@ -53,7 +54,8 @@
 
 			evLabels.push(evLabel);
 			
-			var triple = new rdf.Triple(v, rdfs.label, vLabel);				
+			var triple = new rdf.Triple(v, rdfs.label, vLabel);
+      // FIXME: createFilterExpr not defined
 			var exprLabel = createFilterExpr(evLabel, searchText);
 
 			var exprLang;
@@ -63,7 +65,9 @@
 				for(var j = 0; j < langTags.length; ++j) {
 					var langTag = langTags[j];
 					
-					var e = new sparql.E_LangMatches(new sparql.E_Lang(evLabel), sparql.Node.plainLit(langTag));
+					// var e = new sparql.E_LangMatches(new sparql.E_Lang(evLabel), sparql.Node.plainLit(langTag));
+          // TODO: check if the statement below is a correct interpretation of what was intended in the statement above
+          var e = new sparql.E_LangMatches(new sparql.E_Lang(evLabel), sparql.NodeFactory.createPlainLiteral(langTag));
 					
 					exprLangs.push(e);
 				}
@@ -123,7 +127,7 @@
 	// @Deprecated
 	function createDriverFallback(subjectVar) {
 		return ns.createSubjectConcept(subjectVar);
-	};
+	}
 
 	
 	/**
@@ -132,6 +136,7 @@
 	 * 
 	 */
 	ns.createQueryAnyResource = function(outputVar) {
+    // FIXME: ConceptInt not defined
 		var concept = new facets.ConceptInt(ns.createElementAnyResource(outputVar), outputVar);
 		var result = ns.createQuerySelect(concept, {distinct: true});
 		return result;
@@ -149,7 +154,7 @@
 		var result = new sparql.ElementUnion([
 		    new sparql.ElementTriplesBlock([new rdf.Triple(s, x, y)]),
 		    new sparql.ElementTriplesBlock([new rdf.Triple(x, s, y)]),
-		    new sparql.ElementTriplesBlock([new rdf.Triple(x, y, s)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(x, y, s)])
 		]);
 		
 		return result;
@@ -180,7 +185,7 @@
 		var result = new sparql.ElementUnion([
 		    new sparql.ElementTriplesBlock([new rdf.Triple(s, rdf.type, owl.Class)]),
 		    new sparql.ElementTriplesBlock([new rdf.Triple(x, rdfs.subClassOf, s)]),
-		    new sparql.ElementTriplesBlock([new rdf.Triple(s, rdfs.subClassOf, x)]),
+		    new sparql.ElementTriplesBlock([new rdf.Triple(s, rdfs.subClassOf, x)])
 		]);
 		
 		return result;
@@ -214,6 +219,7 @@
 	 * 
 	 */
 	ns.createQueryGetNamedGraphs = function(outputVar) {
+    // FIXME: ConceptInt not defined
 		var concept = new facets.ConceptInt(ns.createElementGetNamedGraphs(outputVar), outputVar);
 		var result = ns.createQuerySelect(concept, {distinct: true});
 
@@ -226,6 +232,7 @@
 	 * 
 	 */
 	ns.createQueryGetNamedGraphsFallback = function(outputVar) {
+    // FIXME: ConceptInt not defined
 		var concept = new facets.ConceptInt(ns.createElementGetNamedGraphsFallback(outputVar), outputVar);
 		var result = ns.createQuerySelect(concept, {distinct: true});
 
@@ -255,7 +262,7 @@
 	ns.createQuerySelectElement = function(element, vars, options) {
 		var result = new sparql.Query();
 		
-		_(vars).each(function(v)) {
+		_(vars).each(function(v){
 		    result.getProject().add(v);
 		});
 		//result.projectVars.addAll(vars);
@@ -334,6 +341,7 @@
 
 	ns.createDescribeQueryNodes = function(nodes) {		
 		var s = sparql.Node.v("__s");
+    // FIXME: E_In not defined
 		var element = new sparql.ElementFilter([new sparql.E_In(s, nodes)]);
 		var result = ns.createDescribeQuery(element, s);
 		return result;
@@ -385,7 +393,7 @@
 		//result.orderBy.push(new sparql.SortCondition(evIsValueOf));
 		
 		return result;
-	}
+	};
 
 	/**
      * SELECT DISTINCT ?property ?hasValue ?isValueOf
@@ -662,6 +670,8 @@
 		*/
 		
 		// TODO Order by ?o ?p
+    // FIXME: sparql.Order not defined
+    // FIXME: sparql.OrderDir not defined
 		q.order.push(new sparql.Order(new sparql.ExprVar(c), sparql.OrderDir.Desc));
 		
 		//console.log("Created query: " + q);
@@ -712,7 +722,7 @@
 		var optionalElement = new sparql.ElementTriplesBlock([new rdf.Triple(conceptVar, property, labelVar)]);
 		var optional = new sparql.ElementOptional(optionalElement);		
 
-		element = new sparql.ElementGroup();		
+		var element = new sparql.ElementGroup();
 		element.elements.push(optional);
 		element.elements.push(new sparql.ElementFilter([filterExpr]));
 
@@ -843,7 +853,7 @@
 		    subQuery.limit = sampleSize;
 		    result.elements.push(new sparql.ElementSubQuery(subQuery));
 		    
-		    tmp = subQuery;
+		    var tmp = subQuery;
 		}
 
 		//subQuery.elements.push(config.concept);
@@ -868,16 +878,17 @@
 		*/
 		
 		// TODO Order by ?o ?p
+    // FIXME: sparql.Order not defined
+    // FIXME: sparql.OrderDir not defined
 		result.order.push(new sparql.Order(new sparql.ExprVar(c), sparql.OrderDir.Desc));
 		
 		for(var i in outputVars) {
-			var outputVar = outputVars[i];			
+			var outputVar = outputVars[i];
+      // FIXME: sparql.Order not defined
+      // FIXME: sparql.OrderDir not defined
 			result.order.push(new sparql.Order(new sparql.ExprVar(outputVar), sparql.OrderDir.Asc));
 		}
 
-		
-		
-		
 		console.debug("Created query: " + result);
 		return {query: result, outputVars: outputVars };
 		
@@ -1086,6 +1097,7 @@
 	ns.createFacetQueryCountVisibleGeomNested = function(queryGenerator, uris) {
 
 		var concept = queryGenerator.concept;
+    // FIXME: getInferredDriver not defined
 		var inferredDriver = queryGenerator.getInferredDriver();
 
 		//var geoQueryFactory = this.queryGenerator.createQueryFactory();
@@ -1102,6 +1114,7 @@
 		var geomVarStr = queryGenerator.geoConstraintFactory.breadcrumb.targetNode.variable; //geoQueryFactory.geoConstraintFactory.breadcrumb.targetNode.variable;
 		var geomVarExpr = new sparql.ExprVar(sparql.Node.v(geomVarStr));
 		//console.log("geomVar", geomVar);
+    // FIXME: sparql.E_In not defined
 		var filterExpr = (uris.length === 0) ? sparql.NodeValue.False : new sparql.E_In(geomVarExpr, uris);
 		var filterElement = new sparql.ElementFilter([filterExpr]);
 
@@ -1128,6 +1141,7 @@
 		//var result = queryUtils.createFacetQueryCount(element, this.queryGenerator.concept.getVariable());
 		//var result = new facets.ConceptInt(element, queryGenerator.concept.getVariable());
 
+    // FIXME: ConceptInt not defined
 		var result = new facets.ConceptInt(element, inferredDriver.variable);
 
 
@@ -1177,8 +1191,10 @@
 	 */
 	ns.createFacetQueryCountVisibleGeomSimple = function(queryGenerator, uris) {
 
+    // FIXME: createQueryFactory not defined
 		var geoQueryFactory = queryGenerator.createQueryFactory();
 
+    // FIXME: geoQueryFactory.baseQuery not defined
 		var baseQuery = geoQueryFactory.baseQuery;
 		//var baseElement = new sparql.ElementGroup(baseQuery.elements.slice(0)); // create a copy of the original elements
 		var elements = baseQuery.elements.slice(0);
@@ -1186,6 +1202,7 @@
 		var geomVarStr = geoQueryFactory.geoConstraintFactory.breadcrumb.targetNode.variable;
 		var geomVarExpr = new sparql.ExprVar(sparql.Node.v(geomVarStr));
 		//console.log("geomVar", geomVar);
+    // FIXME: sparql.E_In not defined
 		var filterExpr = (uris.length === 0) ? sparql.NodeValue.False : new sparql.E_In(geomVarExpr, uris);
 		var filterElement = new sparql.ElementFilter([filterExpr]);
 		
@@ -1193,7 +1210,7 @@
 
 		var element = new sparql.ElementGroup(elements);
 		
-		
+		// FIXME: this.queryGenerator not defined
 		var inferredDriver = this.queryGenerator.getInferredDriver();
 		
 		var result = queryUtils.createFacetQueryCount(element, inferredDriver.variable);
@@ -1345,6 +1362,7 @@
 		//
 		var maxCount = 1001;
 
+    // FIXME: getSubFacets not defined
 		var knownFacets = config.getRoot().getSubFacets().asArray();
 		
 		if(!knownFacets) {

@@ -190,6 +190,7 @@
 		 */
 		
 		getSchema: function() {
+      // FIXME: schema not defined
 			return schema;
 		}
 	});

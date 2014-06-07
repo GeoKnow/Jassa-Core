@@ -20,7 +20,7 @@
         initialize: function(joinBuilder, alias, targetJoinVars) {
             this.joinBuilder = joinBuilder;
             this.alias = alias;
-            this.targetJoinVars;
+            this.targetJoinVars = targetJoinVars;
         },
         
         getJoinBuilder: function() {
@@ -395,8 +395,7 @@
             var rootNode = this.getRootNode();
             
             var result = this.getElementsRec(rootNode);
-            return result;
-            
+
             //var result = [];
             /*
             var rootNode = this.getRootNode();
@@ -426,9 +425,10 @@
 
     ns.JoinBuilderUtils = {
         getChildren: function(node) {
+            // FIXME: getJoinNodes not defined
             return node.getJoinNodes();
         }
-    }
+    };
 
     ns.JoinBuilderElement.create = function(rootElement, rootAlias, defaultJoinVars) {
         
@@ -448,6 +448,7 @@
      * 
      */
     ns.JoinBuilderElement.createWithEmptyRoot = function(varNames, rootAlias) {
+        // FIXME: varNamesToNodes not defined
         var vars = sparql.VarUtils.varNamesToNodes(varNames);
         
         var joinBuilder = new ns.JoinBuilderElement(null, vars, rootAlias);

@@ -82,7 +82,8 @@
             
             var result;
             if(prefix) {
-                var u = this.prefixes[u];
+
+                var u = this.prefixes[uri];
                 var qname = uri.substring(u.length);
                 
                 result = prefix + ':' + qname;
@@ -90,7 +91,7 @@
                 result = uri;
             }
             
-            return resul;t
+            return result;
         },
         
         addPrefix: function(prefix, urlBase) {

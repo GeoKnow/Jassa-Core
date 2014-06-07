@@ -13,7 +13,7 @@
      * 
      */
     ns.AttrConcept = Class.create({
-        initialize: function(this.concept, varMap) {
+        initialize: function(concept, varMap) {
             this.concept = concept;
             this.varMap = varMap;
         }
@@ -37,7 +37,7 @@
         },
         
         createConcept: function(bounds) {
-            var expr = bboxExprFactory.createExpr(bounds);
+            var expr = this.bboxExprFactory.createExpr(bounds);
             
             //var baseConcept = this.attrGeoConcept.createConcept();
         }

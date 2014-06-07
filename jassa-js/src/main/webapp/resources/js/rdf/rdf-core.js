@@ -722,19 +722,19 @@
 		        var d = str.charAt(l);
 		        
 		        if(!d) {
-                    var result = ns.NodeFactory.createTypedLiteralFromString(val, 'http://www.w3.org/2001/XMLSchema#string');		            
+                    result = ns.NodeFactory.createTypedLiteralFromString(val, 'http://www.w3.org/2001/XMLSchema#string');
 		        }
 		        //console.log('d is ' + d);
 		        switch(d) {
 		        case '':
 		        case '@':
-		            var langTag = str.substr(l + 1)
-		            var result = ns.NodeFactory.createPlainLiteral(val, langTag);
+		            var langTag = str.substr(l + 1);
+		            result = ns.NodeFactory.createPlainLiteral(val, langTag);
 		            break;
 		        case '^':
 		            var type = str.substr(l + 2);
 		            var typeStr = ns.parseUri(type);
-		            var result = ns.NodeFactory.createTypedLiteralFromString(val, typeStr);
+		            result = ns.NodeFactory.createTypedLiteralFromString(val, typeStr);
 		            break;
 		        default: 
 	                console.log('[ERROR] Excepted @ or ^^');

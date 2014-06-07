@@ -485,6 +485,7 @@
 			}
 			
 			// FIXME: Should we clone the attributes too?
+      // FIXME: query not defined
 			var result = new ns.ElementSubQuery(query);
 			return result;
 		},
@@ -1000,7 +1001,7 @@
 					arr.push("(" + expr + " As " + v + ")");
 				} else {
 					arr.push("" + v);				
-				};
+				}
 			}
 			
 			var result = arr.join(" ");
@@ -1130,15 +1131,7 @@
 		getOffset: function() {
 		    return this.offset;
 		},
-		
-		setLimit: function(limit) {
-		    this.limit = limit;
-		},
-		
-		setOffset: function(offset) {
-		    this.offset = offset;
-		},
-		
+
 		toStringOrderBy: function() {
 			var result = (this.orderBy && this.orderBy.length > 0)
 				? "Order By " + this.orderBy.join(" ") + " "
@@ -1258,7 +1251,7 @@
 				this.setDistinct(options.distinct);
 			}
 		},
-		
+
 		setOffset: function(offset) {
 			this.offset = offset ? offset : null;
 		},
@@ -1373,7 +1366,7 @@
 					next.push(new ctor(a, b));
 				} else {
 					next.push(a);
-				};
+				}
 			}
 			
 			open = next;

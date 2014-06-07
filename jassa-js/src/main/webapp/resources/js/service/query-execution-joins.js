@@ -18,6 +18,7 @@
     
     ns.BufferSet = Class.create(ns.Buffer, {
         initialize: function(maxItemCount) {
+            // FIXME: util.SetList not defined
             this.data = new util.SetList();
             this.maxItemCount = maxItemCount;
         },
@@ -85,7 +86,8 @@
                     exprsKey: exprsKey
                 });
             }
-            
+
+            // FIXME: expr not defined
             var elementFilter = new sparql.ElementFilter(expr);
             
 //            var filteredElement = new sparql.ElementGroup([
@@ -128,10 +130,11 @@
         
         $prefetch: function() {
             var maxBufferSize = 20;
-            var buffer = []
+            var buffer = [];
             
             
             // Fill the buffer
+            // FIXME: rsA not defined
             while(rsA.hasNext()) {
             
                 
@@ -139,6 +142,7 @@
             
             // If either the buffer is full or there are no more bindings in rsa,
             // Execute the join
+            // FIXME: rsa not defined
             if(buffer.isFull() || !rsa.hasNext()) {
                 
             }

@@ -32,7 +32,7 @@
 		},
 		
 		getSchema: function() {
-			return schema;
+			return this.schema;
 		},
 		
 		toString: function() {
@@ -231,7 +231,7 @@
 			
 			context.getSchema().addTable(table);
 			
-			context.mapTableNameToElement(name, element);
+			context.mapTableNameToElementFactory(name, element);
 			
 		},
 		
@@ -292,11 +292,13 @@
 	
 			var sourceColumns;
 			var targetColumns;
-			
+
+      // FIXME: joinColumn not defined
 			if(stub.joinColumn) {
 				sourceColumns = [stub.joinColumn];
 			}
-			
+
+      // FIXME: refJoinColumn not defined
 			if(stub.refJoinColumn) {
 				targetColumns = [stub.refJoinColumn];
 			}

@@ -34,6 +34,7 @@
 			}
 			else if(expr.isConstant()) {
 				var e = expr.getConstant();
+        // FIXME: this.evalConstant not defined
 				result = this.evalConstant(e, binding);
 			}
 			else {

@@ -91,7 +91,7 @@
 		consumeResultSet: function(rs) {
 			while(rs.hasNext()) {
 				rs.nextBinding();
-			};
+			}
 		},
 			
 		resultSetToList: function(rs, variable) {
@@ -220,7 +220,7 @@
 		createSparqlRequestAjaxSpec: function(baseUrl, defaultGraphIris, queryString, dataDefaults, ajaxDefaults) {
             var data = {
                 'query': queryString,
-                'default-graph-uri': defaultGraphIris,
+                'default-graph-uri': defaultGraphIris
             };
 
             var result = {

@@ -299,7 +299,7 @@
         },
         
         toString: function() {
-            return '(' + attrPath + ' ' + this.opName + ' ' + this.value + ')'; 
+            return '(' + this.attrPath + ' ' + this.opName + ' ' + this.value + ')';
         }
     });
 
@@ -526,7 +526,7 @@
 				});
 
 				return itemMatch;				
-			})
+			});
 			
 			return result;
 		},
