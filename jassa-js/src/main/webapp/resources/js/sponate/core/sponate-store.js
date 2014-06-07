@@ -506,7 +506,6 @@
 			}
 			//query.setLimit(10);
 			
-<<<<<<< HEAD
 			var rsPromise;
 			if(spec.nodes) {
 			    rsPromise = service.ServiceUtils.execSelectForNodes(this.sparqlService, query, idVar, spec.nodes);
@@ -515,57 +514,6 @@
 	            var qe = this.sparqlService.createQueryExecution(query);
 	            rsPromise = qe.execSelect();			    
 			}
-=======
-			
-			// TODO: We need to deal with references
-			var processResult = function(it) {
-				var instancer = new ns.AggregatorFacade(pattern);
-				//var instancer = new sponate.PatternVisitorData(pattern);
-				//var instancer = new sponate.FactoryAggregator();
-				// TODO
-				
-				while(it.hasNext()) {
-					var binding = it.nextBinding();
-					
-					instancer.process(binding);
-				}
-				
-				var json = instancer.getJson(retainRdfNodes);
-				
-				
-				
-				//console.log('Final json: ' + JSON.stringify(json));
-				
-				var result;
-				if(_(json).isArray()) {
-
-				    var filtered;
-				    if(retainRdfNodes) {
-				        filtered = json;
-				    }
-				    else {
-    					filtered = _(json).filter(function(item) {
-    						var isMatch = criteria.match(item);
-    						return isMatch;
-    					});
-    					
-    					var all = json.length;
-    					var fil = filtered.length;
-    					var delta = all - fil;
-    
-    					console.log('[DEBUG] ' + delta + ' items filtered on the client ('+ fil + '/' + all + ' remaining) using criteria ' + JSON.stringify(criteria));
-				    }
-
-				    result = new util.IteratorArray(filtered);
-				    
-				} else {
-				    console.log('[ERROR] Implement me');
-					throw 'Implement me';
-				}
-				
-				return result;
-			};
->>>>>>> b147c3ff2f4278690ae03b7b2a32bce8eb86e5c8
 
 			var result = rsPromise.pipe(function(rs) {
 			    var r = ns.SponateUtils.processResultSet(rs, pattern, retainRdfNodes, false);
