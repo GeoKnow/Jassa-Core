@@ -1065,7 +1065,7 @@
 			if(!this.tableExecutor) {
 				self.paginatorModel.set({pageCount: 1});
 				return;
-			};
+			}
 
 			var result = $.Deferred();
 
@@ -1109,7 +1109,7 @@
 				sampleTask.pipe(successAction);
 				
 				sampleTask.fail(function() {
-					console.log("[ERROR] Timout encountered during fallback sampling strategy - returning only 1 page")
+					console.log("[ERROR] Timout encountered during fallback sampling strategy - returning only 1 page");
 					
 					self.paginatorModel.set({
 						isLoadingPageCount: false
