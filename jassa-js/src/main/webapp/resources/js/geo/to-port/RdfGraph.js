@@ -127,4 +127,4 @@ RdfGraph.prototype = {
 			
 			return result;
 		}
-}
+};
