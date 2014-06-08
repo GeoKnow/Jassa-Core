@@ -223,6 +223,8 @@
         
         /**
          * Removes a column by id
+         * 
+         * Also removes dependent objects, such as sort conditions and aggregations 
          */
         removeColumn: function(columnId) {
             delete this.colIdToColView[columnId];
@@ -231,8 +233,13 @@
             util.ArrayUtils.filter(this.columnIds, function(cid) {            
                 var r = columnId != cid;
                 return r;
-             });
+            });
             
+            util.ArrayUtils.filter(this.sortConditions, function(sc) {
+                var r = columnId != sc.getColumnId();
+            });
+
+            delete this.colIdToAgg[columnId];
         }
     });
 
@@ -380,6 +387,7 @@
     });
 
     
+    // TODO: Maybe this class should be TableModFacet and inherit from TableMod?
     ns.FacetTableConfig = Class.create({
         initialize: function(facetConfig, tableMod, paths) {
             this.facetConfig = facetConfig;
@@ -398,7 +406,22 @@
         getPaths: function() {
             return this.paths;
         },        
-
+                
+        /**
+         * Return the path for a given column id
+         */
+        getPath: function(colId) {
+            var index = _(this.tableMod.getColumnIds()).indexOf(colId);
+            var result = this.paths.get(index);
+            return result;
+        },
+        
+        getColumnId: function(path) {
+            var index = _(this.paths.toArray()).indexOf(path);
+            result = this.tableMod.getColumnIds()[index];
+            return result;
+        },
+        
         togglePath: function(path) {
             // Updates the table model accordingly
             var status = util.CollectionUtils.toggleItem(this.paths, path);

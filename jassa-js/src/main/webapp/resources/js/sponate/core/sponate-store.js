@@ -25,6 +25,11 @@
 			this.nodes = nodes;
 		},
 		
+		shallowClone: function() {
+		    var r = new ns.QueryConfig(this.criteria, this.limit, this.offset, this.concept, this._isLeftJoin, this.nodes);
+		    return r;
+		},
+		
 		getCriteria: function() {
 			return this.criteria;		
 		},
@@ -249,7 +254,7 @@
 		
 		
 
-		createQueries: function(config) {
+		createQuerySpec: function(config) {
 			// TODO Compile the criteria to
 			// a) SPARQL filters
 			// b) post processors
@@ -260,6 +265,7 @@
 			var offset = config.getOffset();
 			var concept = config.getConcept();
 			var isLeftJoin = config.isLeftJoin();
+			var nodes = config.getNodes();
 			
 			//console.log('context', JSON.stringify(this.context), this.context.getNameToMapping());
 			
@@ -425,14 +431,16 @@
                 innerElement: innerElement,
                 outerElement: outerElement,
                 idVar: idVar,
+                idExpr: idExpr,
                 vars: vars,
                 sortConditions: sortConditions,
                 pattern: pattern,
-                criteria: criteria
+                criteria: criteria,
+                nodes: nodes
             };
             
-            console.log('innerElement: ' + innerElement);
-            console.log('outerElement: ' + outerElement);
+            //console.log('innerElement: ' + innerElement);
+            //console.log('outerElement: ' + outerElement);
             
 
             
@@ -441,7 +449,7 @@
 
 		
 		execute: function(config, retainRdfNodes) {
-		    var spec = this.createQueries(config);
+		    var spec = this.createQuerySpec(config);
 		    
 		    var result = this.executeData(spec, retainRdfNodes);
 		    
@@ -449,7 +457,13 @@
 		},
 		
 		executeCount: function(config) {
-            var spec = this.createQueries(config);
+            var spec = this.createQuerySpec(config);
+
+            if(spec.nodes) {
+                console.log('Counting if nodes are provided is not implemented yet');
+                throw 'Counting if nodes are provided is not implemented yet';
+            }
+                
 
             var element = spec.innerElement;
             var idVar = spec.idVar;
@@ -467,6 +481,7 @@
 		    var outerElement = spec.outerElement;
         // FIXME: spec.idExpr not defined
 		    var idExpr = spec.idExpr;
+		    var idVar = spec.idVar;
 		    var sortConditions = spec.sortConditions;
 		    var vars = spec.vars;
 		    var pattern = spec.pattern;
@@ -491,59 +506,19 @@
 			}
 			//query.setLimit(10);
 			
-			
-			// TODO: We need to deal with references
-			var processResult = function(it) {
-				var instancer = new ns.AggregatorFacade(pattern);
-				//var instancer = new sponate.PatternVisitorData(pattern);
-				//var instancer = new sponate.FactoryAggregator();
-				// TODO
-				
-				while(it.hasNext()) {
-					var binding = it.nextBinding();
-					
-					instancer.process(binding);
-				}
-				
-				var json = instancer.getJson(retainRdfNodes);
-				
-				
-				
-				//console.log('Final json: ' + JSON.stringify(json));
-				
-				var result;
-				if(_(json).isArray()) {
+			var rsPromise;
+			if(spec.nodes) {
+			    rsPromise = service.ServiceUtils.execSelectForNodes(this.sparqlService, query, idVar, spec.nodes);
+			}
+			else {
+	            var qe = this.sparqlService.createQueryExecution(query);
+	            rsPromise = qe.execSelect();			    
+			}
 
-				    var filtered;
-				    if(retainRdfNodes) {
-				        filtered = json;
-				    }
-				    else {
-    					filtered = _(json).filter(function(item) {
-    						var isMatch = criteria.match(item);
-    						return isMatch;
-    					});
-    					
-    					var all = json.length;
-    					var fil = filtered.length;
-    					var delta = all - fil;
-    
-    					console.log('[DEBUG] ' + delta + ' items filtered on the client ('+ fil + '/' + all + ' remaining) using criteria ' + JSON.stringify(criteria));
-				    }
-
-				    result = new util.IteratorArray(filtered);
-				    
-				} else {
-				    console.log('[ERROR] Implement me');
-					throw 'Implement me';
-				}
-				
-				return result;
-			};
-
-			
-			var qe = this.sparqlService.createQueryExecution(query);
-			var result = qe.execSelect().pipe(processResult);			
+			var result = rsPromise.pipe(function(rs) {
+			    var r = ns.SponateUtils.processResultSet(rs, pattern, retainRdfNodes, false);
+			    return r;
+			});
 			
 			return result;
 			//console.log('' + query);
@@ -727,3 +702,52 @@ or simply: Angular + Magic Sparql = Angular Marql
  * 
  */
 
+//  var processResult = function(it) {
+//  var instancer = new ns.AggregatorFacade(pattern);
+//  //var instancer = new sponate.PatternVisitorData(pattern);
+//  //var instancer = new sponate.FactoryAggregator();
+//  // TODO
+//  
+//  while(it.hasNext()) {
+//      var binding = it.nextBinding();
+//      
+//      instancer.process(binding);
+//  }
+//  
+//  var json = instancer.getJson(retainRdfNodes);
+//  
+//  
+//  
+//  //console.log('Final json: ' + JSON.stringify(json));
+//  
+//  var result;
+//  if(_(json).isArray()) {
+//
+//      var filtered;
+//      if(retainRdfNodes) {
+//          filtered = json;
+//      }
+//      else {
+//          var filtered = _(json).filter(function(item) {                                              
+//              var isMatch = criteria.match(item);
+//              return isMatch;
+//          })
+//          
+//          var all = json.length;
+//          var fil = filtered.length;
+//          var delta = all - fil;
+//
+//          console.log('[DEBUG] ' + delta + ' items filtered on the client ('+ fil + '/' + all + ' remaining) using criteria ' + JSON.stringify(criteria));
+//      }
+//
+//      result = new util.IteratorArray(filtered);
+//      
+//  } else {
+//      console.log('[ERROR] Implement me');
+//      throw 'Implement me';
+//  }
+//  
+//  return result;
+//};
+//
+//
