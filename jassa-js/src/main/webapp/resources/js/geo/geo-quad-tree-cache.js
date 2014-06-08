@@ -2,6 +2,8 @@
     
     var ns = Jassa.geo;
     var xsd = Jassa.xsd;
+    var sparql = Jassa.sparql;
+    var sponate = Jassa.sponate;
 
     var defaultDocWktExtractorFn = function(doc) {
         var wktStr = doc.wkt;
@@ -109,7 +111,7 @@
             
 
             
-            this.fnGetBBox = fnGetBBox || ns.defaultDocWktExtractorFn;
+            this.fnGetBBox = fnGetBBox || defaultDocWktExtractorFn;
         },
 
         
@@ -642,10 +644,13 @@
     
         for(var i in parent.children) {
             var child = parent.children[i];
-            
+
+            // FIXME: mergeMapsInPlace not defined
             mergeMapsInPlace(parent.idToPos, child.idToPos);
-            
+
+            // FIXME: mergeMapsInPlace not defined
             mergeMapsInPlace(parent.data.idToLabels, child.data.idToLabels);
+            // FIXME: mergeMapsInPlace not defined
             mergeMapsInPlace(parent.data.idToTypes, child.data.idToTypes);
             
             //parent.data.ids.addAll(child.data.ids);

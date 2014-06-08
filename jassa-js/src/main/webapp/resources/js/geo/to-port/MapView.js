@@ -534,7 +534,7 @@ var appvocab = Namespace("org.aksw.ssb.vocabs.appvocab");
 				var model = items.get(id);
 				
 				if(!model) {
-					console.log('[WARN] Event canceled: Got unselection event of feature, but no data associated with it.')
+					console.log('[WARN] Event canceled: Got unselection event of feature, but no data associated with it.');
 					return;
 				}
 
@@ -611,7 +611,7 @@ var appvocab = Namespace("org.aksw.ssb.vocabs.appvocab");
 	    		var attributes = {
 	    				id: uri,
 	    				json: jsonClone
-	    		}
+	    		};
 	    		
 	    		var labels = rdfGraph.getStrings(uri, "http://www.w3.org/2000/01/rdf-schema#label", ["en", "de", ""]);
 	    		if(labels.length > 0) {

@@ -418,7 +418,7 @@
     			return;
     		}
     		
-    		for(i in this.children) {
+    		for(var i in this.children) {
     			var child = this.children[i];
     			// FIXME: depth is not defined
     			child.queryRec(bounds, depth, result);
