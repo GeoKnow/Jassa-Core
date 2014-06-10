@@ -147,8 +147,8 @@ alse exist the `Expr` and `Element` class hierarchies known from Apache Jena.
 Example usage:
 
 ```js
-var rdf = Jassa.rdf;
-var sparql = Jassa.sparql;
+var rdf = jassa.rdf;
+var sparql = jassa.sparql;
 
 var query = new sparql.Query();
 var s = rdf.NodeFactory.createVar("s");
@@ -157,7 +157,7 @@ var o = rdf.NodeFactory.createVar("o");
 
 var triple = new rdf.Triple(s, p, o);
 
-query.setElement(new sparql.ElementTriplesBlock([triple]));
+query.setQueryPattern(new sparql.ElementTriplesBlock([triple]));
 query.setResultStar(true);
 query.setLimit(10);
 

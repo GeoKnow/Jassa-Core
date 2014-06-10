@@ -124,7 +124,8 @@
     
     
     /**
-     * Object that holds modifications to a table
+     * Object that holds configuration for modifications to a table.
+     * Needs to be interpreted by another object.
      * 
      * { myCol1: {sortDir: 1, aggName: sum, path: foo}, ... }
      * - sum(?varForFoo) As myCol1
@@ -388,7 +389,7 @@
 
     
     // TODO: Maybe this class should be TableModFacet and inherit from TableMod?
-    ns.FacetTableConfig = Class.create({
+    ns.TableConfigFacet = Class.create({
         initialize: function(facetConfig, tableMod, paths) {
             this.facetConfig = facetConfig;
             this.tableMod = tableMod || new ns.TableMod();
@@ -470,16 +471,16 @@
     });
 
     ns.QueryFactoryFacetTable = Class.create(ns.QueryFactory, {
-        initialize: function(facetTableConfig) {
-            this.facetTableConfig = facetTableConfig;
+        initialize: function(tableConfigFacet) {
+            this.tableConfigFacet = tableConfigFacet;
         },
         
         createQuery: function() {
-            var facetConfig = this.facetTableConfig.getFacetConfig();
+            var facetConfig = this.tableConfigFacet.getFacetConfig();
             
             // TODO Possible source of confusion: the config uses a collection for paths, but here we switch to a native array 
-            var paths = this.facetTableConfig.getPaths().getArray();
-            var tableMod = this.facetTableConfig.getTableMod();
+            var paths = this.tableConfigFacet.getPaths().getArray();
+            var tableMod = this.tableConfigFacet.getTableMod();
 
             
             var elementFactory = new ns.ElementFactoryFacetPaths(facetConfig, paths);
