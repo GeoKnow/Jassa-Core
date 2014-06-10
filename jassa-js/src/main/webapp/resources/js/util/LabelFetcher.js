@@ -84,7 +84,7 @@
 			fetch: function(uriStrs) {
 
         // FIXME: filterUrisValidate not defined
-				validUriStrs = uriUtils.filterUrisValidate(uriStrs);
+				var validUriStrs = uriUtils.filterUrisValidate(uriStrs);
 				
 				var uris = _.map(validUriStrs, function(uriStr) {
 					return sparql.Node.uri(uriStr);

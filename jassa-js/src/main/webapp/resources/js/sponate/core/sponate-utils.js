@@ -46,7 +46,7 @@
                     var filtered = _(json).filter(function(item) {                                              
                         var isMatch = criteria.match(item);
                         return isMatch;
-                    })
+                    });
                     
                     var all = json.length;
                     var fil = filtered.length;

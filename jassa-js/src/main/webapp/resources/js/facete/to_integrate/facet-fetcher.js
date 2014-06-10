@@ -61,7 +61,7 @@
 			var tmpConcept = facetFacadeNode.createConcept(true);
 			var unconstrainedConcept = ns.ConceptUtils.createCombinedConcept(this.baseConcept, tmpConcept);
 			
-		}
+		},
 				
 		
 		//createFacetQuery: funct

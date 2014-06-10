@@ -1,6 +1,7 @@
 (function() {
 
     var ns = Jassa.geo;
+    var sparql = Jassa.sparql;
     
     
     ns.GeoExprUtils = {
