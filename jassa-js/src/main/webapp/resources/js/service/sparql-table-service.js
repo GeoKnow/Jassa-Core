@@ -95,8 +95,80 @@
            });
            
            return result;           
-       }
+       },
        
+       
+       createNgGridOptionsFromQuery: function(query) {
+       },
+
+
+       collectNodes: function(rows) {
+           // Collect nodes
+           var result = [];
+           _(rows).each(function(item, k) {
+               _(item).each(function(node) {
+                   result.push(node);
+               });
+           });
+
+           _(result).uniq(false, function(x) { return '' + x; });
+           
+           return result;
+       },
+
+       fetchSchemaTableConfigFacet: function(tableConfigFacet, lookupServicePathLabels) {
+           var paths = tableConfigFacet.getPaths().getArray();
+           
+           // We need to fetch the column headings
+           var promise = lookupServicePathLabels.lookup(paths);
+           
+           var result = promise.pipe(function(map) {
+               
+               var colDefs = _(paths).map(function(path) {
+                   var r = {
+                       field: tableConfigFacet.getColumnId(path),
+                       displayName: map.get(path),
+                       path: path
+                   };
+                   return r;
+               });
+
+               var r = {
+                   colDefs: colDefs
+               };
+
+               return r;
+           });
+           
+           return result;           
+       },
+
+       // rows is expected to be a List<Map<String, Node>>
+       transformToNodeLabels: function(lookupServiceNodeLabels, rows) {
+           
+           var nodes = this.collectNodes(rows);
+           
+           // Get the node labels
+           var p = lookupServiceNodeLabels.lookup(nodes);
+           
+           // Transform every node
+           var result = p.pipe(function(nodeToLabel) {
+               var r = _(rows).map(function(row) {
+                   var r = {};
+                   _(row).each(function(node, key) {
+                       var label = nodeToLabel.get(node);
+                       r[key] = {
+                           node: node,
+                           displayLabel: label
+                       };
+                   });
+                   return r;
+               });
+               return r;                    
+           });
+           
+           return result;
+       }
     };
 
     ns.TableService = Class.create({
@@ -128,11 +200,25 @@
             console.log('Implement me');
             throw 'Implement me';            
         }
+        
+        /**
+         * For identical hash codes, the response of the fetchData method is assumed to
+         * be the same
+         */
+//        getDataConfigHash: function() {
+//            console.log('Implement me');
+//            throw 'Implement me';                        
+//        },
+//        
+//        getSchemaConfigHash: function() {
+//            console.log('Implement me');
+//            throw 'Implement me';
+//        }
     });
 
 
 
-    ns.TableServiceSparqlQuery = Class.create(ns.TableService, {
+    ns.TableServiceQuery = Class.create(ns.TableService, {
         /**
          * TODO Possibly add primaryCountLimit - i.e. a limit that is never counted beyond, even if the backend might be fast enough
          */
@@ -143,11 +229,20 @@
             this.secondaryCountLimit = secondaryCountLimit || 1000;
         },
         
+//        getDataConfigHash: function() {
+//            var query = this.queryFactory.createQuery();
+//            var result = '' + query;
+//            return result;
+//            //return '' + this.queryFactory.createQuery();
+//        },
+//        
+//        getSchemaConfigHash: function() {
+//            return '' + this.query;
+//        },
+        
         fetchSchema: function() {
-            var query = this.query;
-
             var schema = {
-                colDefs: ns.TableServiceUtils.createNgGridOptionsFromQuery(query)
+                colDefs: ns.TableServiceUtils.createNgGridOptionsFromQuery(this.query)
             };
 
             var deferred = $.Deferred();
@@ -175,99 +270,37 @@
      * 
      */
     ns.TableServiceFacet = Class.create(ns.TableService, {
-        initialize: function(sparqlService, tableConfigFacet, lookupServiceNodeLabels, lookupServicePathLabels, timeoutInMillis, secondaryCountLimit) {
-            this.sparqlService = sparqlService;
+        initialize: function(tableServiceQuery, tableConfigFacet, lookupServiceNodeLabels, lookupServicePathLabels) {
+            this.tableServiceQuery = tableServiceQuery;
             this.tableConfigFacet = tableConfigFacet;
             this.lookupServiceNodeLabels = lookupServiceNodeLabels;
             this.lookupServicePathLabels = lookupServicePathLabels;
-            this.timeoutInMillis = timeoutInMillis;
-            this.secondaryCountLimit = secondaryCountLimit;
         },
         
         fetchSchema: function() {
-            var tableConfigFacet = this.tableConfigFacet;
-            
-            var paths = tableConfigFacet.getPaths().getArray();
-                        
-            // We need to fetch the column headings
-            var promise = this.lookupServicePathLabels.lookup(paths);
-            
-            var result = promise.pipe(function(map) {
-                
-                var colDefs = _(paths).map(function(path) {
-                    var r = {
-                        field: tableConfigFacet.getColumnId(path),
-                        displayName: map.get(path),
-                        path: path
-                    };
-                });
-
-                var r = {
-                    colDefs: colDefs
-                };
-
-                return r;
-            });
-            
+            // Ignores the schema of the underlying table Service
+            var result = ns.TableServiceUtils.fetchSchemaTableConfigFacet(this.tableConfigFacet, this.lookupServicePathLabels);
             return result;
         },
                 
         fetchCount: function() {
-            var result = ns.TableServiceUtils.fetchCount(this.sparqlService, this.query, this.timeoutInMillis, this.secondaryCountLimit);
+            var result = this.tableServiceQuery.fetchCount();
             return result;            
         },
-        
-        // TODO Rename function - its too generic
-        // It takes a Map<String, Node> and transforms it to Map<String, {node:, displayLabel: }>
-        // TODO An alternative would be to just put the map with the labels into the schema...
-        transformData: function(data) {
-            // Collect nodes
-            var nodes = [];
-            _(data).each(function(item, k) {
-                _(item).each(function(node) {
-                    nodes.push(node);                    
-                });
-            });
-            
-            // Get the node labels
-            var p = this.lookupServiceNodeLabels.lookup(nodes);
-            
-            // Transform every node
-            var result = p.pipe(function(nodeToLabel) {
-                var r = _(data).map(function(item) {
-                    var r = {};
-                    _(item).each(function(node, key) {
-                        var label = nodeToLabel.get(node);
-                        r[key] = {
-                            node: node,
-                            displayLabel: label
-                        };
-                    });
-                    return r;
-                });
-                return r;                    
-            });
-            
-            return result;
-        },
-        
+                
         fetchData: function(limit, offset) {
-            var promise = ns.TableServiceUtils.fetchData(this.sparqlService, this.query, limit, offset);
+            
+            var promise = this.tableServiceQuery.fetchData(limit, offset);
+            //var promise = ns.TableServiceUtils.fetchData(this.sparqlService, this.query, limit, offset);
 
             var self = this;
-            var result = promise.pipe(function(data) {
-                var r = self.transformData(data);
+            var result = promise.pipe(function(rows) {
+                var r = ns.TableServiceUtils.transformToNodeLabels(self.lookupServiceNodeLabels, rows);
                 return r;
             });
             
             return result;
-        },
-        
-        fetchCount: function() {
-            var result = ns.TableServiceUtils.fetchCount(this.sparqlService, this.query, this.timeoutInMillis, this.secondaryCountLimit);
-            return result;            
         }
-        
     });
     
     

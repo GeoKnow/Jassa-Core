@@ -418,8 +418,8 @@
         },
         
         getColumnId: function(path) {
-            var index = _(this.paths.toArray()).indexOf(path);
-            result = this.tableMod.getColumnIds()[index];
+            var index = this.paths.firstIndexOf(path);
+            var result = this.tableMod.getColumnIds()[index];
             return result;
         },
         
