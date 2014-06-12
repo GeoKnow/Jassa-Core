@@ -444,13 +444,13 @@
 	//ns.E_In = ns.E_OneOf
 	
 	ns.E_Str = Class.create(ns.ExprFunction1, {
-		initialize: function($super) {
-			$super('str');
+		initialize: function($super, subExpr) {
+			$super('str', subExpr);
 		}, 
 		
-		copySubstitute: function(fnNodeMap) {
-			return new ns.E_Str(this.subExpr.copySubstitute(fnNodeMap));
-		},
+//		copySubstitute: function(fnNodeMap) {
+//			return new ns.E_Str(this.subExpr.copySubstitute(fnNodeMap));
+//		},
 
 		getVarsMentioned: function() {
 			return this.subExpr.getVarsMentioned();
