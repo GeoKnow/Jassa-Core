@@ -68,12 +68,12 @@
 			return concept;
 		},
 		
-		createSubjectConcept: function(subjectVar) {
+		createSubjectConcept: function(s, p, o) {
 			
 			//var s = sparql.Node.v("s");
-			var s = subjectVar;
-			var p = sparql.Node.v("_p_");
-			var o = sparql.Node.v("_o_");
+			s = s || rdf.NodeFactory.createVar('s');
+			p = p || rdf.NodeFactory.createVar('_p_');
+			o = o || rdf.NodeFactory.createVar('_o_');
 			
 			var conceptElement = new sparql.ElementTriplesBlock([new rdf.Triple(s, p, o)]);
 

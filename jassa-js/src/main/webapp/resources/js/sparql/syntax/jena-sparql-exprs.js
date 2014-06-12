@@ -120,19 +120,28 @@
 		},
 		
 		getFunction: function() {
+		    console.log('Override me');
 			throw 'Override me';
 		},
 		
 		getExprVar: function() {
+            console.log('Override me');
 			throw 'Override me';
 		},
 		
 		getConstant: function() {
+            console.log('Override me');
 			throw 'Override me';
 		},
 		
 		copySubstitute: function(fnNodeMap) {
+            console.log('Override me');
 			throw 'Override me';
+		},
+		
+		copy: function(newArgs) {
+            console.log('Override me');
+            throw 'Override me';		    
 		}
 	});
 	
@@ -170,7 +179,7 @@
 		
 		copy: function(args) {
 			if(args && args.length > 0) {
-				throw "Invalid argument";
+				throw 'Invalid argument';
 			}
 
 			var result = new ns.ExprVar(this.v);
@@ -194,11 +203,16 @@
 		},
 		
 		toString: function() {
-			return "" + this.v;
+			return '' + this.v;
 		}
 	});
 
 	ns.ExprFunction = Class.create(ns.Expr, {
+	    getName: function() {
+	        console.log('Implement me');
+	        throw 'Implement me';
+	    },
+	    
 		isFunction: function() {
 			return true;
 		},
@@ -208,14 +222,45 @@
 		}
 	});
 
-	ns.ExprFunction0 = Class.create(ns.ExprFunction, {
+	ns.ExprFunctionBase = Class.create(ns.ExprFunction, {
+	    initialize: function(name) {
+	        this.name = name;
+	    },
+
+        copySubstitute: function(fnNodeMap) {
+            var args = this.getArgs();
+            var newArgs = _(args).map(function(arg) {
+                var r = arg.copySubstitute(fnNodeMap);
+                return r;
+            });
+            
+            var result = this.copy(newArgs);
+            return result;
+        },
+	    
+	    getVarsMentioned: function() {
+            var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+            return result;
+        },       
+
+        toString: function() {
+            var result = this.name + '(' + this.getArgs().join(', ') + ')';
+            return result;
+        }
+	});
+	
+	ns.ExprFunction0 = Class.create(ns.ExprFunctionBase, {
+	    initialize: function($super, name) {
+	        $super(name);
+	    },
+
 		getArgs: function() {
 			return [];
 		},
 
 		copy: function(args) {
 			if(args && args.length > 0) {
-				throw "Invalid argument";
+				throw 'Invalid argument';
 			}
 			
 			var result = this.$copy(args);
@@ -223,8 +268,10 @@
 		}
 	});
 
-	ns.ExprFunction1 = Class.create(ns.ExprFunction, {
-		initialize: function(subExpr) {
+
+	ns.ExprFunction1 = Class.create(ns.ExprFunctionBase, {
+		initialize: function($super, name, subExpr) {
+		    $super(name);
 			this.subExpr = subExpr;
 		},
 		
@@ -234,7 +281,7 @@
 
 		copy: function(args) {
 			if(args.length != 1) {
-				throw "Invalid argument";
+				throw 'Invalid argument';
 			}
 			
 			var result = this.$copy(args);
@@ -247,9 +294,10 @@
 	});
 
 
-	ns.ExprFunction2 = Class.create(ns.ExprFunction, {
-		initialize: function(left, right) {
-			this.left = left;
+	ns.ExprFunction2 = Class.create(ns.ExprFunctionBase, {
+		initialize: function($super, name, left, right) {
+			$super(name);
+		    this.left = left;
 			this.right = right;
 		},
 		
@@ -259,7 +307,7 @@
 
 		copy: function(args) {
 			if(args.length != 2) {
-				throw "Invalid argument";
+				throw 'Invalid argument';
 			}
 			
 			var result = this.$copy(args[0], args[1]);
@@ -272,16 +320,95 @@
 		
 		getRight: function() {
 			return this.right;
-		},
-		
-	    getVarsMentioned: function() {
-	        var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+		}		
+	});
+
+   ns.ExprFunctionN = Class.create(ns.ExprFunctionBase, {
+        initialize: function($super, name, args) {
+            $super(name);
+            this.args = args;
+        },
+        
+        getArgs: function() {
+            return this.args;
+        }
+
+//        copy: function(args) {
+////            if(args.length != 1) {
+////                throw 'Invalid argument';
+////            }
+//            
+//            var result = this.$copy(args);
+//            return result;
+//        }
+    });
+
+	ns.E_Function = Class.create(ns.ExprFunctionN, {
+	    initialize: function($super, name, args) {
+	        $super(name, args);
+	    },
+	    
+	    copy: function(newArgs) {
+	        var result = new ns.E_Function(this.name, newArgs);
 	        return result;
 	    }
+/*	    
+        copySubstitute: function(fnNodeMap) {
+            var newArgs = _(this.args).map(function(arg) {
+                var r = arg.copySubstitute(fnNodeMap);
+                return r;
+            });
+            
+            return new ns.E_Function(this.functionIri, newArgs);
+        },
+*/	    
 	});
+
+    /*
+    ns.E_Function = Class.create(ns.Expr, {
+        initialize: function(functionIri, args) {
+            this.functionIri = functionIri;
+            this.args = args;
+        },
+    
+        copySubstitute: function(fnNodeMap) {
+            var newArgs = _(this.args).map(function(arg) {
+                var r = arg.copySubstitute(fnNodeMap);
+                return r;
+            });
+            
+            return new ns.E_Function(this.functionIri, newArgs);
+        },
+    
+        getArgs: function() {
+            return this.args;
+        },
+    
+        copy: function(newArgs) {
+            return new ns.E_Function(this.functionIri, newArgs);
+        },
+    
+        toString: function() {
+            var argStr = this.args.join(", ");
+            
+            // TODO HACK for virtuoso and other cases
+            // If the functionIri contains a ':', we assume its a compact iri
+            var iri = '' + this.functionIri;
+            var fnName = (iri.indexOf(':') < 0) ? '<' + iri + '>' : iri;  
+            
+            var result = fnName + '(' + argStr + ')';
+            return result;
+        },
+        
+        getVarsMentioned: function() {
+            var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
+            return result;
+        }
+    });
+    */
+
 	
-
-
+	
 // TODO Change to ExprFunction1
 	ns.E_OneOf = Class.create(ns.Expr, {
 	    // TODO Jena uses an ExprList as the second argument
@@ -307,9 +434,9 @@
 		
 			if(!this.nodes || this.nodes.length === 0) {
 				// 
-				return "FALSE";
+				return 'FALSE';
 			} else {		
-				return "(" + this.lhsExpr + " In (" + this.nodes.join(", ") + "))";
+				return '(' + this.lhsExpr + ' In (' + this.nodes.join(', ') + '))';
 			}
 		}
 	});
@@ -317,9 +444,9 @@
 	//ns.E_In = ns.E_OneOf
 	
 	ns.E_Str = Class.create(ns.ExprFunction1, {
-//		initialize: function($super) {
-//			
-//		}, 
+		initialize: function($super) {
+			$super('str');
+		}, 
 		
 		copySubstitute: function(fnNodeMap) {
 			return new ns.E_Str(this.subExpr.copySubstitute(fnNodeMap));
@@ -335,7 +462,7 @@
 		},
 	
 		toString: function() {
-			return "str(" + this.subExpr + ")";
+			return 'str(' + this.subExpr + ')';
 		}
 	});
 	
@@ -361,7 +488,7 @@
 	
 			copy: function(args) {
 				if(args.length != 1) {
-					throw "Invalid argument";
+					throw 'Invalid argument';
 				}
 		
 				var newExpr = args[0];
@@ -415,52 +542,10 @@
 	};
 	
 
-
-	ns.E_Function = Class.create(ns.Expr, {
-	    initialize: function(functionIri, args) {
-    		this.functionIri = functionIri;
-    		this.args = args;
-    	},
-	
-    	copySubstitute: function(fnNodeMap) {
-    		var newArgs = _(this.args).map(function(arg) {
-    		    var r = arg.copySubstitute(fnNodeMap);
-    		    return r;
-    		});
-    		
-    		return new ns.E_Function(this.functionIri, newArgs);
-    	},
-	
-    	getArgs: function() {
-    	    return this.args;
-    	},
-	
-    	copy: function(newArgs) {
-    	    return new ns.E_Function(this.functionIri, newArgs);
-    	},
-	
-    	toString: function() {
-    		var argStr = this.args.join(", ");
-    		
-    		// TODO HACK for virtuoso and other cases
-    		// If the functionIri contains a ':', we assume its a compact iri
-    		var iri = '' + this.functionIri;
-    		var fnName = (iri.indexOf(':') < 0) ? '<' + iri + '>' : iri;  
-    		
-    		var result = fnName + '(' + argStr + ')';
-    		return result;
-    	},
-    	
-    	getVarsMentioned: function() {
-            var result = ns.PatternUtils.getVarsMentioned(this.getArgs());
-            return result;
-    	}
-	});
-	
 	
 	ns.E_Equals = Class.create(ns.ExprFunction2, {
 	    initialize: function($super, left, right) {
-	        $super(left, right);
+	        $super('=', left, right);
 	    },
 	    
 		copySubstitute: function(fnNodeMap) {
@@ -568,7 +653,7 @@
 	
 	ns.E_GreaterThan = Class.create(ns.ExprFunction2, {
 	    initialize: function($super, left, right) {
-	        $super(left, right);
+	        $super('>', left, right);
 	    },
 
 	    copySubstitute: function(fnNodeMap) {
@@ -590,7 +675,7 @@
 
 	ns.E_LessThan = Class.create(ns.ExprFunction2, {
         initialize: function($super, left, right) {
-            $super(left, right);
+            $super('<', left, right);
         },
 
         copySubstitute: function(fnNodeMap) {
@@ -612,7 +697,7 @@
 	
 	ns.E_LogicalAnd = Class.create(ns.ExprFunction2, {
         initialize: function($super, left, right) {
-            $super(left, right);
+            $super('&&', left, right);
         },
 
 	    copySubstitute: function(fnNodeMap) {
@@ -635,7 +720,7 @@
 	
 	ns.E_LogicalOr = Class.create(ns.ExprFunction2, {
         initialize: function($super, left, right) {
-            $super(left, right);
+            $super('||', left, right);
         },
 
 	    copySubstitute: function(fnNodeMap) {

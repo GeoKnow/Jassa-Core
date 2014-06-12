@@ -361,7 +361,10 @@
         }, 
 
 		flatten: function(elements) {
-			var result = _.map(elements, function(element) { return element.flatten(); });
+			var result = _(elements).map(function(element) {
+			    var r = element.flatten();
+			    return r;
+			});
 
 			return result;
 		},
@@ -375,10 +378,9 @@
 		flattenElements: function(elements) {
 			var result = [];
 			
-			var triples = [];
-			
+			// Flatten out ElementGroups by 1 level; collect filters
 			var tmps = [];
-			_.each(elements, function(item) {
+			_(elements).each(function(item) {
 				if(item instanceof ns.ElementGroup) {
 					tmps.push.apply(tmps, item.elements);
 				} else {
@@ -386,20 +388,37 @@
 				}
 			});
 			
-			_.each(tmps, function(item) {
+
+            var triples = [];
+            var filters = [];
+            var rest = [];
+			
+			// Collect the triple blocks
+			_(tmps).each(function(item) {
 				if(item instanceof ns.ElementTriplesBlock) {
 					triples.push.apply(triples, item.getTriples());
+                } else if(item instanceof ns.ElementFilter) {
+                    filters.push(item);
 				} else {
-					result.push(item);
+					rest.push(item);
 				}
 			});		
 
+			
+			
 			if(triples.length > 0) {			
 				var ts = ns.uniqTriples(triples);
 				
-				result.unshift(new ns.ElementTriplesBlock(ts));
+				result.push(new ns.ElementTriplesBlock(ts));
 			}
 			
+            result.push.apply(result, rest);
+
+            var uniqFilters = _(filters).uniq(false, function(x) {
+                return '' + x;
+            });
+            result.push.apply(result, uniqFilters);
+
 			//console.log("INPUT ", elements);
 			//console.log("OUTPUT ", result);
 			
