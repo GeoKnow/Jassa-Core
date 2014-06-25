@@ -446,8 +446,8 @@
 		
 		putAll: function(map) {
 		    var self = this;
-		    _(map.entries()).each(function(v, k) {
-		        self.put(k, v);
+		    _(map.entries()).each(function(entry) {
+		        self.put(entry.key, entry.val);
 		    });
 		    
 		    return this;
