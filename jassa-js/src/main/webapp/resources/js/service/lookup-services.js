@@ -1,6 +1,10 @@
 (function() {
 
+    var util = jassa.util;
+    
     var ns = jassa.service;
+    
+    // TODO Rename 'id(s)' to 'key(s)'
     
     ns.LookupService = Class.create({
         getIdStr: function(id) {
@@ -63,7 +67,7 @@
 
             // Make ids unique
             var uniq = _(ids).uniq(false, function(id) {
-                var idStr = self.getIdStr(id);                
+                var idStr = self.getIdStr(id);
                 return idStr;
             });
 
@@ -175,14 +179,51 @@
     });
 
 
+    ns.LookupServiceChunker = Class.create(ns.LookupServiceDelegateBase, {
+        initialize: function($super, delegate, maxChunkSize) {
+            //this.delegate = delegate;
+            $super(delegate);
+            this.maxChunkSize = maxChunkSize;
+        },
+        
+        lookup: function(keys) {
+            var self = this;
+
+            // Make ids unique
+            var ks = _(keys).uniq(false, function(key) {
+                var keyStr = self.getIdStr(key);
+                return keyStr;
+            });
+            
+            var chunks = util.ArrayUtils.chunk(ks, this.maxChunkSize);
+
+            var promises = _(chunks).map(function(chunk) {
+                var r = self.delegate.lookup(chunk);
+                return r;
+            });
+            
+            var result = jQuery.when.apply(window, promises).pipe(function() {
+                var r = new util.HashMap();
+                _(arguments).each(function(map) {
+                    r.putAll(map);
+                });
+                
+                return r;
+            });
+            
+            return result;
+        }
+    });
+    
     /**
      * Wrapper that collects ids for a certain amount of time before passing it on to the
      * underlying lookup service.
      */
     ns.LookupServiceTimeout = Class.create(ns.LookupServiceDelegateBase, {
         
-        initialize: function(delegate, delayInMs, maxRefreshCount) {
-            this.delegate = delegate;
+        initialize: function($super, delegate, delayInMs, maxRefreshCount) {
+            //this.delegate = delegate;
+            $super(delegate);
 
             this.delayInMs = delayInMs;
             this.maxRefreshCount = maxRefreshCount || 0;
@@ -284,6 +325,8 @@
         */
 
     });
+
+    
 
     
     ns.LookupServiceSponate = Class.create(ns.LookupServiceBase, {

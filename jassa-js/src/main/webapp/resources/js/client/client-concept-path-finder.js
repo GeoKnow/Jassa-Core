@@ -45,7 +45,7 @@
 
             // TODO How can we turn the ajax spec into a (base) URL?
 
-			var result = new service.SparqlServiceHttp(this.apiUrl, [], null, data);
+			var result = new service.SparqlServiceHttp(this.apiUrl, this.defaultGraphIris, null, data);
 			return result;
         },
 

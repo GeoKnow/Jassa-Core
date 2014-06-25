@@ -444,6 +444,15 @@
 			this.hashToBucket = {};
 		},
 		
+		putAll: function(map) {
+		    var self = this;
+		    _(map.entries()).each(function(v, k) {
+		        self.put(k, v);
+		    });
+		    
+		    return this;
+		},
+		
 		put: function(key, val) {
 //			if(key == null) {
 //				debugger;

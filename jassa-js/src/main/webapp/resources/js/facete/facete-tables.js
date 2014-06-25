@@ -423,13 +423,24 @@
             return result;
         },
         
+        removeColumn: function(colId) {
+            var path = this.getPath(colId);
+            this.paths.remove(path);
+        },
+
+        getColIdForPath: function(path) {
+            var rootFacetNode = this.facetConfig.getRootFacetNode();
+            var facetNode = rootFacetNode.forPath(path);
+            var result = facetNode.getVar().getName();
+            
+            return result;
+        },
+        
         togglePath: function(path) {
             // Updates the table model accordingly
             var status = util.CollectionUtils.toggleItem(this.paths, path);
-            
-            var rootFacetNode = this.facetConfig.getRootFacetNode();
-            var facetNode = rootFacetNode.forPath(path);
-            var varName = facetNode.getVar().getName();
+
+            var varName = this.getColIdForPath(path);
             
             if(status) {
                 this.tableMod.addColumn(varName);
