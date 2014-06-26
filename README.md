@@ -12,7 +12,7 @@ This repository contains several tools for JavaScript based Sparql access. It wo
 
 The highlights of this repository are:
 
-* A high level JavaScript API for RDF. Provides core RDF classes (such as Node and Triple), SPARQL classes (such as Query, Element, Expr) and Service classes (such QueryExecutionFactoryHttp, QueryExecutionHttp). If you are familiar with [Apache Jena](http://jena.apache.org), you have most likely seen these names before.
+* A high level JavaScript API for RDF. Provides core RDF classes (such as Node and Triple), SPARQL classes (such as Query, Element, Expr) and Service classes (such SparqlServiceHttp, QueryExecutionHttp). If you are familiar with [Apache Jena](http://jena.apache.org), you have most likely seen these names before.
 * The _Facete_-API, a powerful faceted search API for generic faceted search on SPARQL endpoints. Under heavy development - TODO Add demo link.
 * The _Sponate_-API, a SPARQL-to-JSON mapper which is somewhat similar to [Hibernate](http://hibernate.org) (Sponate = SParql, jsON, hiberNATE). This component unfolds its full potential in combination with latest generation frameworks that keep the DOM and controller logic separate, e.g. [AngularJS](http://angularjs.org/). (Possibly also [Ember.js](http://emberjs.com/), but at present we only develop using the former framework).
 
@@ -100,13 +100,13 @@ _.str = require('underscore.string');
 
 _.mixin(_.str.exports());
 
-var Jassa = require('jassa');
+var jassa = require('jassa');
 ```
 
 
 ## Components and Usage
 
-The `Jassa` object defines the following modules
+The `jassa` object defines the following modules
 
 ### The `rdf` and `vocab` modules
 
@@ -125,17 +125,17 @@ terms of `rdf` classes, however literals require the xsd vocabulary.
 Example usage:
 
 ```js
-var rdf = Jassa.rdf;
-var vocab = Jassa.vocab;
+var rdf = jassa.rdf;
+var vocab = jassa.vocab;
 
 var s = rdf.NodeFactory.createVar("s");
 var p = vocab.rdf.type;
 var o = rdf.NodeFactory.createUri("http://example.org/ontology/MyClass");
 
-var triple = new ns.Triple(s, p, o);
+var triple = new rdf.Triple(s, p, o);
 
 console.log("Triple: " + triple);
-console.log("Subject is a variable: " + triple.getSubject().isVar());
+console.log("Subject is a variable: " + triple.getSubject().isVariable());
 ```
 
 ### The `sparql` module
@@ -169,14 +169,14 @@ console.log("QueryString: " + query);
 The service module provides an abstraction layer for communicating with a SPARQL endpoint.
 
 ```js
-var service = Jassa.rdf;
+var service = jassa.rdf;
 
-var qef = new service.QueryExecutionFactoryHttp(
+var sparqlService = new service.SparqlServiceHttp(
           "http://dbpedia.org/sparql",
           ["http://dbpedia.org"]
 );
 
-var qe = qef.createQueryExecution("Select * { ?s ?p ?o } Limit 10");
+var qe = sparqlService.createQueryExecution("Select * { ?s ?p ?o } Limit 10");
 qe.setTimeout(5000); // timout in milliseconds
 
 qe.execSelect()
@@ -206,8 +206,8 @@ Facete then allows one to retrieve a concept's properties and sub-properties und
 TODO Add demo, complete example below (service is missing)
 
 ```js
-var service = Jassa.service;
-var facete = Jassa.facete;
+var service = jassa.service;
+var facete = jassa.facete;
 
 var constraintManager = new facete.ConstraintManager();
 
@@ -230,7 +230,7 @@ var facetConceptGenerator = fcgf.createFacetConceptGenerator();
 var expansionSet = new util.HashSet();
 expansionSet.add(new facete.Path());
 
-var facetService = new facete.FacetServiceImpl(qef, facetConceptGenerator);
+var facetService = new facete.FacetServiceImpl(sparqlService, facetConceptGenerator);
 var facetTreeService = new facete.FacetTreeServiceImpl(facetService, expansionSet);
 
 facetService.fetchFacets()
@@ -248,8 +248,8 @@ Sponate is a SPARQL-to-JSON mapper.
 TODO Add more description...
 
 ```js
-var service = Jassa.service;
-var sponate = Jassa.sponate;
+var service = jassa.service;
+var sponate = jassa.sponate;
 
 var prefixes = {
 	'dbpedia-owl': 'http://dbpedia.org/ontology/',
@@ -258,9 +258,9 @@ var prefixes = {
 	'foaf': 'http://xmlns.com/foaf/0.1/'
 };
 
-var qef = new service.QueryExecutionFactoryHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
+var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);	
 
-var store = new sponate.StoreFacade(qef, prefixes);
+var store = new sponate.StoreFacade(sparqlService, prefixes);
 
 store.addMap({
 	name: 'castles',
