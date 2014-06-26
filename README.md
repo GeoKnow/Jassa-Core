@@ -169,7 +169,7 @@ console.log("QueryString: " + query);
 The service module provides an abstraction layer for communicating with a SPARQL endpoint.
 
 ```js
-var service = jassa.rdf;
+var service = jassa.service;
 
 var sparqlService = new service.SparqlServiceHttp(
           "http://dbpedia.org/sparql",
