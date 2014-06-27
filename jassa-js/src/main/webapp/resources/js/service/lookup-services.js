@@ -54,7 +54,7 @@
     ns.LookupServiceCache = Class.create(ns.LookupServiceDelegateBase, {
         initialize: function($super, delegate, requestCache) {
             $super(delegate);
-            this.requestCache = requestCache || new service.RequestCache();
+            this.requestCache = requestCache || new ns.RequestCache();
         },
         
         /**
@@ -450,5 +450,48 @@
         }
     });
     
+    ns.LookupServiceConstraintLabels = Class.create(ns.LookupServiceBase, {
+        initialize: function(lookupServiceNodeLabels, lookupServicePathLabels) {
+            this.lookupServiceNodeLabels = lookupServiceNodeLabels;
+            this.lookupServicePathLabels = lookupServicePathLabels || new ns.LookupServicePathLabels(lookupServiceNodeLabels);
+        },
+        
+        lookup: function(constraints) {
+            // Note: For now we just assume subclasses of ConstraintBasePathValue
+        
+            var paths = [];
+            var nodes = [];
+            
+            _(constraints).each(function(constraint) {
+                var cPaths = constraint.getDeclaredPaths();
+                var cNode = constraint.getValue();
+                
+                paths.push.apply(paths, cPaths);
+                nodes.push(cNode);
+            });
+
+            var p1 = this.lookupServiceNodeLabels.lookup(nodes);
+            var p2 = this.lookupServicePathLabels.lookup(paths);
+        
+            var result = jQuery.when.apply(window, [p1, p2]).pipe(function(nodeMap, pathMap) {
+                var r = new util.HashMap();
+
+                _(constraints).each(function(constraint) {
+                    var cPath = constraint.getDeclaredPath();
+                    var cNode = constraint.getValue();
+
+                    var pathLabel = pathMap.get(cPath);
+                    var nodeLabel = nodeMap.get(cNode);
+                    
+                    var cLabel = pathLabel + ' = ' + nodeLabel;
+                    r.put(constraint, cLabel);
+                });
+                
+                return r;
+            });
+            
+            return result;
+        }
+    });
     
 })();
