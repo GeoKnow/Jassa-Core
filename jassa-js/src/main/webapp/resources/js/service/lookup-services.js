@@ -374,4 +374,81 @@
         }
     });
     
+    
+    ns.LookupServicePathLabels = Class.create(ns.LookupServiceBase, {
+        initialize: function(lookupServiceBase) {
+            this.lookupServiceBase = lookupServiceBase;
+        },
+        
+        lookup: function(paths) {
+            var nodes = _(paths).chain()
+                // Get all unique mentioned property names and turn them to jassa nodes
+                .map(function(path) {
+                    var r = _(path.getSteps()).map(function(step) {
+                        return step.getPropertyName();
+                    });
+                    return r;
+                })
+                .flatten()
+                .uniq()
+                .map(function(propertyName) {
+                    return rdf.NodeFactory.createUri(propertyName);
+                })
+                .value();
+
+            // Do a lookup with all the nodes
+            var result = this.lookupServiceBase.lookup(nodes).pipe(function(map) {
+                var r = new util.HashMap();
+                _(paths).each(function(path) {
+                    var label = _(path.getSteps()).reduce(function(memo, step) {
+                        var result = memo;
+                        
+                        var property = rdf.NodeFactory.createUri(step.getPropertyName());
+                        var label = map.get(property);
+                        
+                        result = result === '' ? result : result + ' ';
+                        result += label;
+                        result = !step.isInverse() ? result : result + '&sup1';
+
+                        return result;
+                    }, '');
+                    
+                    if(label === '') {
+                        label = 'Items';
+                    }
+                    
+                    r.put(path, label);
+                    /*
+                    r.put(path, {
+                        id: path,
+                        displayLabel: label);
+                    });
+                    */
+                });
+                
+                return r;
+            });
+
+            return result;
+        }
+    });
+    
+    /**
+     * Lookup Service which can filter keys. Used to e.g. get rid of invalid URIs which would
+     * cause SPARQL queries to fail
+     */
+    ns.LookupServiceIdFilter = Class.create(ns.LookupServiceDelegateBase, {
+        initialize: function($super, delegate, predicateFn) {
+            $super(delegate);
+            this.predicateFn = predicateFn;
+        },
+        
+        lookup: function(keys) {
+            var newKeys = _(keys).filter(this.predicateFn);
+            var result = this.delegate.lookup(newKeys);
+            return result;
+        }
+    });
+    
+    
 })();
