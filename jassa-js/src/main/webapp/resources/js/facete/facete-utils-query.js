@@ -55,7 +55,7 @@
 			var valueVar = sparql.Node.v("__o");
 			var elements = ns.createElementsFacet(concept, isInverse, facetVar, valueVar);
 			
-			var result = ns.createQueryCount(element, sampleSize, valueVar, countFacetVar, [facetVar], true);
+			var result = ns.createQueryCount(elements, sampleSize, valueVar, countFacetVar, [facetVar], true);
 	
 			return result;
 		},
