@@ -196,7 +196,8 @@
                 
                 // TODO Not sure how stable this proto stuff is across browsers
                 var isPrimitiveObject = function(obj) {
-                    var result = _(obj).isUndefined() || _(obj).isNull() || _(obj).isBoolean() || _(obj).isNumber() || _(obj).isDate() || _(obj).isString() || _(obj).isRegExp(); 
+                    var result = _(obj).isUndefined() || _(obj).isNull() || _(obj).isBoolean() || _(obj).isNumber() ||
+                        _(obj).isDate() || _(obj).isString() || _(obj).isRegExp();
                     return result;
                 };
                 
