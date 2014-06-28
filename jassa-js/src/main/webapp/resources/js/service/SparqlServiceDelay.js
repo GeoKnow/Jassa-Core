@@ -16,13 +16,11 @@
 	
 	ns.SparqlServiceDelay.prototype = {
 		execSelect: function(queryString, callback) {
-      // FIXME: delegate not defined
-			return delegate.execSelect(queryString, callback);
+			return this.delegate.execSelect(queryString, callback);
 		},
 	
 		execAsk: function(queryString, callback) {
-      // FIXME: delegate not defined
-			return delegate.execAsk(queryString, callback);
+			return this.delegate.execAsk(queryString, callback);
 		}
 	};
 

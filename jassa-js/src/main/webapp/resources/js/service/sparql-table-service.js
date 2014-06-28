@@ -51,7 +51,7 @@
                query.setLimit(null);
                query.setOffset(null);
      
-               var result = ns.ServiceUtils.fetchCountQuery(sparqlService, query, timeoutInMillis, secondaryCountLimit);
+               result = ns.ServiceUtils.fetchCountQuery(sparqlService, query, timeoutInMillis, secondaryCountLimit);
            }
 
            return result;
@@ -96,11 +96,6 @@
            
            return result;           
        },
-       
-       
-       createNgGridOptionsFromQuery: function(query) {
-       },
-
 
        collectNodes: function(rows) {
            // Collect nodes
@@ -198,7 +193,7 @@
          */
         fetchData: function(limit, offset) {
             console.log('Implement me');
-            throw 'Implement me';            
+            throw 'Implement me';
         }
         
         /**
@@ -207,7 +202,7 @@
          */
 //        getDataConfigHash: function() {
 //            console.log('Implement me');
-//            throw 'Implement me';                        
+//            throw 'Implement me';
 //        },
 //        
 //        getSchemaConfigHash: function() {
