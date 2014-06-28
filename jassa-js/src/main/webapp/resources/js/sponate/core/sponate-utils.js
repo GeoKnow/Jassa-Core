@@ -43,7 +43,8 @@
                 var filtered = json;
 
                 if(doClientFiltering && !retainRdfNodes) {
-                    var filtered = _(json).filter(function(item) {                                              
+                    filtered = _(json).filter(function(item) {
+                        // FIXME: criteria not defined
                         var isMatch = criteria.match(item);
                         return isMatch;
                     });
@@ -450,7 +451,7 @@
 	ns.Graph = Class.create({
 		initialize: function(fnCreateNode, fnCreateEdge) {
 			this.fnCreateNode = fnCreateNode;
-			this.fnCretaeEdge = fnCreateEdge;
+			this.fnCreateEdge = fnCreateEdge;
 			
 			this.idToNode = {};
 			
@@ -520,7 +521,7 @@
 	
 	ns.fnCreateMappingJoinNode = function(graph, nodeId) {
 		console.log('Node arguments:', arguments);
-    // FIXME: ns.MappingJoinNode not defined
+		// FIXME: ns.MappingJoinNode not defined
 		return new ns.MappingJoinNode(graph, nodeId);
 	};
 
