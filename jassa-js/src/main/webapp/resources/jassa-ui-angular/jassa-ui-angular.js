@@ -3,6 +3,7 @@ angular.module('ui.jassa', [])
 .controller('FacetTreeCtrl', ['$rootScope', '$scope', '$q', function($rootScope, $scope, $q) {
         
     var self = this;
+    var util = Jassa.util;
       
       
     var updateFacetTreeService = function() {
