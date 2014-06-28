@@ -60,7 +60,7 @@
 	        
 	        var excludeVarNames = this.getVarNames(excludeVars);
 	        var generator = ns.GenSym.create(prefix);
-	        var genVarName = new sparql.GeneratorBlacklist(generator, excludeVarNames);
+	        var genVarName = new ns.GeneratorBlacklist(generator, excludeVarNames);
 
 	        var result = new ns.VarGenerator(genVarName);
 	        
@@ -220,7 +220,7 @@
                 return x != null;
             }).value();
             
-            var result = new sparql.ElementGroup(elements);
+            var result = new ns.ElementGroup(elements);
             
             // Simplify the element
             if(this.simplify) {
@@ -332,7 +332,7 @@
 
             var joinBuilder = joinNode.getJoinBuilder();
             var elements = joinBuilder.getElements();
-            var result = new sparql.ElementGroup(elements);
+            var result = new ns.ElementGroup(elements);
             
             return result;
         }
@@ -342,7 +342,7 @@
 	ns.ElementUtils = {
         createFilterElements: function(exprs) {
             var result = _(exprs).map(function(expr) {
-                var r = new sparql.ElementFilter(expr);
+                var r = new ns.ElementFilter(expr);
                 return r;
             });
             
@@ -353,7 +353,7 @@
             var result = [];
             
             if(triples.length > 0) {
-                var element = new sparql.ElementTriplesBlock(triples);
+                var element = new ns.ElementTriplesBlock(triples);
                 result.push(element);
             }
             
@@ -607,14 +607,14 @@
             }
 
             var result = _(vars).each(function(v) {
-                var exprVar = new sparql.ExprVar(v);
+                var exprVar = new ns.ExprVar(v);
                 var node = binding.get(v);
                 
                 // TODO What if node is NULL?
                 
-                var nodeValue = sparql.NodeValue.makeNode(node);
+                var nodeValue = ns.NodeValue.makeNode(node);
                 
-                var expr = new sparql.E_Equals(exprVar, nodeValue);
+                var expr = new ns.E_Equals(exprVar, nodeValue);
                 
                 return expr;
             });
