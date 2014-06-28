@@ -184,7 +184,7 @@
         },
         
         // Tag node objects at a given path using .createConstraintTagger(path).getTags(node)
-        createContraintTaggerFactory: function() {
+        createConstraintTaggerFactory: function() {
             var constraintManager = this.getConstraintManager();
             var result = new facete.ConstraintTaggerFactory(constraintManager);       
 //constraintTaggerFactory
@@ -310,7 +310,7 @@
             
             
             mapWidget.clearItems();
-            
+
             var self = this;
             //_(diff.removed).each(this.hideNode);
             _(diff.retained).each(function(node) { self.showNode(node); });
