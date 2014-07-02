@@ -163,7 +163,7 @@
 			} else if(node.isVariable()) {
 			    result = new ns.ExprVar(node); 
 			} else {
-			    result = sparql.NodeValue.makeNode(node);
+			    result = ns.NodeValue.makeNode(node);
 			}
 			
 			//var result = (n == null) ? this : //node;//rdf.NodeValue.makeNode(node); 
@@ -1143,7 +1143,7 @@
 	};
 	
 	ns.datatypeFragment = function(node) {
-		return node.dataType ? '^^<' + node.datatype + '>' : "";
+		return node.dataType ? '^^<' + node.dataType + '>' : "";
 	};
 	
 

@@ -180,7 +180,7 @@
 	        },
 	        
 	        removeIndexes: function(arr, indexes) {
-	            var tmp = this.copyWithoutIndexes(arr, indexes);	            
+	            var tmp = this.copyWithoutIndexes(arr, indexes);
 	            this.replace(arr, tmp);
 	            return arr;
 	        }

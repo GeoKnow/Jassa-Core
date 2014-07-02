@@ -166,6 +166,7 @@
 	 * 
 	 */
 	ns.createQueryGetClasses = function(outputVar) {
+		// FIXME: ConceptInt not defined
 		var concept = new facets.ConceptInt(ns.createElementGetClasses(outputVar), outputVar);
 		var result = ns.createQuerySelect(concept, {distinct: true});
 

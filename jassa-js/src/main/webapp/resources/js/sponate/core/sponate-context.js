@@ -286,7 +286,8 @@
 			var targetTable = schema.getTable(targetTableName);
 			
 			// Cardinality 1 means no array
-			var isArray = stub.card == 1 ? false : true;
+			// FIXME: card is not defined
+			var isArray = stub.card != 1;
 	
 			// TODO attr path
 	
@@ -305,7 +306,8 @@
 			
 	//		ns.validateColumnRefs(sourceTable, sourceColumns);
 	//		ns.validateColumnRefs(targetTable, targetColumns);
-			
+
+			// FIXME: stub.joinTable not defined
 			var joinTable = stub.joinTable;
 			if(joinTable != null) {
 				console.log('[ERROR] Implement me');

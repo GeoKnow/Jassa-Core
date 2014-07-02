@@ -17,7 +17,7 @@
 	        
 	    constrainQueryVar: function(query, v, nodes) {
             var exprVar = new sparql.ExprVar(v);
-            var result = constrainQueryExprVar(query, exprVar, nodes);
+            var result = this.constrainQueryExprVar(query, exprVar, nodes);
             return result;
 	    },
 

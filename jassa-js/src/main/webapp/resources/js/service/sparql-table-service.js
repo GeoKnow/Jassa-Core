@@ -96,8 +96,7 @@
            
            return result;           
        },
-       
-       
+
        collectNodes: function(rows) {
            // Collect nodes
            var result = [];
@@ -194,7 +193,7 @@
          */
         fetchData: function(limit, offset) {
             console.log('Implement me');
-            throw 'Implement me';            
+            throw 'Implement me';
         }
         
         /**
@@ -203,7 +202,7 @@
          */
 //        getDataConfigHash: function() {
 //            console.log('Implement me');
-//            throw 'Implement me';                        
+//            throw 'Implement me';
 //        },
 //        
 //        getSchemaConfigHash: function() {

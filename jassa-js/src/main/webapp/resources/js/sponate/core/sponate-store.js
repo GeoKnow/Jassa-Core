@@ -345,7 +345,7 @@
 	            if(concept && (isLeftJoin || !concept.isSubjectConcept())) {
 	                var conceptElement = concept.getElement();
                     var conceptVar = concept.getVar();
-	                 
+
 	                var elementA = conceptElement;
 	                var elementB = innerElement;
 
@@ -479,7 +479,6 @@
 		
 		executeData: function(spec, retainRdfNodes) {
 		    var outerElement = spec.outerElement;
-        // FIXME: spec.idExpr not defined
 		    var idExpr = spec.idExpr;
 		    var idVar = spec.idVar;
 		    var sortConditions = spec.sortConditions;

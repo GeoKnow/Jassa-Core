@@ -294,13 +294,14 @@
         
         createTargetState: function(targetAlias, sourceVarMap, sourceJoinVars, targetElement, oldTargetVars, targetJoinVars) {
             var sjv = sourceJoinVars.map(function(v) {
-                var rv = sourceVarMap.get(v);               
+                var rv = sourceVarMap.get(v);
                 return rv;
             });
             
             //var sourceVars = this.ge; // Based on renaming!
             //var oldTargetVars = targetElement.getVarsMentioned();
-            var targetVarMap = ns.ElementUtils.createJoinVarMap(this.usedVars, oldTargetVars, sjv, targetJoinVars, this.varGenerator);
+            var targetVarMap = ns.ElementUtils.createJoinVarMap(this.usedVars, oldTargetVars, sjv, targetJoinVars, this.varNameGenerator);
+
             
             var newTargetElement = null;
             if(targetElement != null) {

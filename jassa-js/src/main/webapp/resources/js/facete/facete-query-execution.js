@@ -712,7 +712,7 @@
                             
                             var step = new ns.Step(propertyName, isInverse);
                             var childPath = path.copyAppendStep(step);
-                            var item = new ns.FacetItem(childPath, property, distinctValueCount);                            
+                            item = new ns.FacetItem(childPath, property, distinctValueCount);
                         }
                         
                         return item;

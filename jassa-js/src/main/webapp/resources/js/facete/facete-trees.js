@@ -622,13 +622,13 @@
 		forProperty: function(propertyName, isInverse) {
 			var fn = this.facetNode.forProperty(propertyName, isInverse);
 			var result = this.wrap(fn);
-			return result;								
+			return result;
 		},
 		
 		forStep: function(step) {
 			var fn = this.facetNode.forStep(step);
 			var result = this.wrap(fn);
-			return result;				
+			return result;
 		},
 		
 		wrap: function(facetNode) {
