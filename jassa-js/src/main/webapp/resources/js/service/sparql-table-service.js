@@ -41,7 +41,7 @@
 
        fetchCount: function(sparqlService, query, timeoutInMillis, secondaryCountLimit) {
            var result;
-           if(!query) {
+           if(!sparqlService || !query) {
                var deferred = jQuery.Deferred();
                deferred.resolve(0);
                result = deferred.promise();
@@ -51,14 +51,14 @@
                query.setLimit(null);
                query.setOffset(null);
      
-               var result = ns.ServiceUtils.fetchCountQuery(sparqlService, query, timeoutInMillis, secondaryCountLimit);
+               result = ns.ServiceUtils.fetchCountQuery(sparqlService, query, timeoutInMillis, secondaryCountLimit);
            }
 
            return result;
        },
        
        fetchData: function(sparqlService, query, limit, offset) {
-           if(!query) {
+           if(!sparqlService || !query) {
                var deferred = jQuery.Deferred();
 
                var itBinding = new util.IteratorArray([]);
