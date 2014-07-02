@@ -98,10 +98,6 @@
        },
        
        
-       createNgGridOptionsFromQuery: function(query) {
-       },
-
-
        collectNodes: function(rows) {
            // Collect nodes
            var result = [];
