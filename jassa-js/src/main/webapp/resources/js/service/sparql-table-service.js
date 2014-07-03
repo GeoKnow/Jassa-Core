@@ -258,35 +258,42 @@
     });
 
     
-    /**
-     * So the issue is: actually we need a lookup service to get the column headings
-     * The lookup service would need the sparqlService
-     * 
-     * 
-     */
-    ns.TableServiceFacet = Class.create(ns.TableService, {
-        initialize: function(tableServiceQuery, tableConfigFacet, lookupServiceNodeLabels, lookupServicePathLabels) {
-            this.tableServiceQuery = tableServiceQuery;
-            this.tableConfigFacet = tableConfigFacet;
-            this.lookupServiceNodeLabels = lookupServiceNodeLabels;
-            this.lookupServicePathLabels = lookupServicePathLabels;
+    ns.TableServiceDelegateBase = Class.create(ns.TableService, {
+        initialize: function(delegate) {
+            this.delegate = delegate;
         },
-        
+
         fetchSchema: function() {
-            // Ignores the schema of the underlying table Service
-            var result = ns.TableServiceUtils.fetchSchemaTableConfigFacet(this.tableConfigFacet, this.lookupServicePathLabels);
+            var result = this.delegate.fetchSchema();
             return result;
         },
-                
+        
+        /**
+         * Expected to return a promise which yields an integral value for the total number of rows
+         */
         fetchCount: function() {
-            var result = this.tableServiceQuery.fetchCount();
-            return result;            
-        },
-                
+            var result = this.delegate.fetchCount();
+            return result;
+        },        
+        
+        /**
+         * Expected to return a promise which yields an array of objects (maps) from field name to field data
+         */
         fetchData: function(limit, offset) {
-            
-            var promise = this.tableServiceQuery.fetchData(limit, offset);
-            //var promise = ns.TableServiceUtils.fetchData(this.sparqlService, this.query, limit, offset);
+            var result = this.delegate.fetchData();
+            return result;
+        }               
+    });
+    
+    
+    ns.TableServiceNodeLabels = Class.create(ns.TableServiceDelegateBase, {
+        initialize: function($super, delegate, lookupServiceNodeLabels) {
+            $super(delegate);
+            this.lookupServiceNodeLabels = lookupServiceNodeLabels;
+        },
+
+        fetchData: function(limit, offset) {            
+            var promise = this.delegate.fetchData(limit, offset);
 
             var self = this;
             var result = promise.pipe(function(rows) {
@@ -295,7 +302,50 @@
             });
             
             return result;
+        }    
+    });
+
+    
+    /**
+     * So the issue is: actually we need a lookup service to get the column headings
+     * The lookup service would need the sparqlService
+     * 
+     * 
+     */
+    //ns.TableServiceFacet = Class.create(ns.TableService, {
+    ns.TableServiceFacet = Class.create(ns.TableServiceNodeLabels, {
+        initialize: function($super, tableServiceQuery, tableConfigFacet, lookupServiceNodeLabels, lookupServicePathLabels) {
+            $super(tableServiceQuery, lookupServiceNodeLabels);
+            //this.tableServiceQuery = tableServiceQuery;
+            this.tableConfigFacet = tableConfigFacet;
+            //this.lookupServiceNodeLabels = lookupServiceNodeLabels;
+            this.lookupServicePathLabels = lookupServicePathLabels;
+        },
+        
+        fetchSchema: function() {
+            // Ignores the schema of the underlying table Service
+            var result = ns.TableServiceUtils.fetchSchemaTableConfigFacet(this.tableConfigFacet, this.lookupServicePathLabels);
+            return result;
         }
+                
+//        fetchCount: function() {
+//            var result = this.tableServiceQuery.fetchCount();
+//            return result;            
+//        },
+//                
+//        fetchData: function(limit, offset) {
+//            
+//            var promise = this.tableServiceQuery.fetchData(limit, offset);
+//            //var promise = ns.TableServiceUtils.fetchData(this.sparqlService, this.query, limit, offset);
+//
+//            var self = this;
+//            var result = promise.pipe(function(rows) {
+//                var r = ns.TableServiceUtils.transformToNodeLabels(self.lookupServiceNodeLabels, rows);
+//                return r;
+//            });
+//            
+//            return result;
+//        }
     });
     
     
