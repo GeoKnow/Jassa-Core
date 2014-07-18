@@ -450,6 +450,25 @@
         }
     });
     
+    ns.LookupServiceConst = Class.create(ns.LookupServiceBase, {
+        initialize: function(data) {
+            this.data = data;
+        },
+        
+        lookup: function(keys) {
+            var map = new util.HashMap();
+            var self = this;
+            _(keys).each(function(key) {
+                map.put(key, self.data);
+            });
+            
+            var deferred = jQuery.Deferred();
+            deferred.resolve(map);
+            return deferred.promise();
+        }
+    });
+    
+    
     ns.LookupServiceConstraintLabels = Class.create(ns.LookupServiceBase, {
         initialize: function(lookupServiceNodeLabels, lookupServicePathLabels) {
             this.lookupServiceNodeLabels = lookupServiceNodeLabels;

@@ -89,9 +89,12 @@
 		 * Creates a query based on the concept
 		 * TODO: Maybe this should be part of a static util class?
 		 */
-		createQueryList: function(concept) {
+		createQueryList: function(concept, limit, offset) {
 			var result = new sparql.Query();
 			result.setDistinct(true);
+			
+			result.setLimit(limit);
+			result.setOffset(offset);
 			
 			result.getProject().add(concept.getVar());
 			var resultElements = result.getElements();
@@ -102,6 +105,16 @@
 			return result;
 		},
 
+		createNewVar: function(concept, baseVarName) {
+            baseVarName = baseVarName || 'c';
+
+            var varsMentioned = concept.getVarsMentioned();
+
+            var varGen = sparql.VarUtils.createVarGen(baseVarName, varsMentioned);
+            var result = varGen.next();
+		    
+            return result;
+		},
 		
 		createQueryCount: function(concept, outputVar, scanLimit) {
 		    var result = ns.QueryUtils.createQueryCount(concept.getElements(), scanLimit, concept.getVar(), outputVar, null, true);
@@ -188,7 +201,7 @@
 	 */
 	ns.Concept = Class.create({
 		
-		classLabel: 'Concept',
+		classLabel: 'jassa.sparql.Concept',
 		
 		initialize: function(element, variable) {
 			this.element = element;
@@ -206,6 +219,12 @@
 		
 		getElement: function() {
 			return this.element;
+		},
+		
+		getVarsMentioned: function() {
+		    // TODO The variable is assumed to be part of the element already
+		    var result = this.getElement().getVarsMentioned();
+		    return result;
 		},
 		
 		hasTriples: function() {
