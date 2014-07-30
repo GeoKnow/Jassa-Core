@@ -42,7 +42,7 @@
                 obj[key] = values;
             }
             
-            values.push(value);
+            values.push(val);
 	    },
 	    
 	    clear: function(obj) {
