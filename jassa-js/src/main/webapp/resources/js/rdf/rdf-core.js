@@ -70,7 +70,7 @@
       // By default we assume non-equality
       var result = false;
 
-      if(that === null) {
+      if(that == null) {
         result = false;
 
       } else if(this.isLiteral()) {
@@ -485,8 +485,8 @@
       var uriToDt = this.uriToDt;
       var dtype = uriToDt[uri];
 
-      if (dtype === null) {
-        if (uri === null) {
+      if (dtype == null) {
+        if (uri == null) {
           // Plain literal
           return null;
 
@@ -516,7 +516,7 @@
   ns.TypeMapper.getInstance = function() {
     var self = ns.TypeMapper;
 
-    if(self.staticInstance === null) {
+    if(self.staticInstance == null) {
       self.staticInstance = new ns.TypeMapper(ns.RdfDatatypes);
     }
 
@@ -537,7 +537,7 @@
   },
 
     createPlainLiteral: function(value, lang) {
-       if(lang === null) {
+       if(lang == null) {
         lang = '';
       }
 
