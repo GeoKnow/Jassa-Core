@@ -147,6 +147,39 @@
 			return result;
 		},
 		
+		fetchCountConcept: function(sparqlService, concept, threshold) {
+
+		    var outputVar = facete.ConceptUtils.createNewVar(concept);
+		    
+		    var scanLimit = threshold == null ? null : threshold + 1;
+		    
+            var countQuery = facete.ConceptUtils.createQueryCount(concept, outputVar, scanLimit);
+            //var result = ns.ServiceUtils.fetchCountQuery(sparqlService, query, outputVar);
+
+            var qe = sparqlService.createQueryExecution(countQuery);
+//            qe.setTimeout(firstTimeoutInMs);
+            
+            var deferred = jQuery.Deferred();
+            var p1 = ns.ServiceUtils.fetchInt(qe, outputVar); 
+            p1.done(function(count) {
+                
+                var hasMoreItems = count > threshold;
+                
+                var r = {
+                    count: hasMoreItems ? threshold : count,
+                    limit: threshold,
+                    hasMoreItems: hasMoreItems
+                };
+                
+                deferred.resolve(r);
+
+            }).fail(function() {
+                deferred.fail();
+            });
+            
+            return deferred.promise();
+		},
+		
 		
 		/**
 		 * Count the results of a query, whith fallback on timeouts
@@ -187,7 +220,7 @@
 		    }).fail(function() {
 
 		        // Try counting with the fallback size
-	            var countQuery = facete.QueryUtils.createQueryCount(elements, limit, null, outputVar, null, null, null);		        
+	            var countQuery = facete.QueryUtils.createQueryCount(elements, limit + 1, null, outputVar, null, null, null);		        
 	            var qe = sparqlService.createQueryExecution(countQuery);
 	            var p2 = ns.ServiceUtils.fetchInt(qe, outputVar); 
 	            p2.done(function(count) {
@@ -195,7 +228,7 @@
 	                deferred.resolve({
 	                    count: count,
 	                    limit: limit,
-	                    hasMoreItems: count >= limit // using greater for robustness, although it should never happen
+	                    hasMoreItems: count > limit
 	                });	            
 	            }).fail(function() {
 	               deferred.fail(); 

@@ -182,7 +182,7 @@
                 // var countTask = countFlow.count();
                 var globalCheckTask = countTask.pipe(function(countInfo) {
                     var canUseGlobal = !countInfo.hasMoreItems;
-                    console.debug("Global check counts", countInfo);
+                    console.log("Global check counts", countInfo);
                     rootNode.canUseGlobal = canUseGlobal; 
                     rootNode.checkedGlobal = true;
                     
@@ -338,7 +338,7 @@
         createCountTask: function(node) {
 
             var self = this;
-            var threshold = self.maxItemsPerTileCount ? self.maxItemsPerTileCount + 1 : null;
+            var threshold = self.maxItemsPerTileCount; // ? self.maxItemsPerTileCount + 1 : null;
 
             
             var countPromise = this.listServiceBbox.fetchCount(node.getBounds(), threshold);
@@ -577,6 +577,24 @@
     
     ns.LookupServiceUtils = {
         /**
+         * Yields a promise resolving to an empty array if lookupService or keys are null
+         * 
+         */
+        lookup: function(lookupService, keys) {
+            var result;
+            
+            if(!lookupService || !keys) {
+                var deferred = jQuery.Deferred();
+                deferred.resolve([]);
+                result = deferred.promise();
+            } else {
+                result = lookupService.lookup(keys);
+            }
+            
+            return result;
+        },
+            
+        /**
          * Create a new promise from a list of keys and corresponding
          * valuePromises
          */
@@ -633,7 +651,7 @@
             });
             
             return result;            
-        }
+        }        
     };
     
     

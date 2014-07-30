@@ -171,7 +171,13 @@
 			this.config.setLimit(limit);
 			
 			return this;
-		},		
+		},
+		
+		offset: function(offset) {
+		    this.config.setOffset(offset);
+		    
+		    return this;
+		},
 		
 		asList: function(retainRdfNodes) {
 			var promise = this.execute(retainRdfNodes);
@@ -263,7 +269,7 @@
 			var criteria = config.getCriteria();
 			var limit = config.getLimit();
 			var offset = config.getOffset();
-			var concept = config.getConcept();
+			var filterConcept = config.getConcept();
 			var isLeftJoin = config.isLeftJoin();
 			var nodes = config.getNodes();
 			
@@ -334,86 +340,94 @@
             idVar = idExpr.asVar();
 
 						
-			var requireSubQuery = limit != null || offset != null || (concept != null && !concept.isSubjectConcept()) || elementCriteria.length > 0;
+			var requireSubQuery = limit != null || offset != null || elementCriteria.length > 0; // || (filterConcept != null && !filterConcept.isSubjectConcept()) ||;
 
             var innerElement = outerElement;
 
-//            debugger;
-            if(requireSubQuery) {
 
+            
+            
+/////            
+            // Combine innerElement, concept and the criteria
+            var attrConcept = new facete.Concept(innerElement, idVar);
 
-	            if(concept && (isLeftJoin || !concept.isSubjectConcept())) {
-	                var conceptElement = concept.getElement();
-                    var conceptVar = concept.getVar();
+            // If there is no filterConcept, the result is the mappingConcept
+            // If there is a filterConcept and NO leftJoin, the result is the combination of the mappingConcept and the filterConcept
+            //    if there is a leftJoin
+            //       if there is a leftJoin AND there are NO filter criteria, the result is just the filterConcept
+            //    if there are filter criteria, the result is the l
+            //    if there are filter critera, append them
+            
+            // createCombineConcept(attrConcept, filterConcept, renameVars, attrsOptional, filterAsSubquery)
+            var coreConcept;
+            
+            var attrsInCore;
+            if(!filterConcept) {
+                coreConcept = attrConcept;
+            }
+            else {
+                if(!isLeftJoin) {
+                   coreConcept = facete.ConceptUtils.createCombinedConcept(attrConcept, filterConcept, true);
+                } else {
+                    
+                    if(elementCriteria.length > 0) {
+                        // Make the attributes optional
+                        //var optionalAttrConcept = new facete.Concept(new sparql.ElementOptional(attrConcept.getElement()), attrConcept.getVar());
+                        
+                        // TODO The filter concept should go first
+                        //coreConcept = facete.ConceptUtils.createCombinedConcept(optionalAttrConcept, filterConcept, true, true);
+                        coreConcept = facete.ConceptUtils.createCombinedConcept(attrConcept, filterConcept, true, true);
+                    } else {
+                        //coreConcept = attrConcept;
+                        // TODO Rename the vars
+                        //coreConcept = filterConcept;
+                        coreConcept = facete.ConceptUtils.createRenamedConcept(attrConcept, filterConcept);
+                    }                    
+                }
+            }
+            
+            // Append the filter criterias to the core concept
+            if(elementCriteria.length > 0) {
+                var criteriaFilter = (elementCriteria.length > 0) ? new sparql.ElementFilter(elementCriteria) : null;  
+                
+                var es = [coreConcept.getElement(), criteriaFilter];
+                var eg = new sparql.ElementGroup(es); //facete.ElementUtils.createElementGroupFlattenShallow(es);
+                
+                coreConcept = new facete.Concept(eg, coreConcept.getVar());
+            }
 
-	                var elementA = conceptElement;
-	                var elementB = innerElement;
+            console.log('[INFO] SponateCoreConcept ' + coreConcept);            
+        
+            var coreElement = coreConcept.getElement();
 
-	                //console.log('elementA: ' + elementA);
-	                //console.log('elementB: ' + elementB);
-
-	                
-	                var varsA = elementA.getVarsMentioned();
-	                var varsB = elementB.getVarsMentioned();
-	                 
-	                var joinVarsA = [conceptVar];
-	                var joinVarsB = [idVar];
-	                 
-	                var varMap = sparql.ElementUtils.createJoinVarMap(varsB, varsA, joinVarsB, joinVarsA); //, varNameGenerator);
-	                var elementA = sparql.ElementUtils.createRenamedElement(elementA, varMap);
-	                 
-                    //console.log('elementA renamed: ' + elementA);
-	                 
-	                 //var conceptElement = concept.getElement();
-	                concept = new facete.Concept(elementA, idVar);
-	                 
-                    var q = facete.ConceptUtils.createQueryList(concept);
-	                elementA = new sparql.ElementSubQuery(q);
-	                 
-	               
-	                if(isLeftJoin) {
-	                   elementB = new sparql.ElementOptional(elementB);
-	                }
-	               
-	                innerElement = new sparql.ElementGroup([elementA, elementB]);
-	               
-	               /*
-	                 var efa = new sparql.ElementFactoryConst(conceptElement);
-	                 var efb = new sparql.ElementFactoryConst(innerElement);
-	                 
-
-	                 var joinType = isLeftJoin ? sparql.JoinType.LEFT_JOIN : sparql.JoinType.INNER_JOIN;
-	                 
-	                 var efj = new sparql.ElementFactoryJoin(efa, efb, [concept.getVar()], [idVar], joinType);
-	                 innerElement = efj.createElement();
-	                 */
-	             }
-
-			    
+			if(requireSubQuery) {
 				var subQuery = new sparql.Query();
-				
+				/*
 				var subQueryElements = subQuery.getElements();
 				subQueryElements.push(innerElement);
+				*/
+				subQuery.setQueryPattern(coreElement);
 				
+				/*
 				if(elementCriteria.length > 0) {
 				    subQueryElements.push(new sparql.ElementFilter(elementCriteria));
 				}
+				*/
 			
-				
-				var subElement = new sparql.ElementSubQuery(subQuery);
-				var oe = outerElement;
-				
-				if(isLeftJoin) {
-				    //subElement = new sparql.ElementOptional(subElement);
-				    oe = new sparql.ElementOptional(outerElement);
-				}
 				
 				subQuery.setLimit(limit);
 				subQuery.setOffset(offset);
 				subQuery.setDistinct(true);
 				subQuery.getProject().add(idVar);
+
+                var oe = outerElement;
+                if(isLeftJoin) {
+                    //subElement = new sparql.ElementOptional(subElement);
+                    oe = new sparql.ElementOptional(outerElement);
+                }
+				
 				outerElement = new sparql.ElementGroup([
-				                                   subElement,
+				                                   new sparql.ElementSubQuery(subQuery),
 				                                   oe]);
 
 				// TODO Do we need a sort condition on the inner query?
@@ -422,12 +436,14 @@
 				//orderBys.push.apply(orderBys, sortConditions);
 
 				
-				innerElement = subElement;
+				innerElement = coreElement;
+			} else {
+			    outerElement = coreElement;
 			}
-
             
             var result = {
                 requireSubQuery: requireSubQuery,
+                coreConcept: coreConcept,
                 innerElement: innerElement,
                 outerElement: outerElement,
                 idVar: idVar,
@@ -465,14 +481,19 @@
             }
                 
 
-            var element = spec.innerElement;
-            var idVar = spec.idVar;
+            //var element = spec.innerElement;
+            //var idVar = spec.idVar;           
+            //var concept = new facete.Concept(element, idVar);
+            var concept = spec.coreConcept;
             
-            var concept = new facete.Concept(element, idVar);
+            var threshold = config.getLimit();
+            var result = service.ServiceUtils.fetchCountConcept(this.sparqlService, concept, threshold);
+            /*
             var outputVar = rdf.NodeFactory.createVar('_c_');
             var query = facete.ConceptUtils.createQueryCount(concept, outputVar);
             var qe = this.sparqlService.createQueryExecution(query);
             var result = service.ServiceUtils.fetchInt(qe, outputVar);
+            */
             
             return result;
 		},

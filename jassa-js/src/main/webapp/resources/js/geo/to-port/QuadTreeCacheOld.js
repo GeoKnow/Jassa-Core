@@ -244,7 +244,7 @@
 	 * 
 	 */
 	ns.diff = function(oldNodes, newNodes, oldBounds, newBounds) {
-		var involvedNodes = oldNodes ? _.union(oldNodes, newNodes) : newNodes;
+		var involvedNodes = oldNodes ? _(oldNodes).union(newNodes) : newNodes;
 		
 		var addedNodes    = _.difference(newNodes, oldNodes);
 		var removedNodes  = _.difference(oldNodes, newNodes);

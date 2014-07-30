@@ -30,40 +30,118 @@
 	 * 
 	 */
 	ns.ConceptUtils = {
-		createCombinedConcept: function(baseConcept, tmpConcept) {
+
+	    /*
+	    createRenamedConcept: function(concept, newVar) {
+
+            // TODO Rename variables if the newVar clashes with existing names
+
+	        var oldVar = concept.getVar();
+	        var vs = element.getVarsMentioned();
+
+	        // Rename any variables that would clash 
+	        var varMap = ns.ElementUtils.createDistinctVarMap(vs, [oldVar]);
+            var tmpElement = ns.ElementUtils.createRenamedElement(element, varMap);
+
+            var newVarMap = new util.HashBidiMap();
+            newVarMap.put(oldVar, newVar);
+            var newElement = ns.ElementUtils.createRenamedElement(tmpElement, newVarMap);
+	        
+	        var result = new facete.Concept(newElement, newVar);
+	        return result;
+	    },*/
+	        
+	    createVarMap: function(attrConcept, filterConcept) {
+            var attrElement = attrConcept.getElement();
+            var filterElement = filterConcept.getElement();
+            
+            var attrVar = attrConcept.getVar();
+            
+            var attrVars = attrElement.getVarsMentioned();
+            var filterVars = filterElement.getVarsMentioned();
+             
+            var attrJoinVars = [attrConcept.getVar()];
+            var filterJoinVars = [filterConcept.getVar()];
+             
+            var result = sparql.ElementUtils.createJoinVarMap(attrVars, filterVars, attrJoinVars, filterJoinVars); //, varNameGenerator);
+
+            return result;
+	    },
+	    
+	    createRenamedConcept: function(attrConcept, filterConcept) {
+	        
+            var varMap = this.createVarMap(attrConcept, filterConcept);
+            
+            var attrVar = attrConcept.getVar();
+            var filterElement = filterConcept.getElement();
+            var newFilterElement = sparql.ElementUtils.createRenamedElement(filterElement, varMap);
+            
+            var result = new facete.Concept(newFilterElement, attrVar);
+	        
+            return result;
+	    },
+	    
+	    /**
+	     * Combines two concepts into a new one. Thereby, one concept plays the role of the attribute concepts whose variable names are left untouched,
+	     * The other concept plays the role of the 'filter' which limits the former concept to certain items.
+	     * 
+	     * 
+	     */
+		createCombinedConcept: function(attrConcept, filterConcept, renameVars, attrsOptional, filterAsSubquery) {
 			// TODO The variables of baseConcept and tmpConcept must match!!!
 			// Right now we just assume that.
 			
+		    
+            var tmpConcept;
+		    if(renameVars) {
+	            tmpConcept = this.createRenamedConcept(attrConcept, filterConcept);
+		    } else {
+		        tmpConcept = filterConcept;
+		    }
+		    
+
+            var tmpElements = tmpConcept.getElements();
 			
-			// Check if the concept of the facetFacadeNode is empty
-			var tmpElements = tmpConcept.getElements();
-			var baseElement = baseConcept.getElement();
 			
 			// Small workaround (hack) with constraints on empty paths:
 			// In this case, the tmpConcept only provides filters but
 			// no triples, so we have to include the base concept
-			var hasTriplesTmp = tmpConcept.hasTriples();
+			//var hasTriplesTmp = tmpConcept.hasTriples();
+            //hasTriplesTmp && 
+            var attrVar = attrConcept.getVar();
+            var attrElement = attrConcept.getElement();
 			
 			var e;
 			if(tmpElements.length > 0) {
 	
-				if(hasTriplesTmp && baseConcept.isSubjectConcept()) {
-					e = tmpConcept.getElement();
-				} else {
-					var baseElements = baseConcept.getElements();
-	
-					var newElements = [];
-					newElements.push.apply(newElements, baseElements);
-					newElements.push.apply(newElements, tmpElements);
+				if(tmpConcept.isSubjectConcept()) {
+					e = attrConcept.getElement(); //tmpConcept.getElement();
+				} else {	
+                    
+				    var newElements = [];
+
+                    if(attrsOptional) {
+                        attrElement = new sparql.ElementOptional(attrConcept.getElement());
+                    }                    
+                    newElements.push(attrElement);
+
+                    if(filterAsSubquery) {
+                        tmpElements = [new sparql.ElementSubQuery(tmpConcept.asQuery())];
+                    }
+
+				    
+					//newElements.push.apply(newElements, attrElement);
+                    newElements.push.apply(newElements, tmpElements);
+                    
 					
 					e = new sparql.ElementGroup(newElements);
+					e = e.flatten();
 				}
 			} else {
-				e = baseElement;
+				e = attrElement;
 			}
 			
-			// FIXME: ConceptInt class is not defined
-			var concept = new ns.ConceptInt(e, tmpConcept.getVariable());
+			var concept = new ns.Concept(e, attrVar);
 	
 			return concept;
 		},
@@ -84,6 +162,20 @@
 			return result;
 		},
 		
+		/**
+		 * 
+		 * @param typeUri A jassa.rdf.Node or string denoting the URI of a type
+		 * @param subjectVar Optional; variable of the concept, specified either as string or subclass of jassa.rdf.Node
+		 */
+        createTypeConcept: function(typeUri, subjectVar) {            
+            var type = typeUri instanceof rdf.Node ? typeUri : rdf.NodeFactory.createUri(typeUri);            
+            var vs = !subjectVar ? rdf.NodeFactory.createVar('s') :
+                (subjectVar instanceof rdf.Node ? subjectVar : rdf.NodeFactory.createVar(subjectVar));            
+
+            var result = new facete.Concept(new sparql.ElementTriplesBlock([new rdf.Triple(vs, vocab.rdf.type, type)]), vs);      
+            return result;
+        },
+
 		
 		/**
 		 * Creates a query based on the concept
@@ -310,6 +402,10 @@
 			return result;
 		},
 		
+		asQuery: function(limit, offset) {
+		    var result = ns.ConceptUtils.createQueryList(this, limit, offset);
+		    return result;
+		},
 
 		
 		/**

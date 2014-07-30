@@ -340,6 +340,31 @@
 	
 	
 	ns.ElementUtils = {
+	    /*
+	    copyElements: function(targetElementGroup, sourceElement) {
+	        if(sourceElement instanceof sparql.ElementGroup) {
+	            var members = sourceElement.getArgs();
+	            _(members).each(function(member) {
+	                targetElementGroup.addElement(member);
+	            });
+	        }
+	        else { 
+	            targetElementGroup.addElement(sourceElement);
+	        }
+	        
+	        return targetElementGroup;
+	    },
+	
+	    mergeElements: function(elementA, elementB) {
+	        var result = new sparql.ElementGroup();
+	            
+	        this.copyElements(result, elementA);
+	        this.copyElements(result, elementB);
+	            
+	        return result;
+	    },
+	    */
+	        
         createFilterElements: function(exprs) {
             var result = _(exprs).map(function(expr) {
                 var r = new ns.ElementFilter(expr);

@@ -709,6 +709,10 @@
 		    this.elements = elements ? elements : [];
 	    },
 
+	    addElement: function(element) {
+	        this.elements.push(element);
+	    },
+	    
 	    getArgs: function() {
 			return this.elements;
 		},

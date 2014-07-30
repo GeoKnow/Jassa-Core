@@ -14,11 +14,18 @@
             this.bboxExprFactory = bboxExprFactory;
         },
 
+        createMap: function(bounds) {
+            var result = this.createMapForBounds(bounds);
+            return result;
+        },
+        
+        // DEPRECATED - use createMap(null)
         createMapForGlobal: function() {
             var result = this.createMapForBounds(null);
             return result;
         },
         
+        // DEPRECATED - use createMap(bounds)
         createMapForBounds: function(bounds) {
             var baseSponateView = this.baseSponateView;
             var bboxExprFactory = this.bboxExprFactory;

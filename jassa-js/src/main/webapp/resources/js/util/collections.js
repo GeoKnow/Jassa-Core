@@ -114,6 +114,10 @@
 	
 	
 	ns.ArrayUtils = {
+	        addAll: function(arr, items) {
+	            return arr.push.apply(arr, items);
+	        },
+	        
 	        chunk: function(arr, chunkSize) {    
                 var result = [];
                 for (var i = 0; i < arr.length; i += chunkSize) {
@@ -161,6 +165,20 @@
 	            return result;
 	        },
 	        
+	        // Like jQueries's grep
+	        grep: function(arr, fnPredicate) {
+                var result = [];
+
+                _(arr).each(function(item, index) {
+                    var isTrue = fnPredicate(item, index);
+                    if(isTrue) {
+                        result.push(index);
+                    }
+                });
+                
+                return result;	            
+	        },
+	        
 	        copyWithoutIndexes: function(arr, indexes) {
 	            var map = {};
 	            _(indexes).each(function(index) {
@@ -183,6 +201,11 @@
 	            var tmp = this.copyWithoutIndexes(arr, indexes);
 	            this.replace(arr, tmp);
 	            return arr;
+	        },
+	        
+	        removeByGrep: function(arr, fnPredicate) {
+	            var indexes = this.grep(arr, fnPredicate);
+	            this.removeIndexes(arr, indexes);
 	        }
 	};
 	

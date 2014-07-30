@@ -34,13 +34,28 @@
             return 'virtfix:' + this.sparqlService.hashCode();
         },
 
+        hasAggregate: function(query) {
+            var entries = query.getProject().entries();
+            
+            var result = _(entries).some(function(entry) {
+                var expr = entry.expr;
+                if(expr instanceof sparql.E_Count) {
+                    return true;
+                }
+            });
+            
+            return result;
+        },
+        
         createQueryExecution: function(query) {
             
             var orderBy = query.getOrderBy();
             var limit = query.getLimit();
             var offset = query.getOffset();
             
-            var isTransformNeeded = orderBy.length > 0 && (limit || offset);
+            var hasAggregate = this.hasAggregate(query);
+            
+            var isTransformNeeded = orderBy.length > 0 && (limit || offset) || hasAggregate;
             
             var q;
             if(isTransformNeeded) {

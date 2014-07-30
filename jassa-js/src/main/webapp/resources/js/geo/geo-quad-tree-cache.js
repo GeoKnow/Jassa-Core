@@ -312,7 +312,7 @@
         createCountTask: function(node) {
 
             var self = this;
-            var limit = self.maxItemsPerTileCount ? self.maxItemsPerTileCount + 1 : null;
+            var limit = self.maxItemsPerTileCount; //self.maxItemsPerTileCount ? self.maxItemsPerTileCount + 1 : null;
 
             var countFlow = this.createFlowForBounds(node.getBounds()).find().concept(this.concept).limit(limit);
             var result = countFlow.count().pipe(function(itemCount) {
