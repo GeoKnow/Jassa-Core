@@ -8,10 +8,6 @@
   "description": "JAvascript Suite for Sparql Access",
   "main": "jassa.js",
   "dependencies": {
-    "jquery": "1.9.1",
-    "underscore": "1.6.0",
-    "underscore.string": "2.3.2",
-    "jscache": ""
   },
   "keywords": [
     "rdf",

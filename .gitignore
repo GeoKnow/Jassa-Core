@@ -7,3 +7,4 @@ release.properties
 bower_components
 target
 .idea
+node_modules/
