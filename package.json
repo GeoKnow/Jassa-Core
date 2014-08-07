@@ -13,6 +13,7 @@
   "author": "Claus Stadler",
   "license": "BSD",
   "dependencies": {
+    "bluebird": "^2.2.2",
     "lodash.defaults": "^2.4.1",
     "lodash.flatten": "^2.4.1",
     "lodash.isequal": "^2.4.1",
@@ -24,6 +25,7 @@
     "gulp-exit": "0.0.2",
     "gulp-jshint": "^1.8.4",
     "gulp-mocha": "^0.5.2",
+    "request": "^2.40.0",
     "should": "^4.0.4"
   }
 }

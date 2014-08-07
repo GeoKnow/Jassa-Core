@@ -2,6 +2,10 @@
 /* global it */
 var should = require('should');
 
+// lib includes
+var Promise = require('bluebird');
+var request = Promise.promisifyAll(require('request'));
+
 // lib
 var jassa = require('../lib');
 // namespaces
@@ -38,7 +42,46 @@ describe('Basics', function(){
         query.toString().should.be.equal('Select * {?s ?p ?o}  Limit 10');
     });
 
-    it('#Sparql service should get results', function() {
+    it('#Sparql service should get results', function(done) {
+        var $ = {
+            ajax: function(param) {
+                return request.postAsync(param.url, {
+                    json: true,
+                    form: param.data,
+                }).then(function(res) {
+                    return new Promise(function(resolve) {
+                        resolve(res[0].body);
+                    });
+                });
+            }
+        };
 
+        var sparqlService = new service.SparqlServiceHttp(
+            $, 'http://dbpedia.org/sparql', ['http://dbpedia.org']
+        );
+
+        var qe = sparqlService.createQueryExecution('Select * { ?s ?p ?o } Limit 10');
+        qe.setTimeout(100); // timout in milliseconds
+
+        qe
+        .execSelect()
+        .then(function(rs) {
+            var s = rdf.NodeFactory.createVar('s');
+            var p = rdf.NodeFactory.createVar('p');
+            var o = rdf.NodeFactory.createVar('o');
+
+            var count = 0;
+            while(rs.hasNext()) {
+                count++;
+                var binding = rs.nextBinding();
+                
+                binding.get(s).getUri().should.exist;
+                binding.get(p).getUri().should.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
+                binding.get(o).should.exist;
+            }
+
+            count.should.equal(10);
+            done();
+        });
     });
 });
