@@ -19,7 +19,7 @@ var loadModulesFromFolder = function(folder) {
 };
 
 // tests
-describe('Library modules', function(){
+describe.skip('Library modules', function(){
     it('#RDF should load', function(){
         loadModulesFromFolder('rdf');
     });
