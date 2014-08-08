@@ -24,7 +24,7 @@ describe('Basics', function(){
         var triple = new rdf.Triple(s, p, o);
 
         triple.toString().should.equal('?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ontology/MyClass>');
-        triple.getSubject().isVariable().should.be.false;
+        triple.getSubject().isVariable().should.be.true;
     });
 
     it('#Query should be created', function() {
