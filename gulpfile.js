@@ -5,5 +5,6 @@ var gulp = require('./gulp')([
     'jscs',
 ]);
 
-gulp.task('test', ['jshint', 'jscs', 'mocha', 'coverage']);
+gulp.task('lint', ['jshint', 'jscs']);
+gulp.task('test', ['lint', 'mocha', 'coverage']);
 gulp.task('default', ['test']);
