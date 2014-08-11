@@ -3,6 +3,7 @@ var gulp = require('./gulp')([
     'mocha',
     'coverage',
     'jscs',
+    'docs',
 ]);
 
 gulp.task('lint', ['jshint', 'jscs']);
