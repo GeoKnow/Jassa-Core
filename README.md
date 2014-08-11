@@ -23,8 +23,9 @@ Personal anecdote: Use of classes (and inheritance) at least doubled my JavaScri
 ## How to build/test
 
 1. Make sure you have latest node.js installed
-2. Clone this repo
-3. Install [gulp](http://gulpjs.com/) with `npm -g install gulp`
+2. Install [gulp](http://gulpjs.com/) with `npm -g install gulp`
+3. Clone this repo
+4. `cd` into repo folder and run `npm install`
 
 Now you can run `gulp` to see if the tests complete as well as results for code covarage.
 
