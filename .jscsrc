@@ -1,0 +1,19 @@
+{
+    "preset": "google",
+    "fileExtensions": "jscs",
+
+    "requireParenthesesAroundIIFE": true,
+    "requireCamelCaseOrUpperCaseIdentifiers": null,
+
+    "maximumLineLength": 200,
+    "validateLineBreaks": "LF",
+    "validateIndentation": 4,
+
+    "disallowKeywords": ["with"],
+    "disallowSpacesInsideObjectBrackets": null,
+    "disallowImplicitTypeConversion": ["string"],
+
+    "excludeFiles": [
+        "lib/ext/*"
+    ]
+}
