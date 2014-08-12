@@ -1,19 +1,30 @@
 {
     "preset": "google",
-    "fileExtensions": "jscs",
+    "fileExtensions": [".js", ".jsx"],
 
-    "requireParenthesesAroundIIFE": true,
-    "requireCamelCaseOrUpperCaseIdentifiers": null,
+    "excludeFiles": ["lib/ext/*"],
 
     "maximumLineLength": 200,
+
+    "requireParenthesesAroundIIFE": true,
+    "requireBlocksOnNewline": true,
+    "requireTrailingComma": true,
+    "requireCapitalizedConstructors": true,
+    "requireDotNotation": true,
+    "requireSpaceAfterLineComment": true,
+    "requireCommaBeforeLineBreak": true,
+
     "validateLineBreaks": "LF",
     "validateIndentation": 4,
+    "validateQuoteMarks": "'",
 
+    "disallowEmptyBlocks": true,
+    "disallowMultipleVarDecl": true,
     "disallowKeywords": ["with"],
-    "disallowSpacesInsideObjectBrackets": null,
-    "disallowImplicitTypeConversion": ["string"],
-
-    "excludeFiles": [
-        "lib/ext/*"
-    ]
+    "disallowQuotedKeysInObjects": true,
+    "disallowSpaceAfterObjectKeys": true,
+    "disallowKeywordsOnNewLine": ["else", "catch"],
+    "disallowYodaConditions": true,
+    "disallowNewlineBeforeBlockStatements": true,
+    "disallowImplicitTypeConversion": ["numeric", "boolean", "binary", "string"]
 }
