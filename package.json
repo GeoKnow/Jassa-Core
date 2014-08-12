@@ -4,7 +4,9 @@
   "description": "JAvascript Suite for Sparql Access",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "gulp test",
+    "precommit": "gulp lint",
+    "prepush": "gulp mocha"
   },
   "repository": {
     "type": "git",
@@ -13,7 +15,6 @@
   "author": "Claus Stadler",
   "license": "BSD",
   "dependencies": {
-    "bluebird": "^2.2.2",
     "lodash.defaults": "^2.4.1",
     "lodash.flatten": "^2.4.1",
     "lodash.isequal": "^2.4.1",
@@ -21,11 +22,18 @@
     "lodash.uniq": "^2.4.1"
   },
   "devDependencies": {
+    "bluebird": "^2.2.2",
+    "browserify": "^5.9.3",
     "gulp": "^3.8.7",
     "gulp-istanbul": "^0.2.1",
+    "gulp-jscs": "^1.1.0",
+    "gulp-jsdoc": "^0.1.4",
     "gulp-jshint": "^1.8.4",
     "gulp-mocha": "^0.5.2",
+    "husky": "^0.6.0",
     "request": "^2.40.0",
-    "should": "^4.0.4"
+    "should": "^4.0.4",
+    "uglifyify": "^2.5.0",
+    "vinyl-source-stream": "^0.1.1"
   }
 }

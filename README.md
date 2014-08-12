@@ -1,5 +1,7 @@
 ## JAvascript Suite for Sparql Access (Jassa) Core
 
+[![Build Status](https://travis-ci.org/GeoKnow/Jassa-Core.png?branch=master)](https://travis-ci.org/GeoKnow/Jassa-Core) 
+
 ## Terminology
 
 You may have noticed that we repeatedly used the term '''class'''. While it is true that plain JavaScript does not offer them (yet), there are however frameworks which introduce this level of abstraction. For Jassa we chose the [Class object](https://github.com/sstephenson/prototype/blob/master/src/prototype/lang/class.js) of the [prototype.js framework](http://prototypejs.org/).
@@ -39,10 +41,13 @@ TODO: add explanation here
         <script src="resources/libs/jassa/0.5.0/jassa.js"></script>
 
         <script type="text/javascript">
-            // The Jassa object is now readily available
+            // Init jassa with native promise and jquery.ajax
+            var jassa = new Jassa(Promise, $.ajax);
+
+            // The jassa object is now readily available
             // We hope that the name Jassa is sufficiently exotic to never cause a name clash
             // But who knows. I wished JavaScript had native namespace support...
-            console.log("The Jassa object: ", Jassa);
+            console.log("The Jassa object: ", jassa);
         </script>
     </head>
 </html>
@@ -53,7 +58,24 @@ TODO: add explanation here
 Example of a nodejs based set up:
 
 ```js
-var jassa = require('jassa');
+// require libraries
+var Promise = require('bluebird');
+var request = Promise.promisifyAll(require('request'));
+
+// create ajax function for sending requests
+var ajax = function(param) {
+    return request.postAsync(param.url, {
+        json: true,
+        form: param.data,
+    }).then(function(res) {
+        return new Promise(function(resolve) {
+            resolve(res[0].body);
+        });
+    });
+};
+
+// init jassa with loaded Promise and ajax request function
+var jassa = require('jassa')(Promise, ajax);
 ```
 
 ## Components and Usage
