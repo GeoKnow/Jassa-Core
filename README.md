@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.org/GeoKnow/Jassa-Core.png?branch=master)](https://travis-ci.org/GeoKnow/Jassa-Core)
 [![Code Climate](https://codeclimate.com/github/GeoKnow/Jassa-Core.png)](https://codeclimate.com/github/GeoKnow/Jassa-Core) 
 [![Dependency Status](https://gemnasium.com/GeoKnow/Jassa-Core.png)](https://gemnasium.com/GeoKnow/Jassa-Core) 
-[![Coverage Status](https://coveralls.io/repos/GeoKnow/Jassa-Core/badge.png)](https://coveralls.io/r/GeoKnow/Jassa-Core)
+[![Coverage Status](https://coveralls.io/repos/GeoKnow/Jassa-Core/badge.png?branch=master)](https://coveralls.io/r/GeoKnow/Jassa-Core?branch=master) 
+[![Coverage Status Develop](https://coveralls.io/repos/GeoKnow/Jassa-Core/badge.png?branch=develop)](https://coveralls.io/r/GeoKnow/Jassa-Core?branch=develop)
 
 ## Terminology
 
