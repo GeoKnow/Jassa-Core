@@ -1,5 +1,6 @@
 ## JAvascript Suite for Sparql Access (Jassa) Core
 
+[![NPM version](https://badge.fury.io/js/jassa-core.svg)](http://badge.fury.io/js/jassa-core) 
 [![Build Status](https://travis-ci.org/GeoKnow/Jassa-Core.png?branch=master)](https://travis-ci.org/GeoKnow/Jassa-Core)
 [![Code Climate](https://codeclimate.com/github/GeoKnow/Jassa-Core.png)](https://codeclimate.com/github/GeoKnow/Jassa-Core) 
 [![Dependency Status](https://gemnasium.com/GeoKnow/Jassa-Core.png)](https://gemnasium.com/GeoKnow/Jassa-Core) 
