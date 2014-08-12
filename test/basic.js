@@ -5,9 +5,19 @@ var should = require('should');
 // lib includes
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
+var ajax = function(param) {
+    return request.postAsync(param.url, {
+        json: true,
+        form: param.data,
+    }).then(function(res) {
+        return new Promise(function(resolve) {
+            resolve(res[0].body);
+        });
+    });
+};
 
 // lib
-var jassa = require('../lib');
+var jassa = require('../lib')(Promise, ajax);
 // namespaces
 var rdf = jassa.rdf;
 var vocab = jassa.vocab;
@@ -15,8 +25,8 @@ var sparql = jassa.sparql;
 var service = jassa.service;
 
 // tests
-describe('Basics', function(){
-    it('#Triple should be created', function(){
+describe('Basics', function() {
+    it('#Triple should be created', function() {
         var s = rdf.NodeFactory.createVar('s');
         var p = vocab.rdf.type;
         var o = rdf.NodeFactory.createUri('http://example.org/ontology/MyClass');
@@ -43,45 +53,32 @@ describe('Basics', function(){
     });
 
     it('#Sparql service should get results', function(done) {
-        var $ = {
-            ajax: function(param) {
-                return request.postAsync(param.url, {
-                    json: true,
-                    form: param.data,
-                }).then(function(res) {
-                    return new Promise(function(resolve) {
-                        resolve(res[0].body);
-                    });
-                });
-            }
-        };
-
         var sparqlService = new service.SparqlServiceHttp(
-            $, 'http://dbpedia.org/sparql', ['http://dbpedia.org']
+            'http://dbpedia.org/sparql', ['http://dbpedia.org']
         );
 
         var qe = sparqlService.createQueryExecution('Select * { ?s ?p ?o } Limit 10');
         qe.setTimeout(100); // timout in milliseconds
 
         qe
-        .execSelect()
-        .then(function(rs) {
-            var s = rdf.NodeFactory.createVar('s');
-            var p = rdf.NodeFactory.createVar('p');
-            var o = rdf.NodeFactory.createVar('o');
+            .execSelect()
+            .then(function(rs) {
+                var s = rdf.NodeFactory.createVar('s');
+                var p = rdf.NodeFactory.createVar('p');
+                var o = rdf.NodeFactory.createVar('o');
 
-            var count = 0;
-            while(rs.hasNext()) {
-                count++;
-                var binding = rs.nextBinding();
-                
-                binding.get(s).getUri().should.exist;
-                binding.get(p).getUri().should.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
-                binding.get(o).should.exist;
-            }
+                var count = 0;
+                while (rs.hasNext()) {
+                    count++;
+                    var binding = rs.nextBinding();
 
-            count.should.equal(10);
-            done();
-        });
+                    binding.get(s).getUri().should.exist;
+                    binding.get(p).getUri().should.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
+                    binding.get(o).should.exist;
+                }
+
+                count.should.equal(10);
+                done();
+            });
     });
 });
