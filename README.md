@@ -1,5 +1,7 @@
 ## JAvascript Suite for Sparql Access (Jassa) Core
 
+[![Build Status](https://travis-ci.org/GeoKnow/Jassa-Core.png?branch=master)](https://travis-ci.org/GeoKnow/Jassa-Core) 
+
 ## Terminology
 
 You may have noticed that we repeatedly used the term '''class'''. While it is true that plain JavaScript does not offer them (yet), there are however frameworks which introduce this level of abstraction. For Jassa we chose the [Class object](https://github.com/sstephenson/prototype/blob/master/src/prototype/lang/class.js) of the [prototype.js framework](http://prototypejs.org/).
