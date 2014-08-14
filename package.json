@@ -4,7 +4,7 @@
   "description": "JAvascript Suite for Sparql Access Core",
   "main": "./lib/index.js",
   "scripts": {
-    "test": "gulp fulltest",
+    "test": "gulp test",
     "precommit": "gulp lint",
     "prepush": "gulp mocha"
   },
