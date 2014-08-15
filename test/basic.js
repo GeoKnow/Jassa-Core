@@ -37,7 +37,7 @@ describe('Basics', function() {
         triple.getSubject().isVariable().should.be.true;
     });
 
-    it('#Query should be created', function() {
+    it('#Query.toString() should match Select * {?s ?p ?o}  Limit 10', function() {
         var query = new sparql.Query();
         var s = rdf.NodeFactory.createVar('s');
         var p = rdf.NodeFactory.createVar('p');
