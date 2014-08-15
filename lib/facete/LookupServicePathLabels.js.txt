@@ -1,7 +1,7 @@
 var Class = require('../../ext/Class');
 var flatten = require('lodash.flatten');
 var uniq = require('lodash.uniq');
-var LookupServiceBase = require('./lookup-service-base');
+var LookupServiceBase = require('./LookupServiceBase');
 var NodeFactory = require('../../rdf/NodeFactory');
 var HashMap = require('../../util/hash-map');
 

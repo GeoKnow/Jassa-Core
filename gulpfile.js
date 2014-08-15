@@ -2,7 +2,7 @@ var gulp = require('./gulp')([
     'jshint',
     'mocha',
     'coverage',
-//    'jscs',
+    'jscs',
     'docs',
     'browserify',
     'coveralls',
