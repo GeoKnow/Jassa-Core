@@ -27,17 +27,23 @@ var service = jassa.service;
 // tests
 describe('Concept Operations', function() {
     it('#Keyword Search Concept with Regex', function() {
-        var filterConcept = sparql.KeywordSearchUtils.createConceptRegex('Claus');
+/*
+        var relation = sparql.KeywordSearchUtils.createConceptRegex();
         filterConcept.toString().should.equal('?s ?p ?o . Filter((?p In (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?o), "en") || langMatches(lang(?o), ""))); ?s');
+*/
     });
 
     it('#Keyword Search Concept Combination', function() {
         var baseConcept = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Person');
-        var filterConcept = sparql.KeywordSearchUtils.createConceptRegex('Claus');
+
+        var labelRelation = sparql.KeywordSearchUtils.createRelationPrefLabels();
+        var filterConcept = sparql.KeywordSearchUtils.createConceptRegex(labelRelation, 'Claus');
 
         var combinedConcept = sparql.ConceptUtils.createCombinedConcept(baseConcept, filterConcept);
 
-        combinedConcept.toString().should.equal('?s ?p ?o . Filter((?p In (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?o), "en") || langMatches(lang(?o), ""))); ?s');
+       var expected = "?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Person> . Optional {?s ?y ?z . Filter((?y In (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?z), \"en\") || langMatches(lang(?z), \"\"))) . Filter(Regex(str(?z), 'Claus', 'i'))} . Filter((Regex(str(?s), 'Claus', 'i') || Bound(?z))); ?s";
+
+        combinedConcept.toString().should.equal(expected);
     });
 
 });
