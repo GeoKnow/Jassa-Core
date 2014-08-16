@@ -24,7 +24,7 @@
     "lodash.union": "^2.4.1",
     "lodash.uniq": "^2.4.1",
     "lodash.values": "^2.4.1",
-    "lodash.find": "^2.4.1"
+    "lodash.find": "^2.4.1",
   },
   "devDependencies": {
     "bluebird": "^2.2.2",

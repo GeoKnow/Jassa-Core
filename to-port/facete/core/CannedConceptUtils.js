@@ -2,7 +2,8 @@
 
 var CannedConceptUtils = {
 
-    createConceptDeclaredProperties: function(facetConfig, baseConcept) {
+    // TODO We need to integrate the rdfstore js parser, so we can do Concept.parse();
+    createConceptDeclaredProperties: function() {
 
         var types = [vocab.rdf.Property, vocab.owl.AnnotationProperty, vocab.owl.DatatypeProperty, vocab.owl.ObjectProperty];
 
