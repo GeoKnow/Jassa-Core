@@ -22,8 +22,8 @@ var vocab = jassa.vocab;
 var sparql = jassa.sparql;
 var service = jassa.service;
 
-var BaseDatatype = require('../../lib/rdf/base-datatype');
-var TypedValue = require('../../lib/rdf/typed-value');
+var BaseDatatype = require('../../lib/rdf/rdf_datatype/BaseDatatype');
+var TypedValue = require('../../lib/rdf/rdf_datatype/TypedValue');
 
 describe('Base datatype', function(){
   it('should initialize correctly', function() {

@@ -22,7 +22,7 @@ var vocab = jassa.vocab;
 var sparql = jassa.sparql;
 var service = jassa.service;
 
-var AnonId = require('../../lib/rdf/anon-id');
+var AnonId = require('../../lib/rdf/AnonId');
 
 describe('AnonId', function() {
   it('should initialize correctly', function() {

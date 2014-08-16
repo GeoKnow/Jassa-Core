@@ -22,9 +22,9 @@ var vocab = jassa.vocab;
 var sparql = jassa.sparql;
 var service = jassa.service;
 
-var LiteralLabel = require('../../lib/rdf/literal-label');
-var TypedValue = require('../../lib/rdf/typed-value');
-var BaseDatatype = require('../../lib/rdf/base-datatype');
+var LiteralLabel = require('../../lib/rdf/LiteralLabel');
+var TypedValue = require('../../lib/rdf/rdf_datatype/TypedValue');
+var BaseDatatype = require('../../lib/rdf/rdf_datatype/BaseDatatype');
 
 describe('Literal label', function() {
   it('should initialize and serialize correctly with dtype', function() {
