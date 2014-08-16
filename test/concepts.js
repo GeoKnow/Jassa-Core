@@ -41,7 +41,7 @@ describe('Concept Operations', function() {
 
         var combinedConcept = sparql.ConceptUtils.createCombinedConcept(baseConcept, filterConcept);
 
-       var expected = "?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Person> . Optional {?s ?y ?z . Filter((?y In (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?z), \"en\") || langMatches(lang(?z), \"\"))) . Filter(Regex(str(?z), 'Claus', 'i'))} . Filter((Regex(str(?s), 'Claus', 'i') || Bound(?z))); ?s";
+       var expected = '?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Person> . Optional {?s ?y ?z . Filter((?y in (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?z), "en") || langMatches(lang(?z), ""))) . Filter(regex(str(?z), "Claus", "i"))} . Filter((regex(str(?s), "Claus", "i") || bound(?z))); ?s';
 
         combinedConcept.toString().should.equal(expected);
     });
