@@ -48,12 +48,14 @@ describe('Concept Operations', function() {
 
         // Retrieve 10 items and fetch their labels
         itemService.fetchItems(mappedConcept.getConcept(), 10).then(function(items) {
-            console.log('Retrieved the following items: ' + items);
-        }, function() {
-            console.log('ARGH', arguments);
+            return labelService.lookup(items);
+        }).then(function(map) {
+            //var node = rdf.NodeFactory.createUri('http://www.ontologyportal.org/WordNet#WN30-106831819');
+            //var node = rdf.NodeFactory.createUri('http://www.ontologyportal.org/WordNet#WN30-106831819');
+            //var moo = map.get(node);
+            console.log('Result Map', map.values());
         });
-
-        //var itemToLabel = labelService.lookup(items);
+        
 
         //console.log(itemToLabel);
         //combinedConcept.toString().should.equal(expected);
