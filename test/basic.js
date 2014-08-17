@@ -54,7 +54,7 @@ describe('Basics', function() {
         var triple = new rdf.Triple(s, p, o);
 
         query.setQueryPattern(new sparql.ElementTriplesBlock([triple]));
-        query.setResultStar(true);
+        query.setQueryResultStar(true);
         query.setLimit(10);
 
         query.toString().should.be.equal('Select * {?s ?p ?o}  Limit 10');
