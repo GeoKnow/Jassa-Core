@@ -244,7 +244,7 @@
     	 * @returns
     	 */
     	isCountComplete: function() {
-    		if(this.getMinItemCount() !== null) {
+    		if(this.getMinItemCount() != null) {
     			return true;
     		}
     		
@@ -263,14 +263,14 @@
     	},
 	
     	updateInfMinItemCount: function() {
-    		if(!this.children && this._minItemCount !== null) {
+    		if(!this.children && this._minItemCount != null) {
     			return;
     		}
     		
     		var sum = 0;
     		
     		_(this.children).each(function(child, index) {
-    			if(child._minItemCount !== null) {
+    			if(child._minItemCount != null) {
     				sum += child._minItemCount;
     			} else if(child.infMinItemCount) {
     				sum += child.infMinItemCount;
