@@ -53,7 +53,8 @@ describe('Concept Operations', function() {
             //var node = rdf.NodeFactory.createUri('http://www.ontologyportal.org/WordNet#WN30-106831819');
             //var node = rdf.NodeFactory.createUri('http://www.ontologyportal.org/WordNet#WN30-106831819');
             //var moo = map.get(node);
-            console.log('Result Map', map.values());
+            //console.log('Result Map', map.values());
+            console.log('TODO verify output in this test case');
         });
         
 
