@@ -58,7 +58,7 @@ describe('Facete Basics', function() {
         var path = facete.Path.parse('');
         var listService = facetService.createListService(path);
         
-        listService.fetchItems('eu', 10).then(function(items) {
+        listService.fetchItems('amount', 10).then(function(items) {
             console.log('FACETE: ' + JSON.stringify(items));
         });
         
