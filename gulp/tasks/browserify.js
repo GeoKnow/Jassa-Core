@@ -3,8 +3,8 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 
 module.exports = function() {
-    var bundler = browserify().add('./lib/index.js');
-    var bundlerMin = browserify().add('./lib/index.js').transform('uglifyify');
+    var bundler = browserify().add('./lib/standalone.js');
+    var bundlerMin = browserify().add('./lib/standalone.js').transform('uglifyify');
 
     bundler.bundle()
         //Pass desired output filename to vinyl-source-stream

@@ -45,12 +45,18 @@ Now you can run `gulp` to see if the tests complete as well as results for code 
 
 TODO: add explanation here
 
+Run `gulp browserify`. Then this minimal example using JQuery and Bluebird works:
+
 ```html
 <html>
-    <head>
-        <script src="resources/libs/jassa/0.5.0/jassa.js"></script>
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
 
-        <script type="text/javascript">
+    <!--<script src="dist/jassa.min.js"></script>-->
+    <script src="dist/jassa.js"></script>
+
+    <script type="text/javascript">
             // Init jassa with native promise and jquery.ajax
             var jassa = new Jassa(Promise, $.ajax);
 
