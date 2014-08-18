@@ -16,5 +16,5 @@ module.exports = {
                     .pipe(istanbul.writeReports())
                     .pipe(shell('cat ./coverage/lcov.info | ./node_modules/.bin/coveralls')); // Creating the reports after tests runned
             });
-    },
+    }
 };
