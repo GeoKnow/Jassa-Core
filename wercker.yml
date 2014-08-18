@@ -4,6 +4,9 @@ build:
   # The steps that will be executed on build
   steps:
     # A step that executes `npm install` command
+    - script:
+        name: Make sure gulp is installed
+        code: sudo npm install gulp -g
     - npm-install
     - script:
         name: Generate docs
