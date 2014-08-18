@@ -1,0 +1,1 @@
+This sub module contains classes for creating filters from keyword search

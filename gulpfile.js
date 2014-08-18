@@ -8,7 +8,8 @@ var gulp = require('./gulp')([
     'coveralls',
 ]);
 
-gulp.task('lint', ['jshint', 'jscs']);
+//gulp.task('lint', ['jshint', 'jscs']);
+gulp.task('lint', ['jshint']);
 gulp.task('test', ['lint', 'mocha']);
 gulp.task('fulltest', ['test', 'coverage', 'coveralls']);
 gulp.task('build', ['browserify']);

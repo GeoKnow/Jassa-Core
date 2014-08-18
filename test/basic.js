@@ -8,7 +8,7 @@ var request = Promise.promisifyAll(require('request'));
 var ajax = function(param) {
     return request.postAsync(param.url, {
         json: true,
-        form: param.data,
+        form: param.data
     }).then(function(res) {
         return new Promise(function(resolve) {
             resolve(res[0].body);
@@ -24,6 +24,14 @@ var vocab = jassa.vocab;
 var sparql = jassa.sparql;
 var service = jassa.service;
 
+var createSparqlService = function() {
+    var endpoint = 'http://dbpedia.org/sparql';
+    var graphs = ['http://dbpedia.org'];
+    var result = new service.SparqlServiceHttp(endpoint, graphs);
+    return result;
+};
+        
+
 // tests
 describe('Basics', function() {
     it('#Triple should be created', function() {
@@ -37,7 +45,7 @@ describe('Basics', function() {
         triple.getSubject().isVariable().should.be.true;
     });
 
-    it('#Query should be created', function() {
+    it('#Query.toString() should match Select * {?s ?p ?o}  Limit 10', function() {
         var query = new sparql.Query();
         var s = rdf.NodeFactory.createVar('s');
         var p = rdf.NodeFactory.createVar('p');
@@ -46,16 +54,14 @@ describe('Basics', function() {
         var triple = new rdf.Triple(s, p, o);
 
         query.setQueryPattern(new sparql.ElementTriplesBlock([triple]));
-        query.setResultStar(true);
+        query.setQueryResultStar(true);
         query.setLimit(10);
 
         query.toString().should.be.equal('Select * {?s ?p ?o}  Limit 10');
     });
 
     it('#Sparql service should get results', function(done) {
-        var sparqlService = new service.SparqlServiceHttp(
-            'http://dbpedia.org/sparql', ['http://dbpedia.org']
-        );
+        var sparqlService = createSparqlService();
 
         var qe = sparqlService.createQueryExecution('Select * { ?s ?p ?o } Limit 10');
         qe.setTimeout(100); // timout in milliseconds
@@ -81,4 +87,23 @@ describe('Basics', function() {
                 done();
             });
     });
+
+    /*
+    it('#Sparql Items should be filtered by regex', function(done) {
+        var langs = ['en', 'de', ''];
+        var props = ['http://www.w3.org/2000/01/rdf-schema#label'];
+        
+        // Maybe we want a concept transformer? Takes a concept, and returns a new concept - maybe with the filter applied
+        // So the constraint manager is still useful, because it mediates between the UI and and the sparql level
+        // Constraints could also be created only based on a variable
+        
+        var searchFilter(langs, props);
+        
+        searchFilter('test');
+        
+        var sparqlService = createSparqlService();
+        var listService = 
+    });
+    */
+
 });
