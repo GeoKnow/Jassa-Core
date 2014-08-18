@@ -39,12 +39,11 @@
     "gulp-mocha": "^0.5.2",
     "gulp-rename": "^1.2.0",
     "gulp-shell": "^0.2.9",
-    "gulp-uglify": "^0.3.1",
     "husky": "^0.6.0",
     "mocha-lcov-reporter": "0.0.1",
     "request": "^2.40.0",
     "should": "^4.0.4",
-    "uglifyify": "^2.5.0",
+    "uglify-js": "^2.4.15",
     "vinyl-source-stream": "^0.1.1"
   }
 }

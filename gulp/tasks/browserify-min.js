@@ -1,13 +1,7 @@
 var gulp = require('gulp');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
+var shell = require('gulp-shell');
 
 module.exports = {
     deps: ['browserify-normal'],
-    work: function () {
-        return gulp.src('./dist/jassa.js')
-        .pipe(uglify({mangle: false}))
-        .pipe(rename('jassa.min.js'))
-        .pipe(gulp.dest('./dist/'));
-    },
+    work: shell.task('./node_modules/.bin/uglifyjs ./dist/jassa.js -m -r \'module,define,Jassa,$super\' -o ./dist/jassa.min.js'),
 };
