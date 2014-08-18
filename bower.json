@@ -1,12 +1,16 @@
 {
   "name": "jassa",
-  "version": "0.0.4-SNAPSHOT",
+  "version": "0.6.0",
   "homepage": "https://github.com/GeoKnow/Jassa",
   "authors": [
     "Claus Stadler <cstadler@informatik.uni-leipzig.de>"
   ],
   "description": "JAvascript Suite for Sparql Access",
-  "main": "jassa.js",
+  "main": "dist/jassa.js",
+  "repository": {
+      "type": "git",
+      "url": "git://github.com/GeoKnow/Jassa-Core.git"
+  },
   "dependencies": {
   },
   "keywords": [
@@ -22,9 +26,11 @@
   "license": "MIT",
   "ignore": [
     "**/.*",
+    "coverage",
+    "gulp",
+    "lib",
     "node_modules",
-    "bower_components",
     "test",
-    "tests"
+    "to-port"
   ]
 }

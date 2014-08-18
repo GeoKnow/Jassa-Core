@@ -9,3 +9,5 @@ target
 .idea
 node_modules/
 coverage/
+dist
+index.html
