@@ -31,9 +31,9 @@ describe('Facete Basics', function() {
     it('#Service test', function() {
         var facetConfig = new facete.FacetConfig();
         {
-            var p = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/city');
-            var nv = rdf.NodeFactory.createUri('http://fp7-pp.publicdata.eu/resource/city/Austria-VIENNA');
-            facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(p, nv));
+            //var p = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/city');
+            //var nv = rdf.NodeFactory.createUri('http://fp7-pp.publicdata.eu/resource/city/Austria-VIENNA');
+            //facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(p, nv));
         }
 
         

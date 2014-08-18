@@ -4,7 +4,8 @@ var gulp = require('./gulp')([
     'coverage',
     'jscs',
     'docs',
-    'browserify',
+    'browserify-normal',
+    'browserify-min',
     'coveralls',
 ]);
 
@@ -12,5 +13,6 @@ var gulp = require('./gulp')([
 gulp.task('lint', ['jshint']);
 gulp.task('test', ['lint', 'mocha']);
 gulp.task('fulltest', ['test', 'coverage', 'coveralls']);
+gulp.task('browserify', ['browserify-normal', 'browserify-min']);
 gulp.task('build', ['browserify']);
 gulp.task('default', ['test']);
