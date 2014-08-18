@@ -30,10 +30,12 @@ var facete = jassa.facete;
 describe('Facete Basics', function() {
     it('#Service test', function() {
         var facetConfig = new facete.FacetConfig();
-        {
-            //var p = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/city');
-            //var nv = rdf.NodeFactory.createUri('http://fp7-pp.publicdata.eu/resource/city/Austria-VIENNA');
-            //facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(p, nv));
+        
+        
+        if(true) {
+            var p = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/city');
+            var nv = rdf.NodeFactory.createUri('http://fp7-pp.publicdata.eu/resource/city/Austria-VIENNA');
+            facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(p, nv));
         }
 
         
@@ -45,10 +47,18 @@ describe('Facete Basics', function() {
         
         // Transform functions from searchStrings into sparql concepts
         var fnTransformSearch = function(searchString) {
-            var relation = sparql.LabelUtils.createRelationPrefLabels(bestLabelConfig);
-            var concept = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString);
-            //var concept = sparql.KeywordSearchUtils.createConceptBifContains(relation, searchString);
-            return concept;
+            
+            var result;
+            if(searchString) {
+            
+                var relation = sparql.LabelUtils.createRelationPrefLabels(bestLabelConfig);
+                var result = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString);
+                //var result = sparql.KeywordSearchUtils.createConceptBifContains(relation, searchString);
+            }
+            else {
+                result = null;
+            }
+            return result;
         };
         
         var facetService = new facete.FacetServiceSparql(sparqlService, facetConfig);
@@ -56,10 +66,23 @@ describe('Facete Basics', function() {
         
         //var path = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding');
         var path = facete.Path.parse('');
-        var listService = facetService.createListService(path);
+        var listService = facetService.createListService(path, false);
         
-        listService.fetchItems('amount', 10).then(function(items) {
-            console.log('FACETE: ' + JSON.stringify(items));
+        listService.fetchItems('ion', 10).then(function(properties) {
+            console.log('Got facets', properties);
+            /*
+            var properties = [];
+            entries.forEach(function(entry) {
+                properties.push(entry.key);
+            });
+
+            console.log('here');
+            var stepRelations = facete.FacetUtils.createStepRelationsProperties(facetConfig, path, false, [], true);
+            stepRelations.forEach(function(sr) {
+                console.log('StepRelation: ' + sr);
+                console.log('  -- Relation: ' + sparql.RelationUtils.createQueryDistinctValueCount(sr.getRelation(), sparql.VarUtils.c));
+            });
+            */
         });
         
     });
