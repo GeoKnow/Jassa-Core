@@ -31,22 +31,24 @@ describe('Facete Basics', function() {
     it('#Service test', function() {
         var facetConfig = new facete.FacetConfig();
         var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
-
+        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
+        
         var bestLabelConfig = new sparql.BestLabelConfig();
         
         // Transform functions from searchStrings into sparql concepts
         var fnTransformSearch = function(searchString) {
             var relation = sparql.LabelUtils.createRelationPrefLabels(bestLabelConfig);
             var concept = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString);
+            //var concept = sparql.KeywordSearchUtils.createConceptBifContains(relation, searchString);
             return concept;
         };
         
         var facetService = new facete.FacetServiceSparql(sparqlService, facetConfig);
         facetService = new facete.FacetServiceTransformConcept(facetService, fnTransformSearch);
-        var listService = facetService.createListService(new facete.Path());
+        var listService = facetService.createListService(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding'));
         
-        listService.fetchItems('seeAlso', 10).then(function(items) {
-            console.log(items);
+        listService.fetchItems('eu', 10).then(function(items) {
+            console.log('FACETE: ' + JSON.stringify(items));
         });
         
     });
