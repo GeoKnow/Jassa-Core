@@ -70,6 +70,12 @@ describe('Facete Basics', function() {
         
         listService.fetchItems('ion', 10).then(function(properties) {
             console.log('Got facets', properties);
+            
+            var lookupService = facete.ServiceUtils.createLookupServiceFacetCount(sparqlService, facetConfig, path, false);
+            var promise = lookupService.lookup(properties);
+            return promise;
+            
+            
             /*
             var properties = [];
             entries.forEach(function(entry) {
@@ -83,6 +89,8 @@ describe('Facete Basics', function() {
                 console.log('  -- Relation: ' + sparql.RelationUtils.createQueryDistinctValueCount(sr.getRelation(), sparql.VarUtils.c));
             });
             */
+        }).then(function(map) {
+            console.log('FINAL' + JSON.stringify(map.entries()));
         });
         
     });
