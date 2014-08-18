@@ -9,15 +9,35 @@ build:
         code: sudo npm install gulp -g
     - npm-install
     - script:
+        name: Generate dist
+        code: gulp browserify
+    - script:
         name: Generate docs
         code: gulp docs
     - script:
         name: Run fulltest (incl. coveralls)
         code: gulp fulltest
-
 deploy:
   steps:
-    # Copy docs to gh-pages branch
-    - lukevivier/gh-pages:
-        token: $GH_TOKEN
-        basedir: docs
+    - leipert/git-push:
+         gh_token: $GH_TOKEN
+         gh_pages: true
+         basedir: docs
+    - leipert/git-push:
+         gh_token: $GH_TOKEN
+         host: github.com
+         branch: testBranch
+         basedir: dist
+    # Add SSH-Key to
+    - leipert/add-ssh-key-gh-bb:
+        keyname: SSH
+    # Add bitbucket to known hosts, so they won't ask us whether we trust bitbucket
+    - add-to-known_hosts:
+        hostname: bitbucket.org
+        fingerprint: 97:8c:1b:f2:6f:14:6b:5c:3b:ec:aa:46:46:74:7c:40
+    - leipert/git-push:
+         host: bitbucket.org
+         repo: leipert/test
+         branch: master
+         discard_history: true
+         basedir: dist
