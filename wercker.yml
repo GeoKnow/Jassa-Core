@@ -1,0 +1,20 @@
+box: olger/box-yeoman
+# Build definition
+build:
+  # The steps that will be executed on build
+  steps:
+    # A step that executes `npm install` command
+    - npm-install
+    - script:
+        name: Generate docs
+        code: gulp docs
+    - script:
+        name: Generate coveralls
+        code: gulp coveralls
+
+deploy:
+  steps:
+    # Copy docs to gh-pages branch
+    - lukevivier/gh-pages:
+        token: $GH_TOKEN
+        basedir: docs
