@@ -12,7 +12,7 @@ build:
         name: Generate docs
         code: gulp docs
     - script:
-        name: Generate coveralls
+        name: Run fulltest (incl. coveralls)
         code: gulp fulltest
 
 deploy:
