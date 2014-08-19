@@ -71,8 +71,13 @@ describe('Facete Basics', function() {
         listService.fetchItems(null, 10).then(function(properties) {
             console.log('Got facets', properties);
             
-            var lookupService = facete.ServiceUtils.createLookupServiceFacetCount(sparqlService, facetConfig, path, false);
-            var promise = lookupService.lookup(properties);
+            var facetRelationIndex = facete.FacetUtils.createFacetRelationIndex(facetConfig, path, false);
+            
+            var lsPreCount = new facete.LookupServiceFacetPreCount(sparqlService, facetRelationIndex);
+            var lsExactCount = new facete.LookupServiceFacetExactCount(sparqlService, facetRelationIndex);
+            var ls = new facete.LookupServiceFacetCount(lsPreCount, lsExactCount);
+
+            var promise = ls.lookup(properties);
             return promise;
             
             
