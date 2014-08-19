@@ -68,13 +68,12 @@ describe('NodeFactory', function() {
   });
 
   it('should create typed literals from a typed value object correctly', function() {
-    var lexicalValue = 23;
+    var value = 23;
     var datatypeUri = 'http://www.w3.org/2001/XMLSchema#int';
-    var typedValue = new TypedValue(lexicalValue, datatypeUri);
-    var litNode = NodeFactory.createTypedLiteralFromValue(typedValue, datatypeUri);
+    var litNode = NodeFactory.createTypedLiteralFromValue(value, datatypeUri);
 
-    (litNode instanceof Node_Literal).should.be.true;
-    litNode.getLiteralLexicalForm().should.equal(lexicalValue);
+    litNode.isLiteral().should.be.true;
+    litNode.getLiteralLexicalForm().should.equal('23');
     litNode.getLiteralDatatypeUri().should.equal(datatypeUri);
   });
 

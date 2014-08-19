@@ -31,7 +31,7 @@ describe('Services', function() {
         var attrQuery = new sparql.Query();
         
         attrQuery.getProject().add(sparql.VarUtils.s);
-        attrQuery.getProject().add(sparql.VarUtils.c, new sparql.E_Count());        
+        attrQuery.getProject().add(sparql.VarUtils.c, new sparql.ExprAggregator(null, new sparql.AggCount()));
         attrQuery.setQueryPattern(new sparql.ElementTriplesBlock([new rdf.Triple(sparql.VarUtils.s, vocab.rdfs.label, sparql.VarUtils.o)]));
         
         var filterConcept = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Castle'); 
