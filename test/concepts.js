@@ -39,7 +39,7 @@ describe('Concept Operations', function() {
         var bestLabelConfig = new sparql.BestLabelConfig();
 
         var labelRelation = sparql.LabelUtils.createRelationPrefLabels(bestLabelConfig);
-        var filterConcept = sparql.KeywordSearchUtils.createConceptRegex(labelRelation, 'Claus');
+        var filterConcept = sparql.KeywordSearchUtils.createConceptRegex(labelRelation, 'Claus', true);
 
         var combinedConcept = sparql.ConceptUtils.createCombinedConcept(baseConcept, filterConcept);
 

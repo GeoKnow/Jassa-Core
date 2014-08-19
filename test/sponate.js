@@ -27,7 +27,43 @@ var sponate = jassa.sponate;
 
 // tests
 describe('Concept Operations', function() {
-    it('#Keyword Search Concept with Regex', function() {
+    it('#Keyword A DBpedia translation service example', function() {
+        
+        var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+        //var sparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/vsparql', ['http://linkedgeodata.org']);
+        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
+        
+        var sourceBlc = new sparql.BestLabelConfig(['de']);
+        var targetBlc = new sparql.BestLabelConfig(['en']);
+        
+        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(targetBlc);
+        
+        var ls = sponate.ListServiceUtils.createListServiceMappedConcept(sparqlService, mappedConcept);
+
+        ls = new service.ListServiceTransformItem(ls, function(item) {
+            return item.displayLabel;
+        });
+        
+
+        ls = new service.ListServiceTransformConcept(ls, function(concept) {
+            var c = sparql.ConceptUtils.createTypeConcept('http://www.w3.org/2002/07/owl#Class');
+            var result = sparql.ConceptUtils.createCombinedConcept(concept, c, false);
+            return result;
+        });
+
+        
+        ls = new service.ListServiceTransformConcept(ls, function(searchString) {
+            var relation = sparql.LabelUtils.createRelationPrefLabels(sourceBlc);
+            var result = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString);
+            //var result = sparql.KeywordSearchUtils.createConceptBifContains(relation, searchString);
+            return result;
+        });
+
+        ls.fetchItems('airport', 10).then(function(translations) {
+            translations.forEach(function(translation) {
+                console.log('Translated: ' + translation);
+            });
+        });
 /*
         var relation = sparql.KeywordSearchUtils.createConceptRegex();
         filterConcept.toString().should.equal('?s ?p ?o . Filter((?p In (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?o), "en") || langMatches(lang(?o), ""))); ?s');
