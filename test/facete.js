@@ -68,7 +68,7 @@ describe('Facete Basics', function() {
         var path = facete.Path.parse('');
         var listService = facetService.createListService(path, false);
         
-        listService.fetchItems('ion', 10).then(function(properties) {
+        listService.fetchItems(null, 10).then(function(properties) {
             console.log('Got facets', properties);
             
             var lookupService = facete.ServiceUtils.createLookupServiceFacetCount(sparqlService, facetConfig, path, false);
