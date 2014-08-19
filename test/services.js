@@ -34,11 +34,11 @@ describe('Services', function() {
         attrQuery.getProject().add(sparql.VarUtils.c, new sparql.ExprAggregator(null, new sparql.AggCount()));
         attrQuery.setQueryPattern(new sparql.ElementTriplesBlock([new rdf.Triple(sparql.VarUtils.s, vocab.rdfs.label, sparql.VarUtils.o)]));
         
-        var filterConcept = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Castle'); 
+        var filterConcept = sparql.ConceptUtils.createTypeConcept('http://linkedgeodata.org/ontology/Amenity'); 
 
         
         // Sparql layers: http, caching, fixes, pagination and page-expansion
-        var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+        var sparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
         sparqlService = new service.SparqlServiceCache(sparqlService);
         sparqlService = new service.SparqlServiceVirtFix(sparqlService);
         sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);

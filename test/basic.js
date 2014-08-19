@@ -25,8 +25,10 @@ var sparql = jassa.sparql;
 var service = jassa.service;
 
 var createSparqlService = function() {
-    var endpoint = 'http://dbpedia.org/sparql';
-    var graphs = ['http://dbpedia.org'];
+//    var endpoint = 'http://dbpedia.org/sparql';
+//    var graphs = ['http://dbpedia.org'];
+    var endpoint = 'http://linkedgeodata.org/sparql';
+    var graphs = ['http://linkedgeodata.org'];
     var result = new service.SparqlServiceHttp(endpoint, graphs);
     return result;
 };
@@ -63,7 +65,7 @@ describe('Basics', function() {
     it('#Sparql service should get results', function(done) {
         var sparqlService = createSparqlService();
 
-        var qe = sparqlService.createQueryExecution('Select * { ?s ?p ?o } Limit 10');
+        var qe = sparqlService.createQueryExecution('Select * { ?s ?p ?o . Filter(?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>) } Limit 10');
         qe.setTimeout(100); // timout in milliseconds
 
         qe

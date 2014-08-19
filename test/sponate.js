@@ -26,6 +26,7 @@ var service = jassa.service;
 var sponate = jassa.sponate;
 
 // tests
+/*
 describe('Concept Operations', function() {
     it('#Keyword A DBpedia translation service example', function() {
         
@@ -64,10 +65,10 @@ describe('Concept Operations', function() {
                 console.log('Translated: ' + translation);
             });
         });
-/*
-        var relation = sparql.KeywordSearchUtils.createConceptRegex();
-        filterConcept.toString().should.equal('?s ?p ?o . Filter((?p In (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?o), "en") || langMatches(lang(?o), ""))); ?s');
-*/
+
+//        var relation = sparql.KeywordSearchUtils.createConceptRegex();
+//        filterConcept.toString().should.equal('?s ?p ?o . Filter((?p In (<http://www.w3.org/2000/01/rdf-schema#label>))) . Filter((langMatches(lang(?o), "en") || langMatches(lang(?o), ""))); ?s');
+
     });
 
     it('#Label aggregation', function() {
@@ -99,3 +100,4 @@ describe('Concept Operations', function() {
     });
 
 });
+*/

@@ -32,7 +32,7 @@ describe('Facete Basics', function() {
         var facetConfig = new facete.FacetConfig();
         
         
-        if(true) {
+        if(false) {
             var p = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/city');
             var nv = rdf.NodeFactory.createUri('http://fp7-pp.publicdata.eu/resource/city/Austria-VIENNA');
             facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(p, nv));
@@ -61,22 +61,35 @@ describe('Facete Basics', function() {
             return result;
         };
         
-        var facetService = new facete.FacetServiceSparql(sparqlService, facetConfig);
+        //ListServicecreateListServiceMappedConcept
+        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(bestLabelConfig);
+        var lsBestLabel = sponate.LookupServiceUtils.createLookupServiceMappedConcept(sparqlService, mappedConcept);
+        
+        
+        var facetConceptSupplierExact = new facete.FacetConceptSupplierExact(facetConfig);
+        var facetConceptSupplierMeta = new facete.FacetConceptSupplierMeta(facetConceptSupplierExact);
+
+        // TODO: Use the set of declared properties for the root
+        //facetConceptSupplierMeta.getPathHeadToConcept().put(new facete.Path(), );
+        
+        var facetService = new facete.FacetServiceSparql(sparqlService, facetConceptSupplierMeta);
         facetService = new facete.FacetServiceTransformConcept(facetService, fnTransformSearch);
         
         //var path = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding');
-        var path = facete.Path.parse('');
-        var listService = facetService.createListService(path, false);
+        var pathHead = new facete.PathHead(facete.Path.parse(''), false);
+        var listService = facetService.createListService(pathHead);
+        
         
         listService.fetchItems(null, 10).then(function(properties) {
             console.log('Got facets', properties);
             
-            var facetRelationIndex = facete.FacetUtils.createFacetRelationIndex(facetConfig, path, false);
+            var facetRelationIndex = facete.FacetUtils.createFacetRelationIndex(facetConfig, pathHead);
             
             var lsPreCount = new facete.LookupServiceFacetPreCount(sparqlService, facetRelationIndex);
             var lsExactCount = new facete.LookupServiceFacetExactCount(sparqlService, facetRelationIndex);
             var ls = new facete.LookupServiceFacetCount(lsPreCount, lsExactCount);
 
+            ls = lsBestLabel;
             var promise = ls.lookup(properties);
             return promise;
             
@@ -97,7 +110,10 @@ describe('Facete Basics', function() {
         }).then(function(map) {
             console.log('FINAL' + JSON.stringify(map.entries()));
         });
-        
+
+        listService.fetchItems(null, null).then(function(items) {
+            console.log('got everything', items.length);
+        });
     });
 
 
