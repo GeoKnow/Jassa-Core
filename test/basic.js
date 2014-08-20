@@ -32,7 +32,7 @@ var createSparqlService = function() {
     var result = new service.SparqlServiceHttp(endpoint, graphs);
     return result;
 };
-        
+
 
 // tests
 describe('Basics', function() {
@@ -94,17 +94,17 @@ describe('Basics', function() {
     it('#Sparql Items should be filtered by regex', function(done) {
         var langs = ['en', 'de', ''];
         var props = ['http://www.w3.org/2000/01/rdf-schema#label'];
-        
+
         // Maybe we want a concept transformer? Takes a concept, and returns a new concept - maybe with the filter applied
         // So the constraint manager is still useful, because it mediates between the UI and and the sparql level
         // Constraints could also be created only based on a variable
-        
+
         var searchFilter(langs, props);
-        
+
         searchFilter('test');
-        
+
         var sparqlService = createSparqlService();
-        var listService = 
+        var listService =
     });
     */
 
