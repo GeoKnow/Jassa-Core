@@ -41,7 +41,7 @@ describe('Facete Basics', function() {
 
         var pathHead = facete.PathHead.parse('', false);
         facetService.createListService(pathHead).then(function(ls) {
-            return ls.fetchItems('ion');
+            return ls.fetchItems('lon');
         }).then(function(items) {
             console.log('FACETE: ' + JSON.stringify(items));
         });
