@@ -26,25 +26,77 @@ var service = jassa.service;
 var sponate = jassa.sponate;
 
 // tests
+describe('Sponate tests', function() {
+    it('#Simple mapping', function() {
+//        var map = {
+//            template: [{
+//                id: '?s',
+//                name: '?l'
+//            }],
+//            from: '?s a dbpedia-owl:Castle ; ?s rdfs:label ?l'
+//        };
+
+        //var parser = new sponate.TemplateParser();
+        //var agg = parser.parseAgg(map.template);
+
+        var prefixMapping = new rdf.PrefixMappingImpl({
+            fp7o: 'http://fp7-pp.publicdata.eu/ontology/'
+        });
+
+        context = new sponate.Context(prefixMapping);
+
+        context.add({
+            name: 'projects',
+            template: [{
+                id: '?s',
+                //displayName: labelAggregator // Aggregator fields cannot be filtered server side.
+                name: '?l',
+                partners: [{
+                    id: '?o',
+                    name: '?pl',
+                    amount: '?a',
+                }]
+                //partnersTest: ['?o']
+            }],
+            from: '?s a fp7o:Project ; rdfs:label ?l ; fp7o:funding ?f . ?f fp7o:partner ?o . ?o rdfs:label ?pl . ?f fp7o:amount ?a'
+        });
+
+        var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
+        var engine = new sponate.Engine(sparqlService);
+
+
+        var query = new sponate.Query('projects');
+        query.setLimit(10);
+
+        engine.exec(context, query).then(function(items) {
+            items.forEach(function(item) {
+                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+            });
+        });
+
+
+    });
+});
+
 /*
 describe('Concept Operations', function() {
     it('#Keyword A DBpedia translation service example', function() {
-        
+
         var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
         //var sparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/vsparql', ['http://linkedgeodata.org']);
         sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
-        
+
         var sourceBlc = new sparql.BestLabelConfig(['de']);
         var targetBlc = new sparql.BestLabelConfig(['en']);
-        
+
         var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(targetBlc);
-        
+
         var ls = sponate.ListServiceUtils.createListServiceMappedConcept(sparqlService, mappedConcept);
 
         ls = new service.ListServiceTransformItem(ls, function(item) {
             return item.displayLabel;
         });
-        
+
 
         ls = new service.ListServiceTransformConcept(ls, function(concept) {
             var c = sparql.ConceptUtils.createTypeConcept('http://www.w3.org/2002/07/owl#Class');
@@ -52,7 +104,7 @@ describe('Concept Operations', function() {
             return result;
         });
 
-        
+
         ls = new service.ListServiceTransformConcept(ls, function(searchString) {
             var relation = sparql.LabelUtils.createRelationPrefLabels(sourceBlc);
             var result = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString);
@@ -76,10 +128,10 @@ describe('Concept Operations', function() {
 
         var bestLabelConfig = new sparql.BestLabelConfig();
         var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(bestLabelConfig);
-        
+
         var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
         //sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
-        
+
         var labelService = sponate.LookupServiceUtils.createLookupServiceMappedConcept(sparqlService, mappedConcept);
         var itemService = new service.ListServiceConcept(sparqlService);
 
@@ -93,7 +145,7 @@ describe('Concept Operations', function() {
             //console.log('Result Map', map.values());
             console.log('TODO verify output in this test case');
         });
-        
+
 
         //console.log(itemToLabel);
         //combinedConcept.toString().should.equal(expected);
