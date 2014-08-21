@@ -39,13 +39,27 @@ describe('Facete Basics', function() {
         var constraintManager = new facete.ConstraintManager();
         var facetService = facetSystem.createFacetService(constraintManager);
 
+        /*
         var pathHead = facete.PathHead.parse('', false);
         facetService.createListService(pathHead).then(function(ls) {
             return ls.fetchItems('lon');
         }).then(function(items) {
             console.log('FACETE: ' + JSON.stringify(items));
         });
+        */
 
+        var ftc = new facete.FacetTreeConfig();
+        ftc.setState(new facete.Path(), new facete.FacetNodeState(1, 10, null, 'funding'));
+
+        ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding'), new facete.FacetNodeState(1, 10, null, null));
+
+        facete.FacetTreeService.fetchFacetTree(facetService, ftc).then(function(items) {
+            console.log('PRINTING TREE [START]');
+            items.forEach(function(item) {
+                console.log('TREE: ' + JSON.stringify(item));
+            });
+            console.log('PRINTING TREE [DONE]');
+        });
 
 /*
         if(false) {

@@ -70,7 +70,7 @@ describe('Sponate tests', function() {
 
         engine.exec(context, query).then(function(items) {
             items.forEach(function(item) {
-                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+                //console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
             });
         });
 
