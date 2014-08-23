@@ -25,6 +25,7 @@ var service = jassa.service;
 var NodeFactory = require('../../lib/rdf/NodeFactory');
 var Node_Blank = require('../../lib/rdf/node/Node_Blank');
 var Node_Uri = require('../../lib/rdf/node/Node_Uri');
+var Node_Variable = require('../../lib/rdf/node/Node_Variable');
 var Node_Literal = require('../../lib/rdf/node/Node_Literal');
 var LiteralLabel = require('../../lib/rdf/LiteralLabel');
 var TypedValue = require('../../lib/rdf/rdf_datatype/TypedValue');
@@ -44,6 +45,14 @@ describe('NodeFactory', function() {
 
     (uriNode instanceof Node_Uri).should.be.true;
     uriNode.getUri().should.equal(uriStr);
+  });
+
+  it('should create variable nodes correctly', function() {
+    var varName = 'var23';
+    var varNode = NodeFactory.createVar(varName);
+
+    (varNode instanceof Node_Variable).should.be.true;
+    varNode.getName().should.equal(varName);
   });
 
   it('should create plain literals with lang tag correctly', function() {
@@ -149,5 +158,54 @@ describe('NodeFactory', function() {
     typedLit.getLiteralLexicalForm().should.equal(talisJSON.value);
     // FIXME: #19
 //    typedLit.getLiteralDatatypeUri().should.equal(talisJSON.datatype);
+  });
+
+  it('should parse blank node strings correctly', function() {
+    var bNodeId = '_:23';
+    var blankNode = NodeFactory.parseRdfTerm(bNodeId);
+
+    (blankNode instanceof Node_Blank).should.be.true;
+    blankNode.getBlankNodeId().label.should.equal(bNodeId);
+  });
+
+  it('should parse URI strings correctly', function() {
+    var uriStr = 'http://ex.org/sth';
+    var resStr = '<' + uriStr + '>';
+    var node = NodeFactory.parseRdfTerm(resStr);
+
+    (node instanceof Node_Uri).should.be.true;
+    node.getUri().should.equal(uriStr)
+  });
+
+  it('should parse plain literal strings wo/ language tag correctly', function() {
+    var litStr = 'plain plain plain';
+    var valStr = '"' + litStr + '"';
+    var node = NodeFactory.parseRdfTerm(valStr);
+
+    (node instanceof Node_Literal).should.be.true;
+    node.getLiteralValue().should.equal(litStr);
+    node.getLiteralLanguage().should.equal('');
+  });
+
+  it('should parse plain literals w/ language tag correctly', function() {
+    var litStr = 'plain plain plain';
+    var langStr = 'en';
+    var valStr = '"' + litStr + '"@' + langStr;
+    var node = NodeFactory.parseRdfTerm(valStr);
+
+    (node instanceof Node_Literal).should.be.true;
+    node.getLiteralValue().should.equal(litStr);
+    node.getLiteralLanguage().should.equal(langStr);
+  });
+
+  it('should parse typed literal strings correctly', function() {
+    var litStr = 'typed typed typed';
+    var typeUriStr = 'http://www.w3.org/2001/XMLSchema#string';
+    var valStr = '"' + litStr + '"^^<' + typeUriStr + '>';
+    var node = NodeFactory.parseRdfTerm(valStr);
+
+    (node instanceof Node_Literal).should.be.true;
+    node.getLiteralValue().should.equal(litStr);
+    node.getLiteralDatatypeUri().should.equal(typeUriStr);
   });
 });
