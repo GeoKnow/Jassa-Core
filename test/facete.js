@@ -93,79 +93,24 @@ describe('Facete Basics', function() {
         sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
 
         var facetConfig = new facete.FacetConfig();
-        var cpath = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding http://fp7-pp.publicdata.eu/ontology/partner http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/country');
-        //facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(cpath, rdf.NodeFactory.createUri('http://foo.org/foo')));
-        var path = facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
-        var excludeSelfConstraints = false;
-        var concept = facete.FacetUtils.createConceptResources(facetConfig, cpath, excludeSelfConstraints);
-        var baseVar = facetConfig.getRootFacetNode().getVar();
-
-        var relation = new sparql.Relation(concept.getElement(), concept.getVar(), baseVar);
+        var cpath = facete.Path.parse('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
+        facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(cpath, rdf.NodeFactory.createUri('http://fp7-pp.publicdata.eu/ontology/Project')));
 
 
-        // Make a check on how many rows there are
-        service.ServiceUtils.fetchCountRows(sparqlService, relation.getElement(), 100000).then(function(countInfo) {
-            var canUseCounts = countInfo.hasMoreItems === false;
+        var facetValueService = new facete.FacetValueService(sparqlService, facetConfig, 5000000);
+        var path = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding http://fp7-pp.publicdata.eu/ontology/partner http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/country');
+        facetValueService.prepareTableService(path, false).then(function(ls) {
 
-            // If we could count the items, we can also support ordering them by their aggregated value
-            var canUseOrder = canUseCounts;
+            var bestLabelConfig = new sparql.BestLabelConfig();
+            var labelRelation = sparql.LabelUtils.createRelationPrefLabels(bestLabelConfig);
+            var filterConcept = sparql.KeywordSearchUtils.createConceptRegex(labelRelation, 'Germany', true);
 
-
-            console.log('Count info: ', countInfo);
+            return ls.fetchItems(filterConcept, 10);
+        }).then(function(items) {
+            items[0].val.bindings[0].get(rdf.NodeFactory.createVar('c_1')).getLiteralValue().should.equal(1094);
+            //console.log('FACET VALUES\n ' + JSON.stringify(items, null, 4));
         });
 
-
-
-        var countVar = rdf.NodeFactory.createVar('c');
-        var query = sparql.RelationUtils.createQueryDistinctValueCount(relation, countVar);
-
-        query.getOrderBy().push(new sparql.SortCondition(query.getProject().getExpr(countVar), 'desc'));
-
-        /*
-        valueSystem.prepareTable(somePath) // Will check whether sorting is feasible on the that path
-        .then(function(tableService) { // Returns a table service
-            The issue is, that we don't have access to the concept here
-
-            So maybe have a util method instead?
-            FacetValueUtil.prepareTableService(sparqlService, concept);
-        });
-
-
-
-        facetSystem.createValueTable(somePath).setTableMod(tableMod).createTableService().then(function(tableService) {
-
-        });
-
-
-        var tw = new TableWrapperQuery(query, [{'item': {v: concept.getVar(), sortable: true, removeable: false}, ]);
-        tw.setOrder('item', 'asc'); //
-
-        tw.getOrder('columnId');
-
-
-        */
-        console.log('Resource concept is: ' + query);
-
-        var listService = new service.ListServiceSparqlQuery(sparqlService, query, concept.getVar());
-
-        //var qe = sparqlService.createQueryExecution(query);
-        //qe.execSelect().then(function(rs) {
-        //console.log('Argh ' + baseVar + '; ' + query);
-        listService.fetchItems(null, 10, 100).then(function(items) {
-            console.log('Results:\n' + JSON.stringify(items.length, null, 4));
-        });
-
-
-        // TODO Wrap the query with a table mod
-
-
-/*
-
-        var facetSystem = new facete.FacetSystemSparql(sparqlService);
-        var constraintManager = new facete.ConstraintManager();
-        constraintManager.addConstraint(new facete.ConstraintRegex(facete.Path.parse('http://dcat.cc/ontology/groupId'), 'dbpedia'));
-        constraintManager.addConstraint(new facete.ConstraintRegex(facete.Path.parse('http://dcat.cc/ontology/artifacetId'), 'o'));
-*/
     });
 
     it('#Datacat test', function() {
