@@ -92,9 +92,10 @@ describe('Sponate tests', function() {
         });
 
         store.projects.find().limit(10).list().then(function(items) {
-            items.forEach(function(item) {
+            items.length.should.equal(10);
+            /*items.forEach(function(item) {
                 console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
-            });
+            });*/
         });
 
 
