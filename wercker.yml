@@ -8,9 +8,9 @@ build:
         name: Make sure gulp is installed
         code: sudo npm install gulp -g
     - npm-install
-#    - script:
-#        name: Run fulltest (incl. coveralls)
-#        code: gulp fulltest
+    - script:
+        name: Run fulltest (incl. coveralls)
+        code: gulp fulltest
     - script:
         name: Generate dist
         code: gulp browserify
@@ -30,6 +30,7 @@ deploy:
     - leipert/git-push:
          gh_token: $GH_TOKEN
          host: github.com
-         branch: bowerTest
+         repo: GeoKnow/Jassa-Bower
+         branch: master
          basedir: dist
          tag: bower
