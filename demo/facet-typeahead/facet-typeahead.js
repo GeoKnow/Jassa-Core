@@ -85,12 +85,30 @@ angular.module('ui.jassa.facet-typeahead', [])
             });
 
 
-            var facetValueService = new jassa.facete.FacetValueService(sparqlService, facetConfig, 5000000);
+//            var facetValueService = new jassa.facete.FacetValueService(sparqlService, facetConfig, 5000000);
+//            var result = facetValueService.prepareTableService(path, false).then(function(listService) {
+//                return listService.fetchItems(null, 100);
+//            });
+
+            var bestLabelConfig = new sparql.BestLabelConfig();
+            var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(bestLabelConfig);
+
+            var itemService = sponate.ListServiceUtils.createListServiceMappedConcept(sparqlService, mappedConcept);
+
+
+            var facetValueConceptService = new jassa.facete.FacetValueConceptServiceExact(facetConfig);
+
+            var result = facetValueConceptService.prepareConcept(path, false).then(function(concept) {
+                var r = itemService.fetchItems(concept, 10).then(function(items) {
+                    console.log('Items: ' + JSON.stringify(items, null, 4));
+                    //return ['foo', 'bar'];
+                    return items;
+                });
+                return r;
+                //jassa.sparql.ConceptUtils.createCombinedConcept();
+            });
 
             // TODO Currently we really return a list service rather than a table service
-            var result = facetValueService.prepareTableService(path, false).then(function(listService) {
-                return listService.fetchItems(null, 100);
-            });
 
             /*
             var p1 = fetcher.fetchData(offset, limit); //offset);
@@ -144,12 +162,14 @@ angular.module('ui.jassa.facet-typeahead', [])
             var modelExprStr = attrs['ngModel'];
             var configExprStr = attrs['facetTypeahead'];
             var pathExprStr = attrs['facetTypeaheadPath'];
+            var listServiceExprStr = attrs['facetTypeaheadList'];
 
             // Remove the attribute to prevent endless loop in compilation
             elem.removeAttr('facet-typeahead');
             elem.removeAttr('facet-typeahead-path');
+            elem.removeAttr('facet-typeahead-list');
 
-            var newAttrVal = 'item for item in facetTypeAheadService.getSuggestions($viewValue)';
+            var newAttrVal = 'item.id.getUri() as item.displayLabel for item in facetTypeAheadService.getSuggestions($viewValue)';
             elem.attr('typeahead', newAttrVal);
 
 
