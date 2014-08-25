@@ -1,0 +1,36 @@
+box: olger/box-yeoman
+# Build definition
+build:
+  # The steps that will be executed on build
+  steps:
+    # A step that executes `npm install` command
+    - script:
+        name: Make sure gulp is installed
+        code: sudo npm install gulp -g
+    - npm-install
+    - script:
+        name: Run fulltest (incl. coveralls)
+        code: gulp fulltest
+    - script:
+        name: Generate dist
+        code: gulp browserify
+    - script:
+        name: Copy bower.json into dist folder
+        code: cp bower.json dist/
+    - script:
+        name: Generate docs
+        code: gulp docs
+
+deploy:
+  steps:
+    - leipert/git-push:
+         gh_token: $GH_TOKEN
+         gh_pages: true
+         basedir: docs
+    - leipert/git-push:
+         gh_token: $GH_TOKEN
+         host: github.com
+         repo: GeoKnow/Jassa-Bower
+         branch: master
+         basedir: dist
+         tag: bower
