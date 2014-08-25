@@ -27,25 +27,55 @@ var sponate = jassa.sponate;
 
 // tests
 describe('Sponate tests', function() {
-    it('#Simple mapping', function() {
-//        var map = {
+
+    it('#Simple low mapping', function() {
+
+//        var prefixMapping = new rdf.PrefixMappingImpl({
+//            fp7o: 'http://fp7-pp.publicdata.eu/ontology/'
+//        });
+//
+//        context = new sponate.Context(prefixMapping);
+//
+//        context.add({
+//            name: 'projects',
 //            template: [{
 //                id: '?s',
-//                name: '?l'
+//                //displayName: labelAggregator // Aggregator fields cannot be filtered server side.
+//                name: '?l',
+//                partners: [{
+//                    id: '?o',
+//                    name: '?pl',
+//                    amount: '?a',
+//                }]
+//                //partnersTest: ['?o']
 //            }],
-//            from: '?s a dbpedia-owl:Castle ; ?s rdfs:label ?l'
-//        };
+//            from: '?s a fp7o:Project ; rdfs:label ?l ; fp7o:funding ?f . ?f fp7o:partner ?o . ?o rdfs:label ?pl . ?f fp7o:amount ?a'
+//        });
+//
+//        var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
+//        var engine = new sponate.Engine(sparqlService);
+//
+//
+//        var query = new sponate.Query('projects');
+//        query.setLimit(10);
+//
+//        engine.exec(context, query).then(function(items) {
+//            items.forEach(function(item) {
+//                //console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+//            });
+//        });
 
-        //var parser = new sponate.TemplateParser();
-        //var agg = parser.parseAgg(map.template);
+    }),
 
-        var prefixMapping = new rdf.PrefixMappingImpl({
+    it('#Simple mapping', function() {
+
+        var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
+
+        store = new sponate.StoreFacade(sparqlService, {
             fp7o: 'http://fp7-pp.publicdata.eu/ontology/'
         });
 
-        context = new sponate.Context(prefixMapping);
-
-        context.add({
+        store.addMap({
             name: 'projects',
             template: [{
                 id: '?s',
@@ -61,16 +91,9 @@ describe('Sponate tests', function() {
             from: '?s a fp7o:Project ; rdfs:label ?l ; fp7o:funding ?f . ?f fp7o:partner ?o . ?o rdfs:label ?pl . ?f fp7o:amount ?a'
         });
 
-        var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
-        var engine = new sponate.Engine(sparqlService);
-
-
-        var query = new sponate.Query('projects');
-        query.setLimit(10);
-
-        engine.exec(context, query).then(function(items) {
+        store.projects.find().limit(10).list().then(function(items) {
             items.forEach(function(item) {
-                //console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
             });
         });
 
