@@ -28,8 +28,6 @@ var NodeFactory = require('../../lib/rdf/NodeFactory');
 
 describe('NodeUtils', function() {
   it('should return correct node substitutes', function() {
-    // TODO: how do I create a 'real' varMap and what is it used for?
-//    var varMap = ConceptUtils.createVarMap(attrConcept, filterConcept);
     var nodeAUriStr = 'http://ex.org/a';
     var nodeA = NodeFactory.createUri(nodeAUriStr);
 
@@ -98,7 +96,6 @@ describe('NodeUtils', function() {
     var node = NodeFactory.createAnon(value)
 
     var resValue = NodeUtils.getValue(node);
-    // TODO: check if I'm testing a bug here...
     resValue.should.equal('_:' + value);
   });
 
