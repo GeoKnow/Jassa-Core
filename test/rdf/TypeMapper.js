@@ -16,11 +16,6 @@ var ajax = function(param) {
 
 // lib
 var jassa = require('../../lib')(Promise, ajax);
-// namespaces
-var rdf = jassa.rdf;
-var vocab = jassa.vocab;
-var sparql = jassa.sparql;
-var service = jassa.service;
 
 var TypeMapper = require('../../lib/rdf/TypeMapper');
 
