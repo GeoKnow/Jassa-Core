@@ -22,11 +22,11 @@ var DatatypeLabel = require('../../lib/rdf/datatype/DatatypeLabel');
 describe('DatatypeLabel', function() {
   it('should throw an error if its parse method is called', function() {
     var dtypeLabel = new DatatypeLabel();
-    dtypeLabel.parse.bind(null).should.throw('Not implemented');
+    dtypeLabel.parse.bind(dtypeLabel).should.throw('Not implemented');
   });
 
   it('should throw an error if its unparse method is called', function() {
     var dtypeLabel = new DatatypeLabel();
-    dtypeLabel.unparse.bind(null).should.throw('Not implemented');
+    dtypeLabel.unparse.bind(dtypeLabel).should.throw('Not implemented');
   });
 });
