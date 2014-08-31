@@ -67,9 +67,69 @@ describe('Sponate tests', function() {
 
     }),
 
+    it('#Resource Description', function() {
+
+        var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
+        linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
+
+        linkStore = new sponate.StoreFacade(linkSparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'llo': 'http://www.linklion.org/ontology#'
+        });
+
+        linkStore.addMap({
+            name: 'resources',
+            template: [{
+                id: '?l',
+                source: '?s',
+                target: '?t'
+            }],
+            from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
+        });
+
+        linkStore.resources.find().limit(10).concept().list().then(function(items) {
+            /*
+            items.forEach(function(item) {
+                console.log('LINK:\n' + JSON.stringify(item, null, 4));
+            });
+            */
+        });
+
+        if (true) {
+            return;
+        }
+
+        var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
+
+        store = new sponate.StoreFacade(sparqlService);
+
+        store.addMap({
+            name: 'resources',
+            template: [{
+                id: '?s',
+                predicates: [{
+                    id: '?p',
+                    objects: ['?o']
+                }]
+            }],
+            from: '?s ?p ?o'
+        });
+
+        var airports = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Airport');
+
+        // TODO If the element is just SPO, we can optimize it away from the inner query...
+        store.resources.find().limit(10).concept(airports).list().then(function(items) {
+            items.forEach(function(item) {
+                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+            });
+        });
+    }),
+
     it('#Simple mapping', function() {
 
         var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
+        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
 
         store = new sponate.StoreFacade(sparqlService, {
             fp7o: 'http://fp7-pp.publicdata.eu/ontology/'
@@ -93,9 +153,9 @@ describe('Sponate tests', function() {
 
         store.projects.find().limit(10).list().then(function(items) {
             items.length.should.equal(10);
-            /*items.forEach(function(item) {
-                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
-            });*/
+//            items.forEach(function(item) {
+//                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+//            });
         });
 
 

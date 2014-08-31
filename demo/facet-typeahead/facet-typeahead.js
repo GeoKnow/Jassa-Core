@@ -69,12 +69,21 @@ angular.module('ui.jassa.facet-typeahead', [])
                     return null;
                 }
 
-                var val = rdf.NodeFactory.createPlainLiteral(valStr);
+                //var val = rdf.NodeFactory.createPlainLiteral(valStr);
                 var pathSpec = item.pathExpr(self.$scope);
                 var path = parsePathSpec(pathSpec); //facete.PathUtils.
 
+                var r;
+                if(config.search) {
+                    var concept = config.search(valStr);
+                    r = new jassa.facete.ConstraintConcept(path, concept);
+                } else {
+                    //throw new Error('No keyword search strategy specified');
+                    r = new jassa.facete.ConstraintRegex(path, valStr);
+                }
 
-                var r = new jassa.facete.ConstraintRegex(path, val);
+                //console.log('Result constraint: ', r.createElementsAndExprs(config.facetConfig.getRootFacetNode()));
+
                 return r;
             });
 
@@ -93,14 +102,16 @@ angular.module('ui.jassa.facet-typeahead', [])
             var bestLabelConfig = new sparql.BestLabelConfig();
             var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(bestLabelConfig);
 
-            var itemService = sponate.ListServiceUtils.createListServiceMappedConcept(sparqlService, mappedConcept);
+            var itemService = sponate.ListServiceUtils.createListServiceMappedConcept(sparqlService, mappedConcept, true);
 
 
             var facetValueConceptService = new jassa.facete.FacetValueConceptServiceExact(facetConfig);
 
             var result = facetValueConceptService.prepareConcept(path, false).then(function(concept) {
+                console.log('Path ' + path);
+                console.log('Concept: ' + concept);
                 var r = itemService.fetchItems(concept, 10).then(function(items) {
-                    console.log('Items: ' + JSON.stringify(items, null, 4));
+                    //console.log('Items: ' + JSON.stringify(items, null, 4));
                     //return ['foo', 'bar'];
                     return items;
                 });
@@ -185,6 +196,11 @@ angular.module('ui.jassa.facet-typeahead', [])
                     // However, we need to register/unregister the directive from the config object when this changes
                     scope.$watch(configExprStr, function(newConfig, oldConfig) {
 
+                        // Unregister from old config
+                        if(oldConfig && oldConfig != newConfig && oldConfig.modelToPathMapping) {
+                            delete oldConfig.idToModelPathMapping[instanceId];
+                        }
+
                         if(!newConfig) {
                             return;
                         }
@@ -201,10 +217,6 @@ angular.module('ui.jassa.facet-typeahead', [])
                             pathExpr: pathExpr
                         };
 
-                        // TODO Unregister from old config
-                        if(oldConfig && oldConfig != newConfig && oldConfig.modelToPathMapping) {
-                            delete oldConfig.idToModelPathMapping[instanceId];
-                        }
                     });
 
 
