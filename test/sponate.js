@@ -72,6 +72,10 @@ describe('Sponate tests', function() {
         var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
         linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
 
+        var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+        dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
+
+
         linkStore = new sponate.StoreFacade(linkSparqlService, {
             'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
             'llo': 'http://www.linklion.org/ontology#'
@@ -81,27 +85,35 @@ describe('Sponate tests', function() {
             name: 'resources',
             template: [{
                 id: '?l',
-                source: '?s',
+                source: { $ref: { target: 'dbpedia-data', on: '?s' } },
                 target: '?t'
             }],
             from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
         });
 
+        linkStore.addMap({
+            name: 'dbpedia-data',
+            template: [{
+                id: '?s',
+                predicates: [{
+                    id: '?p',
+                    values: ['?o']
+                }]
+            }],
+            from: '?s ?p ?o',
+            service: dbpediaSparqlService
+        });
+
+
         linkStore.resources.find().limit(10).concept().list().then(function(items) {
-            /*
+
             items.forEach(function(item) {
                 console.log('LINK:\n' + JSON.stringify(item, null, 4));
             });
-            */
+
         });
 
-        if (true) {
-            return;
-        }
-
-        var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
-        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
-
+/*
         store = new sponate.StoreFacade(sparqlService);
 
         store.addMap({
@@ -124,6 +136,7 @@ describe('Sponate tests', function() {
                 console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
             });
         });
+        */
     }),
 
     it('#Simple mapping', function() {
