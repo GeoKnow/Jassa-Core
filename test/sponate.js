@@ -75,6 +75,8 @@ describe('Sponate tests', function() {
         var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
         dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
 
+        var lgdSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
+        lgdSparqlService = new service.SparqlServiceConsoleLog(lgdSparqlService);
 
         linkStore = new sponate.StoreFacade(linkSparqlService, {
             'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -86,7 +88,7 @@ describe('Sponate tests', function() {
             template: [{
                 id: '?l',
                 source: { $ref: { target: 'dbpedia-data', on: '?s' } },
-                target: '?t'
+                target: { $ref: { target: 'lgd-data', on: '?t' } }
             }],
             from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
         });
@@ -102,6 +104,19 @@ describe('Sponate tests', function() {
             }],
             from: '?s ?p ?o',
             service: dbpediaSparqlService
+        });
+
+        linkStore.addMap({
+            name: 'lgd-data',
+            template: [{
+                id: '?s',
+                predicates: [{
+                    id: '?p',
+                    values: ['?o']
+                }]
+            }],
+            from: '?s ?p ?o',
+            service: lgdSparqlService
         });
 
 
