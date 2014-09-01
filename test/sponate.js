@@ -93,8 +93,11 @@ describe('Sponate tests', function() {
             from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
         });
 
-        linkStore.addMap({
-            name: 'dbpedia-data',
+        // [] -> array
+        // [[]] -> map
+
+        linkStore.addTemplate({
+            name: 'spo',
             template: [{
                 id: '?s',
                 predicates: [{
@@ -103,19 +106,17 @@ describe('Sponate tests', function() {
                 }]
             }],
             from: '?s ?p ?o',
+        });
+
+        linkStore.addMap({
+            name: 'dbpedia-data',
+            template: 'spo',
             service: dbpediaSparqlService
         });
 
         linkStore.addMap({
             name: 'lgd-data',
-            template: [{
-                id: '?s',
-                predicates: [{
-                    id: '?p',
-                    values: ['?o']
-                }]
-            }],
-            from: '?s ?p ?o',
+            template: 'spo',
             service: lgdSparqlService
         });
 
