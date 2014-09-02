@@ -2,6 +2,8 @@
 /* global it */
 var should = require('should');
 
+var uniq = require('lodash');
+
 // lib includes
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
@@ -24,6 +26,7 @@ var vocab = jassa.vocab;
 var sparql = jassa.sparql;
 var service = jassa.service;
 var sponate = jassa.sponate;
+var util = jassa.util;
 
 // tests
 describe('Sponate tests', function() {
@@ -103,7 +106,7 @@ describe('Sponate tests', function() {
                 id: '?s',
                 predicates: [{
                     id: '?p',
-                    values: ['?o']
+                    values: ['?o'] // [{ $ref: { target: 'spo', on: '?o', lazy: true } }]
                 }]
             }],
             from: '?s ?p ?o',
@@ -124,9 +127,14 @@ describe('Sponate tests', function() {
 
         linkStore.links.find().limit(10).list().then(function(items) {
 
+            var keyToGroup = {};
             items.forEach(function(item) {
-                console.log('LINK:\n' + JSON.stringify(item, null, null));
+                var link = item.val;
+
+                util.ClusterUtils.clusterLink(link, {}, keyToGroup);
             });
+
+            //console.log('CLUSTER: ' + JSON.stringify(keyToGroup, null, 4));
 
         });
 
