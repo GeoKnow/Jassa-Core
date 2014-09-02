@@ -84,7 +84,7 @@ describe('Sponate tests', function() {
         });
 
         linkStore.addMap({
-            name: 'resources',
+            name: 'links',
             template: [{
                 id: '?l',
                 source: { $ref: { target: 'dbpedia-data', on: '?s' } },
@@ -95,6 +95,7 @@ describe('Sponate tests', function() {
 
         // [] -> array
         // [[]] -> map
+        // [[[ ]]] -> hashmap
 
         linkStore.addTemplate({
             name: 'spo',
@@ -121,10 +122,10 @@ describe('Sponate tests', function() {
         });
 
 
-        linkStore.resources.find().limit(10).concept().list().then(function(items) {
+        linkStore.links.find().limit(10).list().then(function(items) {
 
             items.forEach(function(item) {
-                console.log('LINK:\n' + JSON.stringify(item, null, 4));
+                console.log('LINK:\n' + JSON.stringify(item, null, null));
             });
 
         });
