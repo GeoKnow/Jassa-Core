@@ -81,7 +81,7 @@ describe('Sponate tests', function() {
             template: [
                 {
                     id: '?uri',
-                    $labels: [{id: '?label_loc', value: '?label'}],
+                    $labels: [[{id: '?label_loc', value: '?label'}]],
                     $comments: [{id: '?comment_loc', value: '?comment'}]
                 }
             ],
