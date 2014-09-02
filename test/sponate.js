@@ -81,8 +81,8 @@ describe('Sponate tests', function() {
             template: [
                 {
                     id: '?uri',
-                    $labels: [[{id: '?label_loc', value: '?label'}]],
-                    $comments: [{id: '?comment_loc', value: '?comment'}]
+                    $labels: [[{id: '?label_loc', $value: '?label'}]],
+                    $comments: [{id: '?comment_loc', $value: '?comment'}]
                 }
             ],
             from: '{?uri a <http://www.w3.org/2000/01/rdf-schema#Class> .} UNION {?uri a <http://www.w3.org/2002/07/owl#Class> .} .FILTER ( !isBlank(?uri) )OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . BIND(LANG(?label) AS ?label_loc) } .OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . BIND(LANG(?comment) AS ?comment_loc)}'
