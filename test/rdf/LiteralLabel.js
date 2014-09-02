@@ -28,9 +28,10 @@ var BaseDatatype = require('../../lib/rdf/rdf_datatype/BaseDatatype');
 
 describe('Literal label', function() {
   it('should initialize and serialize correctly with dtype', function() {
-    var lex = 23;
+    var val = 23;
+    var lex = '23';
     var dtypeURI = 'http://www.w3.org/2001/XMLSchema#int';
-    var typedValue = new TypedValue(lex, dtypeURI);
+    var typedValue = new TypedValue(val, dtypeURI);
     var dtype = new BaseDatatype(dtypeURI);
 
     var litLabel = new LiteralLabel(typedValue, lex, null, dtype);
