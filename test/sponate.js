@@ -89,7 +89,7 @@ describe('Sponate tests', function() {
         });
 
         store.classes.find().limit(10).list().then(function(items) {
-            //console.log('ITEM: ' + JSON.stringify(items));
+            console.log('ITEM: ' + JSON.stringify(items, null, 4));
         });
     })
 
