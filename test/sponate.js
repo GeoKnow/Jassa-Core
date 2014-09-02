@@ -2,6 +2,8 @@
 /* global it */
 var should = require('should');
 
+var uniq = require('lodash');
+
 // lib includes
 var Promise = require('bluebird');
 var request = Promise.promisifyAll(require('request'));
@@ -24,6 +26,7 @@ var vocab = jassa.vocab;
 var sparql = jassa.sparql;
 var service = jassa.service;
 var sponate = jassa.sponate;
+var util = jassa.util;
 
 // tests
 describe('Sponate tests', function() {
@@ -67,9 +70,104 @@ describe('Sponate tests', function() {
 
     }),
 
+    it('#Resource Description', function() {
+
+        var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
+        linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
+
+        var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+        dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
+
+        var lgdSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
+        lgdSparqlService = new service.SparqlServiceConsoleLog(lgdSparqlService);
+
+        linkStore = new sponate.StoreFacade(linkSparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'llo': 'http://www.linklion.org/ontology#'
+        });
+
+        linkStore.addMap({
+            name: 'links',
+            template: [{
+                id: '?l',
+                source: { $ref: { target: 'dbpedia-data', on: '?s' } },
+                target: { $ref: { target: 'lgd-data', on: '?t' } }
+            }],
+            from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
+        });
+
+        // [] -> array
+        // [[]] -> map
+        // [[[ ]]] -> hashmap
+
+        linkStore.addTemplate({
+            name: 'spo',
+            template: [{
+                id: '?s',
+                predicates: [{
+                    id: '?p',
+                    values: ['?o'] // [{ $ref: { target: 'spo', on: '?o', lazy: true } }]
+                }]
+            }],
+            from: '?s ?p ?o',
+        });
+
+        linkStore.addMap({
+            name: 'dbpedia-data',
+            template: 'spo',
+            service: dbpediaSparqlService
+        });
+
+        linkStore.addMap({
+            name: 'lgd-data',
+            template: 'spo',
+            service: lgdSparqlService
+        });
+
+
+        linkStore.links.find().limit(10).list().then(function(items) {
+
+            var keyToGroup = {};
+            items.forEach(function(item) {
+                var link = item.val;
+
+                util.ClusterUtils.clusterLink(link, {}, keyToGroup);
+            });
+
+            //console.log('CLUSTER: ' + JSON.stringify(keyToGroup, null, 4));
+
+        });
+
+/*
+        store = new sponate.StoreFacade(sparqlService);
+
+        store.addMap({
+            name: 'resources',
+            template: [{
+                id: '?s',
+                predicates: [{
+                    id: '?p',
+                    objects: ['?o']
+                }]
+            }],
+            from: '?s ?p ?o'
+        });
+
+        var airports = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Airport');
+
+        // TODO If the element is just SPO, we can optimize it away from the inner query...
+        store.resources.find().limit(10).concept(airports).list().then(function(items) {
+            items.forEach(function(item) {
+                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+            });
+        });
+        */
+    }),
+
     it('#Simple mapping', function() {
 
         var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
+        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
 
         store = new sponate.StoreFacade(sparqlService, {
             fp7o: 'http://fp7-pp.publicdata.eu/ontology/'
@@ -93,9 +191,9 @@ describe('Sponate tests', function() {
 
         store.projects.find().limit(10).list().then(function(items) {
             items.length.should.equal(10);
-            /*items.forEach(function(item) {
-                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
-            });*/
+//            items.forEach(function(item) {
+//                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+//            });
         });
 
 
