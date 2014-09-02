@@ -71,6 +71,19 @@ describe('Sponate tests', function() {
     }),
 
     it('#Lukas eiperts use case', function() {
+
+        /*
+        var ve = new sparql.VarExprList();
+        ve.add(sparql.VarUtils.s);
+        ve.add(sparql.VarUtils.o);
+
+        console.log('VAREXPRLIST:');
+        console.log(ve.contains(sparql.VarUtils.s));
+        console.log(ve.contains(sparql.VarUtils.p));
+        console.log(ve.contains(sparql.VarUtils.o));
+        */
+
+
         var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
         //linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
 
@@ -89,7 +102,7 @@ describe('Sponate tests', function() {
         });
 
         store.classes.find().limit(10).list().then(function(items) {
-            console.log('ITEM: ' + JSON.stringify(items, null, 4));
+            //console.log('ITEM: ' + JSON.stringify(items, null, 4));
         });
     })
 
