@@ -27,6 +27,7 @@ deploy:
          gh_token: $GH_TOKEN
          gh_pages: true
          basedir: docs
+         discard_history: true
     - leipert/git-push:
          gh_token: $GH_TOKEN
          host: github.com
