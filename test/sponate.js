@@ -108,17 +108,20 @@ describe('Sponate tests', function() {
 
     it('#Resource Description', function() {
 
-        var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
-        linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
+        //var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
+//        linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
+
+        var linkSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+        //linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
 
         var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
-        dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
+        //dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
 
         //var dbpediaSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
         //dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
 
         var lgdSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
-        lgdSparqlService = new service.SparqlServiceConsoleLog(lgdSparqlService);
+        //lgdSparqlService = new service.SparqlServiceConsoleLog(lgdSparqlService);
 
         linkStore = new sponate.StoreFacade(linkSparqlService, {
             'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
@@ -155,7 +158,6 @@ describe('Sponate tests', function() {
         });
 
 
-
         linkStore.addMap({
             name: 'dbpedia-data',
             template: 'spo',
@@ -169,7 +171,7 @@ describe('Sponate tests', function() {
         });
 
 
-        linkStore.links.find().limit(10).list().then(function(items) {
+        linkStore.links.find().limit(10).skip(10).list().then(function(items) {
 
             var keyToGroup = {};
             items.forEach(function(item) {
