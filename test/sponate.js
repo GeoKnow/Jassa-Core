@@ -70,141 +70,145 @@ describe('Sponate tests', function() {
 
     }),
 
-    it('#Lukas eiperts use case', function() {
-
-        /*
-        var ve = new sparql.VarExprList();
-        ve.add(sparql.VarUtils.s);
-        ve.add(sparql.VarUtils.o);
-
-        console.log('VAREXPRLIST:');
-        console.log(ve.contains(sparql.VarUtils.s));
-        console.log(ve.contains(sparql.VarUtils.p));
-        console.log(ve.contains(sparql.VarUtils.o));
-        */
-
-
-        var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
-        //linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
-
-        var store = new sponate.StoreFacade(sparqlService);
-
-        store.addMap({
-            name: 'classes',
-            template: [
-                {
-                    id: '?uri',
-                    $labels: [[{id: '?label_loc', $value: '?label'}]],
-                    $comments: [{id: '?comment_loc', $value: '?comment'}]
-                }
-            ],
-            from: '{?uri a <http://www.w3.org/2000/01/rdf-schema#Class> .} UNION {?uri a <http://www.w3.org/2002/07/owl#Class> .} .FILTER ( !isBlank(?uri) )OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . BIND(LANG(?label) AS ?label_loc) } .OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . BIND(LANG(?comment) AS ?comment_loc)}'
-        });
-
-        store.classes.find().limit(10).list().then(function(items) {
-            //console.log('ITEM: ' + JSON.stringify(items, null, 4));
-        });
-    })
-
-//    it('#Resource Description', function() {
+//    it('#Lukas eiperts use case', function() {
 //
-//        var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
-//        linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
+//        /*
+//        var ve = new sparql.VarExprList();
+//        ve.add(sparql.VarUtils.s);
+//        ve.add(sparql.VarUtils.o);
 //
-//        var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
-//        dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
-//
-//        var lgdSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
-//        lgdSparqlService = new service.SparqlServiceConsoleLog(lgdSparqlService);
-//
-//        linkStore = new sponate.StoreFacade(linkSparqlService, {
-//            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-//            'llo': 'http://www.linklion.org/ontology#'
-//        });
-//
-//        linkStore.addMap({
-//            name: 'links',
-//            template: [{
-//                id: '?l',
-//                source: { $ref: { target: 'dbpedia-data', on: '?s' } },
-//                target: { $ref: { target: 'lgd-data', on: '?t' } }
-//            }],
-//            from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
-//        });
-//
-//        // [] -> array
-//        // [[]] -> map
-//        // [[[ ]]] -> hashmap
-//        var blc = new sparql.BestLabelConfig();
-//        var mappedConcept = MappedConceptUtils.createMappedConceptBestLabel(blc);
-//
-//        linkStore.addTemplate({
-//            name: 'spo',
-//            template: [{
-//                id: '?s',
-//                displayLabel: ,
-//                predicates: [{
-//                    id: '?p',
-//                    values: ['?o'] // [{ $ref: { target: 'spo', on: '?o', lazy: true } }]
-//                }]
-//            }],
-//            from: '?s ?p ?o',
-//        });
+//        console.log('VAREXPRLIST:');
+//        console.log(ve.contains(sparql.VarUtils.s));
+//        console.log(ve.contains(sparql.VarUtils.p));
+//        console.log(ve.contains(sparql.VarUtils.o));
+//        */
 //
 //
+//        var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+//        //linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
 //
-//        linkStore.addMap({
-//            name: 'dbpedia-data',
-//            template: 'spo',
-//            service: dbpediaSparqlService
-//        });
-//
-//        linkStore.addMap({
-//            name: 'lgd-data',
-//            template: 'spo',
-//            service: lgdSparqlService
-//        });
-//
-//
-//        linkStore.links.find().limit(10).list().then(function(items) {
-//
-//            var keyToGroup = {};
-//            items.forEach(function(item) {
-//                var link = item.val;
-//
-//                util.ClusterUtils.clusterLink(link, {}, keyToGroup);
-//            });
-//
-//            //console.log('CLUSTER: ' + JSON.stringify(keyToGroup, null, 4));
-//
-//        });
-//
-///*
-//        store = new sponate.StoreFacade(sparqlService);
+//        var store = new sponate.StoreFacade(sparqlService);
 //
 //        store.addMap({
-//            name: 'resources',
-//            template: [{
-//                id: '?s',
-//                predicates: [{
-//                    id: '?p',
-//                    objects: ['?o']
-//                }]
-//            }],
-//            from: '?s ?p ?o'
+//            name: 'classes',
+//            template: [
+//                {
+//                    id: '?uri',
+//                    $labels: [[{id: '?label_loc', $value: '?label'}]],
+//                    $comments: [{id: '?comment_loc', $value: '?comment'}]
+//                }
+//            ],
+//            from: '{?uri a <http://www.w3.org/2000/01/rdf-schema#Class> .} UNION {?uri a <http://www.w3.org/2002/07/owl#Class> .} .FILTER ( !isBlank(?uri) )OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#label> ?label . BIND(LANG(?label) AS ?label_loc) } .OPTIONAL { ?uri <http://www.w3.org/2000/01/rdf-schema#comment> ?comment . BIND(LANG(?comment) AS ?comment_loc)}'
 //        });
 //
-//        var airports = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Airport');
-//
-//        // TODO If the element is just SPO, we can optimize it away from the inner query...
-//        store.resources.find().limit(10).concept(airports).list().then(function(items) {
-//            items.forEach(function(item) {
-//                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
-//            });
+//        store.classes.find().limit(10).list().then(function(items) {
+//            //console.log('ITEM: ' + JSON.stringify(items, null, 4));
 //        });
-//        */
 //    }),
-//
+
+    it('#Resource Description', function() {
+
+        var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
+        linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
+
+        var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+        dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
+
+        //var dbpediaSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
+        //dbpediaSparqlService = new service.SparqlServiceConsoleLog(dbpediaSparqlService);
+
+        var lgdSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
+        lgdSparqlService = new service.SparqlServiceConsoleLog(lgdSparqlService);
+
+        linkStore = new sponate.StoreFacade(linkSparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'llo': 'http://www.linklion.org/ontology#'
+        });
+
+        linkStore.addMap({
+            name: 'links',
+            template: [{
+                id: '?l',
+                source: { $ref: { target: 'dbpedia-data', on: '?s' } },
+                target: { $ref: { target: 'lgd-data', on: '?t' } }
+            }],
+            from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
+        });
+
+        // [] -> array
+        // [[]] -> map
+        // [[[ ]]] -> hashmap
+        var blc = new sparql.BestLabelConfig(['ja', 'ko', 'en', '']);
+        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(blc);
+
+        linkStore.addTemplate({
+            name: 'spo',
+            template: [{
+                id: '?s',
+                displayLabel: { $ref: { target: mappedConcept, attr: 'displayLabel' }},
+                predicates: [{
+                    id: '?p',
+                    values: ['?o'] // [{ $ref: { target: 'spo', on: '?o', lazy: true } }]
+                }]
+            }],
+            from: '?s ?p ?o', // Filter(?p = rdf:type)
+        });
+
+
+
+        linkStore.addMap({
+            name: 'dbpedia-data',
+            template: 'spo',
+            service: dbpediaSparqlService
+        });
+
+        linkStore.addMap({
+            name: 'lgd-data',
+            template: 'spo',
+            service: lgdSparqlService
+        });
+
+
+        linkStore.links.find().limit(10).list().then(function(items) {
+
+            var keyToGroup = {};
+            items.forEach(function(item) {
+                var link = item.val;
+
+                console.log('LINK: ' + JSON.stringify(link, null, 4));
+                //util.ClusterUtils.clusterLink(link, {}, keyToGroup);
+            });
+
+            //console.log('CLUSTER: ' + JSON.stringify(keyToGroup, null, 4));
+
+        });
+
+/*
+        store = new sponate.StoreFacade(sparqlService);
+
+        store.addMap({
+            name: 'resources',
+            template: [{
+                id: '?s',
+                predicates: [{
+                    id: '?p',
+                    objects: ['?o']
+                }]
+            }],
+            from: '?s ?p ?o'
+        });
+
+        var airports = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Airport');
+
+        // TODO If the element is just SPO, we can optimize it away from the inner query...
+        store.resources.find().limit(10).concept(airports).list().then(function(items) {
+            items.forEach(function(item) {
+                console.log('SPONATE:\n' + JSON.stringify(item, null, 4));
+            });
+        });
+        */
+    })
+
 //    it('#Simple mapping', function() {
 //
 //        var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
@@ -239,7 +243,6 @@ describe('Sponate tests', function() {
 //
 //
 //    });
-//});
 
 /*
 describe('Concept Operations', function() {
