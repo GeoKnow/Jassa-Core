@@ -108,10 +108,10 @@ describe('Sponate tests', function() {
 
     it('#Resource Description', function() {
 
-        //var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
+        var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
 //        linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
 
-        var linkSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+        //var linkSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
         //linkSparqlService = new service.SparqlServiceConsoleLog(linkSparqlService);
 
         var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
@@ -151,6 +151,7 @@ describe('Sponate tests', function() {
                 displayLabel: { $ref: { target: mappedConcept, attr: 'displayLabel' }},
                 predicates: [{
                     id: '?p',
+                    displayLabel: { $ref: { target: mappedConcept, attr: 'displayLabel', on: '?p' }},
                     values: ['?o'] // [{ $ref: { target: 'spo', on: '?o', lazy: true } }]
                 }]
             }],
