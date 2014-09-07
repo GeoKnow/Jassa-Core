@@ -85,10 +85,17 @@
                 result = null;
             } else {
                 var labelRelation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
-                result = sparql.KeywordSearchUtils.createConceptRegexLabelOnly(labelRelation, searchString);
 
-                // Uncomment this line for bif-contains searches
-                //result = sparql.KeywordSearchUtils.createConceptBifContains(labelRelation, searchString);
+                switch($scope.searchMode) {
+                case 'regex':
+                    result = sparql.KeywordSearchUtils.createConceptRegexLabelOnly(labelRelation, searchString);
+                    break;
+                case 'fulltext':
+                    result = sparql.KeywordSearchUtils.createConceptBifContains(labelRelation, searchString);
+                    break;
+                default:
+                    throw new Error('Unknown search mode: ', $scope.searchMode);
+                }
             }
 
             return result;
@@ -101,6 +108,7 @@
         $scope.offset = 0;
         $scope.numItemsPerPage = 10;
         $scope.searchString = '';
+        $scope.searchMode = 'regex';
         $scope.totalItems = null;
         $scope.currentPage = 1;
 
@@ -170,6 +178,15 @@
                     type="text"
                     class="form-control"
                     placeholder="Find ...">
+
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{searchMode}} <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li><a ng-click="searchMode='regex'" href="#">regex</a></li>
+                        <li><a ng-click="searchMode='fulltext'" href="#">fulltext</a></li>
+                    </ul>
+                </div>
+
                 <span class="input-group-btn">
                     <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
                 </span>
@@ -185,6 +202,7 @@
 <div class="col-md-12" style="text-align: center">
 
 <pagination
+    ng-show="items.length"
     class="pagination-tiny" max-size="7"
     total-items="totalItems"
     page="currentPage"
@@ -200,10 +218,9 @@
 </div>
 
 <table class="table table-striped">
-        <tr><th>Depiction</th><th>Description</th></tr>
         <tr ng-repeat="item in items">
             <td>
-                <div class="thumbnail">
+                <div class="thumbnail" style="width: 200px;">
                     <img ng-src="{{item.depiction}}">
                 </div>
             </td>
@@ -211,6 +228,14 @@
                 <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
                 <br />
                 {{item.comment || 'Sorry, there is no description available in your preferred languages'}}
+            </td>
+        </tr>
+
+        <tr ng-show="!items.length">
+            <td colspan="2" style="text-align: center">
+                <div class="alert alert-danger" role="alert">
+                    There are no results that can be shown
+                </div>
             </td>
         </tr>
 </table>
@@ -222,6 +247,7 @@
 <div class="col-md-12" style="text-align: center">
 
 <pagination
+    ng-show="items.length"
     class="pagination-tiny" max-size="7"
     total-items="totalItems"
     page="currentPage"
