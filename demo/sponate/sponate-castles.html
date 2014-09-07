@@ -17,6 +17,10 @@
     .preserve-whitespace {
         white-space: pre;
     }
+
+    a {
+        cursor: pointer
+    }
     </style>
 
     <script type="text/javascript">
@@ -65,26 +69,56 @@
                 comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
                 depiction: '?d'
             }],
-            from: '?s a dbpedia-owl:Castle . Optional { ?s foaf:depiction ?d }'
+            from: '?s a dbpedia-owl:Airport . Optional { ?s foaf:depiction ?d }'
         });
 
         // TODO store should offer a list service (or collections are listservices???)
 
-        var createSearchConcept = function(searchString) {
-            var labelRelation = LabelUtils.createRelationPrefLabels(labelConfig);
-            sparql.KeywordSearchUtils.createConceptRegexLabelOnly()
-        };
+        var listService = store.castles.getListService();
+
+        listService = new service.ListServiceTransformConcept(listService, function(searchString) {
+
+            var result;
+            if(searchString == null || searchString.trim() === '') {
+                result = null;
+            } else {
+                var labelRelation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
+                result = sparql.KeywordSearchUtils.createConceptRegexLabelOnly(labelRelation, searchString);
+                //result = sparql.KeywordSearchUtils.createConceptBifContains(labelRelation, searchString);
+            }
+
+            return result;
+        });
+
 
         $scope.offset = 0;
-        $scope.numItems = 10;
+        $scope.numItemsPerPage = 10;
+        $scope.searchString = '';
+        $scope.totalItems = null;
+        $scope.currentPage = 1;
 
-        $scope.$watchCollection('[offset, numItems]', function() {
-            $q.when(store.castles.find().limit($scope.numItems).skip($scope.offset).list()).then(function(items) {
+        $scope.$watch('currentPage', function() {
+            $scope.offset = ($scope.currentPage - 1) * $scope.numItemsPerPage;
+        });
+
+        $scope.refresh = function() {
+            $q.when(listService.fetchCount($scope.searchString)).then(function(countInfo) {
+                $scope.totalItems = countInfo.count;
+            });
+
+            $q.when(listService.fetchItems($scope.searchString, $scope.numItemsPerPage, $scope.offset)).then(function(items) {
                 $scope.items = items.map(function(item) {
                     return item.val;
                 });
             });
-        });
+        };
+
+        $scope.$watchCollection('[offset, numItems]', $scope.refresh);
+
+        $scope.doFilter = function() {
+            $scope.currentPage = 1;
+            $scope.refresh();
+        };
     }]);
 
     </script>
@@ -115,22 +149,51 @@
 <div class="col-md-12">
 
 <div class="alert alert-success" role="alert">
-    <div class="form-group">
-        <div class="input-group">
-            <input
-                ng-model="searchString"
-                type="text"
-                class="form-control"
-                placeholder="Find ...">
-            <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+    <form role="form" ng-submit="doFilter()" novalidate>
+        <div class="form-group">
+            <div class="input-group">
+                <input
+                    ng-model="searchString"
+                    type="text"
+                    class="form-control"
+                    placeholder="Find ...">
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
+            </div>
         </div>
+    </form>
+    <div>
+    <strong>Found <span class="badge">{{totalItems}}</span> items</strong>
     </div>
+</div>
+
+<div class="row">
+<div class="col-md-12" style="text-align: center">
+
+<pagination
+    class="pagination-tiny" max-size="7"
+    total-items="totalItems"
+    page="currentPage"
+    boundary-links="true"
+    rotate="false"
+    first-text="&lt;&lt;"
+    previous-text="&lt;"
+    next-text="&gt;"
+    last-text="&gt;&gt;">
+</pagination>
+
+</div>
 </div>
 
 <table class="table table-striped">
         <tr><th>Depiction</th><th>Description</th></tr>
         <tr ng-repeat="item in items">
-            <td><img style="width: 200px" ng-src="{{item.depiction}}"></td>
+            <td>
+                <div class="thumbnail">
+                    <img ng-src="{{item.depiction}}">
+                </div>
+            </td>
             <td>
                 <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
                 <br />
@@ -141,6 +204,26 @@
 
 </div>
 </div>
+
+<div class="row">
+<div class="col-md-12" style="text-align: center">
+
+<pagination
+    class="pagination-tiny" max-size="7"
+    total-items="totalItems"
+    page="currentPage"
+    boundary-links="true"
+    rotate="false"
+    first-text="&lt;&lt;"
+    previous-text="&lt;"
+    next-text="&gt;"
+    last-text="&gt;&gt;">
+</pagination>
+
+</div>
+</div>
+
+
 </div>
 
 </html>
