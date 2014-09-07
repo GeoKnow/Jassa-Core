@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="SponateLinkDemo">
+<html ng-app="SponateDemo">
 <head>
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
 
@@ -9,15 +9,12 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
-    <script src="../../dist/jassa.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
 
     <style>
-    .preserve-whitespace {
-        white-space: pre;
-    }
-
+    /* Force pointer cursor on 'a' elements - even without href attribute */
     a {
         cursor: pointer
     }
@@ -34,11 +31,13 @@
     var facete = jassa.facete;
     var util = jassa.util;
 
-    angular.module('SponateLinkDemo', ['ui.bootstrap', 'ngSanitize'])
+    angular.module('SponateDemo', ['ui.bootstrap', 'ngSanitize'])
 
     .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
 
-        // A fully buffed sparqlService just because we can
+        /*
+         * Set up the sparql service with as many buffs (decorations) as we like
+         */
         //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
         var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org'], {type: 'POST'});
         sparqlService = new service.SparqlServiceCache(sparqlService);
@@ -52,11 +51,12 @@
             'foaf': 'http://xmlns.com/foaf/0.1/'
         });
 
-        //var langs = ['de']; //, 'en', ''];
+        /*
+         * Set up the Sponate mapping for the data we are interested in
+         */
         var langs = ['de', 'en', ''];
 
         var labelConfig = new sparql.BestLabelConfig(langs);
-
         var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
         var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig(langs, [rdf.NodeFactory.createUri('http://dbpedia.org/ontology/abstract')]));
 
@@ -69,11 +69,13 @@
                 comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
                 depiction: '?d'
             }],
-            from: '?s a dbpedia-owl:Airport . Optional { ?s foaf:depiction ?d }'
+            from: '?s a dbpedia-owl:Castle . Optional { ?s foaf:depiction ?d }'
         });
 
-        // TODO store should offer a list service (or collections are listservices???)
-
+        /*
+         * Create a list service for our mapping and decorate it with
+         * keyword search support
+         */
         var listService = store.castles.getListService();
 
         listService = new service.ListServiceTransformConcept(listService, function(searchString) {
@@ -84,22 +86,23 @@
             } else {
                 var labelRelation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
                 result = sparql.KeywordSearchUtils.createConceptRegexLabelOnly(labelRelation, searchString);
+
+                // Uncomment this line for bif-contains searches
                 //result = sparql.KeywordSearchUtils.createConceptBifContains(labelRelation, searchString);
             }
 
             return result;
         });
 
+        /*
+         * Angular setup
+         */
 
         $scope.offset = 0;
         $scope.numItemsPerPage = 10;
         $scope.searchString = '';
         $scope.totalItems = null;
         $scope.currentPage = 1;
-
-        $scope.$watch('currentPage', function() {
-            $scope.offset = ($scope.currentPage - 1) * $scope.numItemsPerPage;
-        });
 
         $scope.refresh = function() {
             $q.when(listService.fetchCount($scope.searchString)).then(function(countInfo) {
@@ -112,6 +115,10 @@
                 });
             });
         };
+
+        $scope.$watch('currentPage', function() {
+            $scope.offset = ($scope.currentPage - 1) * $scope.numItemsPerPage;
+        });
 
         $scope.$watchCollection('[offset, numItems]', $scope.refresh);
 
@@ -138,8 +145,14 @@
                 <span class="icon-bar"></span>
             </button>
 
-            <a class="navbar-brand" style="padding: 3px 15px;" href="#"><img style="height: 42px;" src="http://aksw.org/extensions/site/sites//local/images/logo-aksw.png" alt=""></img></a>
-            <a class="navbar-brand" href="#">Sponate Demo</a>
+            <a class="navbar-brand" style="padding: 3px 15px;" href="http://aksw.org" target="_blank"><img style="height: 42px;" src="http://js.geoknow.eu/images/aksw-logo.png" alt=""></img></a>
+            <a class="navbar-brand" href="#">Jassa/Sponate Demo</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://aksw.org/ClausStadler" target="_blank">by Claus Stadler</a></li>
+            </ul>
         </div>
     </div>
 </nav>
