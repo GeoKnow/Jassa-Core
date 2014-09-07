@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html ng-app="SponateLinkDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+    <script src="../../dist/jassa.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+
+    <style>
+    .preserve-whitespace {
+        white-space: pre;
+    }
+    </style>
+
+    <script type="text/javascript">
+    jassa = new Jassa(Promise, $.ajax);
+
+    var vocab = jassa.vocab;
+    var rdf = jassa.rdf;
+    var sparql = jassa.sparql;
+    var service = jassa.service;
+    var sponate = jassa.sponate;
+    var facete = jassa.facete;
+    var util = jassa.util;
+
+    angular.module('SponateLinkDemo', ['ui.bootstrap', 'ngSanitize'])
+
+    .filter('objectToArray', function() {
+        return function(input) {
+            var r = _.values(input);
+            return r;
+        }
+    })
+
+    .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
+
+        //var linkSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+        var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/'], {type: 'POST'});
+        var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        //var dbpediaSparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+        var lgdSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org'], {type: 'POST'});
+
+        linkStore = new sponate.StoreFacade(linkSparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'llo': 'http://www.linklion.org/ontology#'
+        });
+
+        linkStore.addMap({
+            name: 'links',
+            template: [{
+                id: '?l',
+                source: { $ref: { target: 'dbpedia-data', on: '?s' } },
+                target: { $ref: { target: 'lgd-data', on: '?t' } }
+            }],
+            from: '?l a llo:Link; rdf:subject ?s; rdf:object ?t'
+        });
+
+        var bestLiteralConfig = new sparql.BestLabelConfig(); //['ja', 'ko', 'en', '']);
+        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(bestLiteralConfig);
+
+        linkStore.addTemplate({
+            name: 'spo',
+            template: [{
+                id: '?s',
+                displayLabel: { $ref: { target: mappedConcept, attr: 'displayLabel' }},
+                predicates: [{
+                    id: '?p',
+                    displayLabel: { $ref: { target: mappedConcept, attr: 'displayLabel', on: '?p' }},
+                    values: [{
+                        id: '?o',
+                        displayLabel: { $ref: { target: mappedConcept, attr: 'displayLabel', on: '?o' }},
+                    }]
+                }]
+            }],
+            from: '?s ?p ?o',
+        });
+
+        linkStore.addMap({
+            name: 'dbpedia-data',
+            template: 'spo',
+            service: dbpediaSparqlService
+        });
+
+        linkStore.addMap({
+            name: 'lgd-data',
+            template: 'spo',
+            service: lgdSparqlService
+        });
+
+        $scope.offset = 0;
+        $scope.numItems = 10;
+
+        var orderBySource = function(map) {
+            var result = Object.keys(map);
+
+            _(result).orderBy(function(item) {
+                var s = item.sources;
+                var r = s.length + '-' + s.join('-');
+                return r;
+            });
+
+            return result;
+        };
+
+        $scope.sourceOrderFn = function(item) {
+            var s = item.sources;
+            var r = s.length + '-' + s.join('-');
+            //console.log('Item: ', item, r);
+            return r;
+        };
+
+
+        $scope.$watchCollection('[offset, numItems]', function() {
+            $q.when(linkStore.links.find().limit($scope.numItems).skip($scope.offset).list().then(function(items) {
+                return items.map(function(item) {
+                    return item.val;
+                });
+            })).then(function(links) {
+
+                // Enrich links with a cluster for the predicates
+                links.forEach(function(link) {
+                    var cluster = util.ClusterUtils.clusterLink(link);
+
+                    // TODO Add the property display labels
+//                     _(cluster).forEach(function(cluster) {
+
+//                     })
+
+                    link.cluster = cluster;
+                });
+
+
+                //console.log('Links: ', links);
+
+                $scope.links = links;
+            })
+
+        });
+
+
+    }]);
+
+    </script>
+
+</head>
+
+<body ng-controller="AppCtrl">
+
+<table class="table table-striped">
+
+    <div class="alert alert-success" role="alert">
+        Legend: <span class="label label-success">Both resources</span> <span class="label label-primary">Source only</span> <span class="label label-warning">Target only</span>
+    </div>
+
+    <tr><th>Link</th><th>Source</th><th>Target</th></tr>
+    <tr ng-repeat="link in links">
+        <td>
+            <span class="label label-warning" title="{{link.source.id}}">{{link.source.displayLabel}}</span>
+            <span class="label label-primary" title="{{link.target.id}}">{{link.target.displayLabel}}</span>
+        </td>
+
+
+        <button ng-class="{ 'disabled': offset === 0 }" type="button" class="btn btn-default" ng-click="offset = offset > 0 ? offset - 1 : offset">Prev</button>
+        <button type="button" class="btn btn-default" ng-click="offset = offset + 1">Next</button>
+
+        <td>
+            <table class="table table-striped">
+                <tr ng-repeat="predicate in link.cluster | objectToArray | orderBy:sourceOrderFn:true">
+                    <td>
+                        <span title="{{predicate.id}}" class="label" ng-class="predicate.sources.length === 2 ? 'label-success' : ( predicate.sources[0] === 'source' ? 'label-primary' : 'label-warning' )">{{predicate.displayLabel || predicate.id}}</span>
+                    </td>
+                    <td>
+                        <ul>
+                            <li ng-repeat="member in predicate.valueToMember | objectToArray | orderBy:sourceOrderFn:true">
+                                <span title="{{member.value.id}}" class="label preserve-whitespace" ng-class="member.sources.length === 2 ? 'label-success' : ( member.sources[0] === 'source' ? 'label-primary' : 'label-warning' )">{{member.value.displayLabel || member.value.id}}</span>
+                            </li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+        </td>
+
+    </tr>
+</table>
+
+</body>
+
+</html>

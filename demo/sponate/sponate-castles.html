@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html ng-app="SponateLinkDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+    <script src="../../dist/jassa.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+
+    <style>
+    .preserve-whitespace {
+        white-space: pre;
+    }
+    </style>
+
+    <script type="text/javascript">
+    jassa = new Jassa(Promise, $.ajax);
+
+    var vocab = jassa.vocab;
+    var rdf = jassa.rdf;
+    var sparql = jassa.sparql;
+    var service = jassa.service;
+    var sponate = jassa.sponate;
+    var facete = jassa.facete;
+    var util = jassa.util;
+
+    angular.module('SponateLinkDemo', ['ui.bootstrap', 'ngSanitize'])
+
+    .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
+
+        // A fully buffed sparqlService just because we can
+        //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        sparqlService = new service.SparqlServiceCache(sparqlService);
+        sparqlService = new service.SparqlServiceVirtFix(sparqlService);
+        sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
+        sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
+
+        store = new sponate.StoreFacade(sparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'dbpedia-owl': 'http://dbpedia.org/ontology/',
+            'foaf': 'http://xmlns.com/foaf/0.1/'
+        });
+
+        //var langs = ['de']; //, 'en', ''];
+        var langs = ['de', 'en', ''];
+
+        var labelConfig = new sparql.BestLabelConfig(langs);
+
+        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+        var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig(langs, [rdf.NodeFactory.createUri('http://dbpedia.org/ontology/abstract')]));
+
+        var comments =
+        store.addMap({
+            name: 'castles',
+            template: [{
+                id: '?s',
+                label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+                comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+                depiction: '?d'
+            }],
+            from: '?s a dbpedia-owl:Castle . Optional { ?s foaf:depiction ?d }'
+        });
+
+        // TODO store should offer a list service (or collections are listservices???)
+
+        var createSearchConcept = function(searchString) {
+            var labelRelation = LabelUtils.createRelationPrefLabels(labelConfig);
+            sparql.KeywordSearchUtils.createConceptRegexLabelOnly()
+        };
+
+        $scope.offset = 0;
+        $scope.numItems = 10;
+
+        $scope.$watchCollection('[offset, numItems]', function() {
+            $q.when(store.castles.find().limit($scope.numItems).skip($scope.offset).list()).then(function(items) {
+                $scope.items = items.map(function(item) {
+                    return item.val;
+                });
+            });
+        });
+    }]);
+
+    </script>
+
+</head>
+
+<body ng-controller="AppCtrl">
+
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <a class="navbar-brand" style="padding: 3px 15px;" href="#"><img style="height: 42px;" src="http://aksw.org/extensions/site/sites//local/images/logo-aksw.png" alt=""></img></a>
+            <a class="navbar-brand" href="#">Sponate Demo</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+<div class="row">
+<div class="col-md-12">
+
+<div class="alert alert-success" role="alert">
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="searchString"
+                type="text"
+                class="form-control"
+                placeholder="Find ...">
+            <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+        </div>
+    </div>
+</div>
+
+<table class="table table-striped">
+        <tr><th>Depiction</th><th>Description</th></tr>
+        <tr ng-repeat="item in items">
+            <td><img style="width: 200px" ng-src="{{item.depiction}}"></td>
+            <td>
+                <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
+                <br />
+                {{item.comment || 'Sorry, there is no description available in your preferred languages'}}
+            </td>
+        </tr>
+</table>
+
+</div>
+</div>
+</div>
+
+</html>
