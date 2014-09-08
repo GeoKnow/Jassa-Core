@@ -144,7 +144,7 @@
             out: function(e, ui) { removeIntent = true; },
             beforeStop: function(e, ui) {
                 if (removeIntent === true) {
-                    var lang = ui.item.context.innerText;
+                    var lang = ui.item.context.textContent;
                     if(lang) {
                         lang = lang.trim();
                         var i = $scope.langs.indexOf(lang);
