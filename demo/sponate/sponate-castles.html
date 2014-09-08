@@ -11,6 +11,7 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.js"></script>
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
@@ -59,7 +60,7 @@
     var facete = jassa.facete;
     var util = jassa.util;
 
-    angular.module('SponateDemo', ['ui.bootstrap', 'ui.sortable', 'ngSanitize'])
+    angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ngSanitize'])
 
     .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
 
@@ -162,9 +163,11 @@
         $scope.offset = 0;
         $scope.numItemsPerPage = 10;
         $scope.searchString = '';
-        $scope.searchMode = 'regex';
+        $scope.searchMode = 'fulltext';
         $scope.totalItems = null;
         $scope.currentPage = 1;
+
+        $scope.focusLangInput = false;
 
         $scope.refresh = function() {
             $q.when(listService.fetchCount($scope.searchString)).then(function(countInfo) {
@@ -192,11 +195,12 @@
 
         $scope.confirmAddLang = function(lang) {
 
-            //if(lang) {
+            var i = $scope.langs.indexOf(lang);
+            if(i < 0) {
                 $scope.langs.push(lang);
-                $scope.showLangInput = false;
-                $scope.newLang = '';
-            //}
+            }
+            $scope.showLangInput = false;
+            $scope.newLang = '';
         }
 
 
@@ -262,20 +266,29 @@
             </div>
         </div>
     </form>
+
+    <div>
+        <ul class="list-inline">
+            <li><span>Language Settings: </span></li>
+            <li>
+                <ul ui-sortable="sortConfig" ng-model="langs" class="list-inline">
+                    <li class="item" ng-repeat="lang in langs"><span class="label label-success preserve-whitespace">{{lang.length ? lang : '  '}}</span></li>
+                </ul>
+            </li>
+            <li ng-show="showLangInput">
+                <form ng-submit="confirmAddLang(newLang)">
+                    <input auto-focus="focusLangInput" size="4" ng-model="newLang" type="text" class="borderless" typeahead="lang for lang in availableLangs | filter:$viewValue | limitTo:8">
+                    <button type="submit" style="cursor: pointer;" class="btn label label-info""><span class="glyphicon glyphicon-ok"></span></button>
+                    <button type="button" style="cursor: pointer;" class="btn label label-warning" ng-click="showLangInput=false"><span class="glyphicon glyphicon-remove"></span></button>
+                </form>
+            </li>
+            <li>
+                <button type="button" ng-show="!showLangInput" style="cursor: pointer;" class="btn label label-primary" ng-click="showLangInput=true; focusLangInput=true"><span class="glyphicon glyphicon-plus"></span></button>
+            </ul>
+    </div>
+
     <div>
         <strong>Found <span class="badge">{{totalItems}}</span> items</strong>
-    </div>
-    <div>
-        <ul ui-sortable="sortConfig" ng-model="langs" class="list-inline" style="float: left;">
-            <li class="item" ng-repeat="lang in langs"><span class="label label-success preserve-whitespace">{{lang.length ? lang : '  '}}</span></li>
-        </ul>
-        <form ng-submit="confirmAddLang(newLang)">
-        <input ng-show="showLangInput" size="4" ng-model="newLang" type="text" class="borderless" typeahead="lang for lang in availableLangs | filter:$viewValue | limitTo:8">
-        <button type="submit" ng-show="showLangInput" style="cursor: pointer;" class="btn label label-info""><span class="glyphicon glyphicon-ok"></span></button>
-        <button type="button" ng-show="showLangInput" style="cursor: pointer;" class="btn label label-warning" ng-click="showLangInput=false"><span class="glyphicon glyphicon-remove"></span></button>
-        </form>
-
-        <button type="button" ng-show="!showLangInput" style="cursor: pointer; clear:both;" class="btn label label-primary" ng-click="showLangInput=true"><span class="glyphicon glyphicon-plus"></span></button>
     </div>
 </div>
 
@@ -308,7 +321,7 @@
             <td>
                 <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
                 <br />
-                {{item.comment || 'Sorry, there is no description available in your preferred languages'}}
+                 <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
             </td>
         </tr>
 
