@@ -15,6 +15,7 @@
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
 
     <style>
     /* Force pointer cursor on 'a' elements - even without href attribute */
@@ -28,9 +29,9 @@
         min-height: 1em;
     }
 
-    .placeholder {
+    .sortable-placeholder {
         width: 25px;
-        height: 15px;
+        height: 0.9em;
         border: 2px dotted #aaaaaa;
     }
 
@@ -60,7 +61,7 @@
     var facete = jassa.facete;
     var util = jassa.util;
 
-    angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ngSanitize'])
+    angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
 
     .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
 
@@ -74,15 +75,16 @@
         sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
         sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
 
-        store = new sponate.StoreFacade(sparqlService, {
+
+        /*
+         * Set up the Sponate mapping for the data we are interested in
+         */
+        var store = new sponate.StoreFacade(sparqlService, {
             'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
             'dbpedia-owl': 'http://dbpedia.org/ontology/',
             'foaf': 'http://xmlns.com/foaf/0.1/'
         });
 
-        /*
-         * Set up the Sponate mapping for the data we are interested in
-         */
         $scope.langs = ['de', 'en', ''];
 
         var labelConfig = new sparql.BestLabelConfig($scope.langs);
@@ -138,7 +140,7 @@
 
         var removeIntent = false;
         $scope.sortConfig = {
-            placeholder: 'placeholder',
+            placeholder: 'sortable-placeholder',
             receive: function(e, ui) { removeIntent = false; },
             over: function(e, ui) { removeIntent = false; },
             out: function(e, ui) { removeIntent = true; },
@@ -276,10 +278,10 @@
                 </ul>
             </li>
             <li ng-show="showLangInput">
-                <form ng-submit="confirmAddLang(newLang)">
+                <form ng-submit="confirmAddLang(newLang)" ui-keydown="{esc: 'showLangInput=false'}">
                     <input auto-focus="focusLangInput" size="4" ng-model="newLang" type="text" class="borderless" typeahead="lang for lang in availableLangs | filter:$viewValue | limitTo:8">
                     <button type="submit" style="cursor: pointer;" class="btn label label-info""><span class="glyphicon glyphicon-ok"></span></button>
-                    <button type="button" style="cursor: pointer;" class="btn label label-warning" ng-click="showLangInput=false"><span class="glyphicon glyphicon-remove"></span></button>
+                    <button type="reset" style="cursor: pointer;" class="btn label label-warning" ng-click="showLangInput=false"><span class="glyphicon glyphicon-remove"></span></button>
                 </form>
             </li>
             <li>
