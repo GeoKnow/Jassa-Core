@@ -2,6 +2,7 @@
 <html ng-app="SponateDemo">
 <head>
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+    <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
@@ -11,7 +12,7 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
-    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
@@ -22,32 +23,6 @@
     a {
         cursor: pointer
     }
-
-    .item {
-        cursor: move;
-        min-width: 20px;
-        min-height: 1em;
-    }
-
-    .sortable-placeholder {
-        width: 25px;
-        height: 0.9em;
-        border: 2px dotted #aaaaaa;
-    }
-
-    .borderless,
-    .boderless:active,
-    .borderless:focus {
-        border: none;
-        outline: none;
-        outline-offset: 0;
-        border-color: transparent;
-    }
-
-    .preserve-whitespace {
-        white-space: pre;
-    }
-
     </style>
 
     <script type="text/javascript">
@@ -137,31 +112,6 @@
         /*
          * Angular setup
          */
-
-        var removeIntent = false;
-        $scope.sortConfig = {
-            placeholder: 'sortable-placeholder',
-            receive: function(e, ui) { removeIntent = false; },
-            over: function(e, ui) { removeIntent = false; },
-            out: function(e, ui) { removeIntent = true; },
-            beforeStop: function(e, ui) {
-                if (removeIntent === true) {
-                    var lang = ui.item.context.textContent;
-                    if(lang) {
-                        lang = lang.trim();
-                        var i = $scope.langs.indexOf(lang);
-                        $scope.langs.splice(i, 1);
-                        ui.item.remove();
-                    }
-                }
-            },
-            stop: function() {
-                if(!$scope.$$phase) {
-                    $scope.$apply();
-                }
-            }
-        };
-
         $scope.offset = 0;
         $scope.numItemsPerPage = 10;
         $scope.searchString = '';
@@ -194,16 +144,6 @@
             $scope.currentPage = 1;
             $scope.refresh();
         };
-
-        $scope.confirmAddLang = function(lang) {
-
-            var i = $scope.langs.indexOf(lang);
-            if(i < 0) {
-                $scope.langs.push(lang);
-            }
-            $scope.showLangInput = false;
-            $scope.newLang = '';
-        }
 
 
         // TODO Load languages dynamically
@@ -272,21 +212,8 @@
     <div>
         <ul class="list-inline">
             <li><span>Language Settings: </span></li>
-            <li>
-                <ul ui-sortable="sortConfig" ng-model="langs" class="list-inline">
-                    <li class="item" ng-repeat="lang in langs"><span class="label label-success preserve-whitespace">{{lang.length ? lang : '  '}}</span></li>
-                </ul>
-            </li>
-            <li ng-show="showLangInput">
-                <form ng-submit="confirmAddLang(newLang)" ui-keydown="{esc: 'showLangInput=false'}">
-                    <input auto-focus="focusLangInput" size="4" ng-model="newLang" type="text" class="borderless" typeahead="lang for lang in availableLangs | filter:$viewValue | limitTo:8">
-                    <button type="submit" style="cursor: pointer;" class="btn label label-info""><span class="glyphicon glyphicon-ok"></span></button>
-                    <button type="reset" style="cursor: pointer;" class="btn label label-warning" ng-click="showLangInput=false"><span class="glyphicon glyphicon-remove"></span></button>
-                </form>
-            </li>
-            <li>
-                <button type="button" ng-show="!showLangInput" style="cursor: pointer;" class="btn label label-primary" ng-click="showLangInput=true; focusLangInput=true"><span class="glyphicon glyphicon-plus"></span></button>
-            </ul>
+            <li><lang-select langs="langs" available-langs="availableLangs"></lang-select></li>
+        </ul>
     </div>
 
     <div>
