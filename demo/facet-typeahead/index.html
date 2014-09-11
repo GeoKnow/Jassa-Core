@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html ng-app="FacetTypeaheadDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+<!--     <script src="../../dist/jassa.js"></script> -->
+    <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+
+    <script src="facet-typeahead.js"></script>
+
+
+    <script type="text/ng-template" id="basicDescriptionTemplate.html">
+        <a href="" style="font-family: verdana;">
+            <table>
+                <tr>
+                    <td style="vertical-align: center;">
+                        <div class="thumbnail href="" style="width: 48px; margin-right: 5px;">
+                            <img ng-src="{{match.model.depiction}}">
+                        </div>
+                    </td>
+                    <td style="vertical-align: text-top;">
+                            <strong><span title="{{match.model.id}}" bind-html-unsafe="(match.model.displayLabel || match.model.id) | typeaheadHighlight:query"></span></strong>
+
+                            <small><i>
+                                <ul class="list-inline">
+                                    <li ng-repeat="type in match.model.types"><span title="{{type.id}}">{{type.displayLabel || type.id}}{{$last ? '' : ', '}}</span></li>
+                                </ul>
+                            </i></small>
+                    </td>
+                </tr>
+            </table>
+        </a>
+    </script>
+
+    <script type="text/ng-template" id="subjectTemplate.html">
+        <a href="" style="font-family: verdana; font-size: 80%;">
+            <h6><span title="{{match.model.id}}" bind-html-unsafe="(match.model.displayLabel || match.model.id) | typeaheadHighlight:query"></span></h6>
+        </a>
+    </script>
+<!--             <span bind-html-unsafe="match.displayLabel | typeaheadHighlight:query"></span> -->
+
+
+    <script type="text/javascript">
+        // Create the global 'jassa' object
+        jassa = new Jassa(Promise, $.ajax);
+
+        var vocab = jassa.vocab;
+        var rdf = jassa.rdf;
+        var sparql = jassa.sparql;
+        var service = jassa.service;
+        var sponate = jassa.sponate;
+        var facete = jassa.facete;
+
+        angular.module('FacetTypeaheadDemo', ['ui.bootstrap', 'ui.jassa.facet-typeahead', 'ui.jassa', 'ngSanitize'])
+
+        .controller('AppCtrl', ['$scope', '$q', '$timeout', function($scope, $q, $timeout) {
+
+            $scope.jassa = jassa;
+
+            // Create the SPARQL concept that identifies datasets
+            var baseConcept = new sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Castle');
+
+            // Create a facetTreeConfig with the dataset config as its base
+            var facetConfig = new facete.FacetConfig();
+            facetConfig.setBaseConcept(baseConcept);
+
+
+            // Init the sparql service (and wrap it with a cache and pagination)
+            //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
+            var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+            //sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
+            sparqlService = new service.SparqlServiceCache(sparqlService);
+            sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
+            sparqlService = new service.SparqlServicePageExpand(sparqlService, 50);
+
+
+            /*
+             * Set up the Sponate mapping for the data we are interested in
+             */
+            var store = new sponate.StoreFacade(sparqlService, {
+                'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+                'dbpedia-owl': 'http://dbpedia.org/ontology/',
+                'foaf': 'http://xmlns.com/foaf/0.1/',
+                'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#',
+                'dcterms': 'http://purl.org/dc/terms/',
+                'skos': 'http://www.w3.org/2004/02/skos/core#'
+            });
+
+            $scope.langs = ['de', 'en', ''];
+
+            var labelConfig = new sparql.BestLabelConfig($scope.langs);
+            var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+            var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri('http://dbpedia.org/ontology/abstract')]));
+
+//             store.addMap({
+//                 name: 'labels',
+//                 template: labelTemplate,
+//             });
+
+            store.addMap({
+                name: 'subjects',
+                template: [{
+                    id: '?s',
+                    displayLabel: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+                    comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+                }],
+                from: '?s a skos:Concept'
+            });
+
+            store.addMap({
+                name: 'basicDescriptions',
+                template: [{
+                    id: '?s',
+                    depiction: '?d',
+                    displayLabel: { $ref: { target: labelTemplate, attr: 'displayLabel' } },
+                    types: [{
+                        id: '?t',
+                        displayLabel: { $ref: { target: labelTemplate, attr: 'displayLabel', on: '?t' } },
+                    }],
+                }],
+                from: '?s a ?t . Optional { ?s foaf:depiction ?d } . Filter(regex(str(?t), "http://dbpedia.org/ontology/") && !regex(str(?t), "Wikidata"))',
+            });
+
+
+            $scope.data = {};
+
+            // Set up the facet typeahead config (ftac)
+            $scope.ftac = {
+                sparqlService: sparqlService,
+                facetConfig: facetConfig,
+                store: store,
+                search: function(searchString) {
+                    var relation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
+                    var r = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString, true);
+                    return r;
+                }
+            };
+
+            var refresh = function(listFacetConfig) {
+                var facetValueConceptService = new facete.FacetValueConceptServiceExact(listFacetConfig);
+
+                var promise = facetValueConceptService.prepareConcept(new facete.Path()).then(function(concept) {
+                    console.log('Concept: ' + concept);
+                    var ls = store.basicDescriptions.getListService();
+                    var r = ls.fetchItems(concept, 10);
+                    return r;
+                });
+
+                $q.when(promise).then(function(items) {
+                    $timeout(function() {
+                        console.log('Items: ', items);
+                        $scope.items = items.map(function(item) { return item.val; });
+                    });
+                });
+            };
+
+            $scope.$watch('ftac.getConstraints(true)', function(constraints) {
+                var listFacetConfig = new facete.FacetConfig();
+                listFacetConfig.setBaseConcept(baseConcept);
+                if(constraints) {
+                    listFacetConfig.getConstraintManager().addConstraints(constraints);
+                    refresh(listFacetConfig);
+                }
+
+            }, true);
+        }])
+
+    </script>
+</head>
+<body ng-controller="AppCtrl">
+
+<div class="container">
+
+<div class="row">
+<div class="col-md-12">
+<h3>Facet-based Typeahead</h3>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-3">
+
+<div class="alert alert-info" role="alert">
+<form role="form">
+
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="data.location"
+                facet-typeahead="ftac"
+                facet-typeahead-path="'http://dbpedia.org/ontology/location'"
+                facet-typeahead-suggestions="'basicDescriptions'"
+                facet-typeahead-label="displayLabel"
+                facet-typeahead-model="id"
+                typeahead-template-url="basicDescriptionTemplate.html"
+                typeahead-loading="data.loadingLocations"
+                type="text"
+                class="form-control"
+                placeholder="Location"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="data.location == null || data.location===''" ng-click="data.location=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="data.loadingLocations ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="data.subject"
+                facet-typeahead="ftac"
+                facet-typeahead-path="'http://purl.org/dc/terms/subject'"
+                facet-typeahead-suggestions="'subjects'"
+                facet-typeahead-label="displayLabel"
+                typeahead-template-url="subjectTemplate.html"
+                typeahead-loading="data.loadingSubjects"
+                type="text"
+                class="form-control"
+                placeholder="Subject"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="data.subject == null || data.subject===''" ng-click="data.subject=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="data.loadingSubjects ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+</form>
+</div>
+
+</div>
+
+<div class="col-md-9">
+<div class="alert alert-success" role="alert">
+    <table class="table table-striped">
+    <tr ng-repeat="item in items">
+        <td ng-init="match={model: item}">
+            <div ng-include="'basicDescriptionTemplate.html'"></div>
+        </td>
+    </tr>
+    </table>
+</div>
+</div>
+
+</div>
+</div>
+
+</body>
+</html>
