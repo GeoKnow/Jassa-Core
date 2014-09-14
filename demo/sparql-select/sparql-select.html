@@ -95,6 +95,7 @@
             'dbpedia-owl': 'http://dbpedia.org/ontology/',
             'foaf': 'http://xmlns.com/foaf/0.1/',
             'dcat': 'http://www.w3.org/ns/dcat#',
+            'theme': 'http://example.org/resource/theme/',
             'o': 'http://example.org/ontology/'
         });
 
@@ -104,29 +105,29 @@
         var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
         var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment]));
 
+        var template = [{
+            id: '?s',
+            label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+            comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+            depiction: '?d',
+            distributions: [{ $ref: {target: 'distributions', on: '?x'} }],
+            joinSummaries: [{ $ref: { target: 'datasets', on: '?j'}}]
+        }];
+
         store.addMap({
-            name: 'castles',
-            template: [{
-                id: '?s',
-                label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
-                comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
-                depiction: '?d',
-                distributions: [{ $ref: {target: 'dists', on: '?x'} }],
-                joinSummaries: [{ $ref: { target: 'castles', on: '?j'}}]
-            }],
-            from: '?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
-            //from: '?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s . ?x dcat:accessURL ?a . Optional { ?x o:graph ?g } } Optional { ?j o:joinSummaryOf ?s}'
+            name: 'primaryDatasets',
+            template: template,
+            from: '?s a dcat:Dataset ; dcat:theme theme:primary . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
         });
 
-//         Prefix dcat: <http://www.w3.org/ns/dcat#>
-//             Prefix o: <http://example.org/ontology/>
-
-// Select * {
-// ?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s . ?x dcat:accessURL ?a . Optional { ?x o:graph ?g } }
-// }
+        store.addMap({
+            name: 'datasets',
+            template: template,
+            from: '?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
+        });
 
         store.addMap({
-            name: 'dists',
+            name: 'distributions',
             template: [{
                 id: '?s',
                 accessUrl: '?a',
@@ -140,11 +141,11 @@
          * Create a list service for our mapping and decorate it with
          * keyword search support
          */
-        var listService = store.castles.getListService();
+        var listService = store.primaryDatasets.getListService();
 
         listService = new service.ListServiceTransformConcept(listService, function(searchString) {
 
-            var searchConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri('http://dbpedia.org/ontology/abstract'), vocab.rdfs.label]);
+            var searchConfig = new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment, vocab.rdfs.label]);
 
             var result;
             if(searchString == null || searchString.trim() === '') {
