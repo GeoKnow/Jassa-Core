@@ -24,7 +24,45 @@
     a {
         cursor: pointer
     }
+
+    .thumbnail-center {
+        display: -webkit-flexbox;
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex-align: center;
+        -ms-flex-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+    }
     </style>
+
+
+   <script type="text/ng-template" id="template/list-search/list-search.html">
+    <form role="form" ng-submit="onSubmit()" novalidate>
+        <div class="form-group">
+            <div class="input-group">
+                <input
+                    ng-model="ngModel"
+                    type="text"
+                    class="form-control"
+                    placeholder="Find ...">
+
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{activeSearchMode.label}} <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li ng-repeat="searchMode in searchModes"><a ng-click="setActiveSearchMode(searchMode)" href="#"><span bind-html-unsafe="searchMode.label"></span></a></li>
+                    </ul>
+                </div>
+
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
+            </div>
+        </div>
+    </form>
+    </script>
+
 
     <script type="text/javascript">
     jassa = new Jassa(Promise, $.ajax);
@@ -39,20 +77,25 @@
 
     angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
 
-    .controller('ListSearchCtrl', ['$scope', function($scope) {
+     .controller('ListSearchCtrl', ['$scope', function($scope) {
+         $scope.setActiveSearchMode = function(searchMode) {
+             $scope.activeSearchMode = searchMode;
+         }
+     }])
 
-    }])
-
-    .directive('listSearch' [function() {
+    .directive('listSearch', function() {
         return {
+            restrict: 'EA',
             scope: {
-                langs: '=',
-                availableLangs: '=' // TODO This should be a list service
+                searchModes: '=',
+                activeSearchMode: '=',
+                ngModel: '=',
+                onSubmit: '&submit'
             },
             controller: 'ListSearchCtrl',
-            templateUrl: ''
+            templateUrl: 'template/list-search/list-search.html'
         };
-    }])
+    })
 
     .controller('ListResultCtrl', ['$scope', function($scope) {
     }])
@@ -81,10 +124,10 @@
         //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
         //var sparqlService = new service.SparqlServiceHttp('http://localhost/data/servicecat/sparql', ['http://datacat.aksw.org/'], {type: 'POST'});
         var sparqlService = new service.SparqlServiceHttp('http://localhost/data/servicecat/sparql', ['http://datacat.aksw.org/']);
-//         sparqlService = new service.SparqlServiceCache(sparqlService);
-//         sparqlService = new service.SparqlServiceVirtFix(sparqlService);
-//         sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
-//         sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
+        sparqlService = new service.SparqlServiceCache(sparqlService);
+        sparqlService = new service.SparqlServiceVirtFix(sparqlService);
+        sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
+        sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
 
 
         /*
@@ -111,7 +154,7 @@
             comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
             depiction: '?d',
             distributions: [{ $ref: {target: 'distributions', on: '?x'} }],
-            joinSummaries: [{ $ref: { target: 'datasets', on: '?j'}}]
+            joinSummaries: [{ $ref: { target: 'datasets', on: '?j'}}] // <-- here be recursive reference :)
         }];
 
         store.addMap({
@@ -137,6 +180,17 @@
         });
 
 
+
+        $scope.searchModes = [{
+            label: 'regex',
+            fn: sparql.KeywordSearchUtils.createConceptRegexLabelOnly //(labelRelation, searchString);
+        }, {
+            label: 'fulltext',
+            fn: sparql.KeywordSearchUtils.createConceptBifContains
+        }];
+
+        $scope.activeSearchMode = $scope.searchModes[0];
+
         /*
          * Create a list service for our mapping and decorate it with
          * keyword search support
@@ -148,21 +202,12 @@
             var searchConfig = new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment, vocab.rdfs.label]);
 
             var result;
-            if(searchString == null || searchString.trim() === '') {
+            var searchFn = $scope.activeSearchMode.fn;
+            if(searchString == null || searchString.trim() === '' || !searchFn) {
                 result = null;
             } else {
                 var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
-
-                switch($scope.searchMode) {
-                case 'regex':
-                    result = sparql.KeywordSearchUtils.createConceptRegexLabelOnly(labelRelation, searchString);
-                    break;
-                case 'fulltext':
-                    result = sparql.KeywordSearchUtils.createConceptBifContains(labelRelation, searchString);
-                    break;
-                default:
-                    throw new Error('Unknown search mode: ', $scope.searchMode);
-                }
+                result = searchFn(labelRelation, searchString);
             }
 
             return result;
@@ -246,30 +291,8 @@
 <div class="col-md-12">
 
 <div class="alert alert-success" role="alert">
-    <form role="form" ng-submit="doFilter()" novalidate>
-        <div class="form-group">
-            <div class="input-group">
-                <input
-                    ng-model="searchString"
-                    type="text"
-                    class="form-control"
-                    placeholder="Find ...">
 
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{searchMode}} <span class="caret"></span></button>
-                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                        <li><a ng-click="searchMode='regex'" href="#">regex</a></li>
-                        <li><a ng-click="searchMode='fulltext'" href="#">fulltext</a></li>
-                    </ul>
-                </div>
-
-                <span class="input-group-btn">
-                    <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
-                </span>
-            </div>
-        </div>
-    </form>
-
+    <list-search ng-model="searchString" submit="doFilter()" search-modes="searchModes" active-search-mode="activeSearchMode"></list-search>
     <div>
         <ul class="list-inline">
             <li><span>Language Settings: </span></li>
@@ -304,7 +327,7 @@
 <table class="table table-striped">
         <tr ng-repeat="item in items">
             <td>
-                <div class="thumbnail" style="width: 100px; height: 100px;">
+                <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
                     <img ng-src="{{item.depiction}}">
                 </div>
             </td>
@@ -322,6 +345,7 @@
                 </ul>
                 <ul>
                     <li ng-repeat="joinSummary in item.joinSummaries">
+                        {{joinSummary.label}}
                         <ul>
                             <li ng-repeat="dist in joinSummary.distributions">
                                 {{dist.accessUrl}}
@@ -368,5 +392,31 @@
 
 
 </div>
+
+
+<!--     <form role="form" ng-submit="doFilter()" novalidate> -->
+<!--         </div> -->
+<!--     </form> -->
+
+<!--         <div class="form-group"> -->
+<!--             <div class="input-group"> -->
+<!--                 <input -->
+<!--                     ng-model="searchString" -->
+<!--                     type="text" -->
+<!--                     class="form-control" -->
+<!--                     placeholder="Find ..."> -->
+
+<!--                 <div class="input-group-btn"> -->
+<!--                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{searchMode}} <span class="caret"></span></button> -->
+<!--                     <ul class="dropdown-menu dropdown-menu-right" role="menu"> -->
+<!--                         <li><a ng-click="searchMode='regex'" href="#">regex</a></li> -->
+<!--                         <li><a ng-click="searchMode='fulltext'" href="#">fulltext</a></li> -->
+<!--                     </ul> -->
+<!--                 </div> -->
+
+<!--                 <span class="input-group-btn"> -->
+<!--                     <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button> -->
+<!--                 </span> -->
+<!--             </div> -->
 
 </html>
