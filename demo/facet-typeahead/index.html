@@ -81,7 +81,7 @@
 
             // Init the sparql service (and wrap it with a cache and pagination)
             //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
-            var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+            var sparqlService = new service.SparqlServiceHttp('http://linkedspending.aksw.org/sparql', ['http://dbpedia.org']);
             //sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
             sparqlService = new service.SparqlServiceCache(sparqlService);
             sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);

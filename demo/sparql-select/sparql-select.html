@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html ng-app="SponateDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+    <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+<!--     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script> -->
+    <script src="../../dist/jassa.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+
+    <style>
+    /* Force pointer cursor on 'a' elements - even without href attribute */
+    a {
+        cursor: pointer
+    }
+    </style>
+
+    <script type="text/javascript">
+    jassa = new Jassa(Promise, $.ajax);
+
+    var vocab = jassa.vocab;
+    var rdf = jassa.rdf;
+    var sparql = jassa.sparql;
+    var service = jassa.service;
+    var sponate = jassa.sponate;
+    var facete = jassa.facete;
+    var util = jassa.util;
+
+    angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
+
+    .controller('ListSearchCtrl', ['$scope', function($scope) {
+
+    }])
+
+    .directive('listSearch' [function() {
+        return {
+            scope: {
+                langs: '=',
+                availableLangs: '=' // TODO This should be a list service
+            },
+            controller: 'ListSearchCtrl',
+            templateUrl: ''
+        };
+    }])
+
+    .controller('ListResultCtrl', ['$scope', function($scope) {
+    }])
+
+    .directive('listResult', [function() {
+        return {
+            restrict: 'EA',
+            replace: true,
+            templateUrl: 'template/sparql-select/facet-value-list.html',
+            transclude: false,
+            scope: {
+                listService: '=',
+                templateUrl: '=',
+
+            },
+            controller: 'ListResultCtrl'
+        };
+    }])
+
+
+    .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
+
+        /*
+         * Set up the sparql service with as many buffs (decorations) as we like
+         */
+        //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        //var sparqlService = new service.SparqlServiceHttp('http://localhost/data/servicecat/sparql', ['http://datacat.aksw.org/'], {type: 'POST'});
+        var sparqlService = new service.SparqlServiceHttp('http://localhost/data/servicecat/sparql', ['http://datacat.aksw.org/']);
+//         sparqlService = new service.SparqlServiceCache(sparqlService);
+//         sparqlService = new service.SparqlServiceVirtFix(sparqlService);
+//         sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
+//         sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
+
+
+        /*
+         * Set up the Sponate mapping for the data we are interested in
+         */
+        var store = new sponate.StoreFacade(sparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'dbpedia-owl': 'http://dbpedia.org/ontology/',
+            'foaf': 'http://xmlns.com/foaf/0.1/',
+            'dcat': 'http://www.w3.org/ns/dcat#',
+            'o': 'http://example.org/ontology/'
+        });
+
+        $scope.langs = ['de', 'en', ''];
+
+        var labelConfig = new sparql.BestLabelConfig($scope.langs);
+        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+        var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment]));
+
+        store.addMap({
+            name: 'castles',
+            template: [{
+                id: '?s',
+                label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+                comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+                depiction: '?d',
+                distributions: [{ $ref: {target: 'dists', on: '?x'} }],
+                joinSummaries: [{ $ref: { target: 'castles', on: '?j'}}]
+            }],
+            from: '?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
+            //from: '?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s . ?x dcat:accessURL ?a . Optional { ?x o:graph ?g } } Optional { ?j o:joinSummaryOf ?s}'
+        });
+
+//         Prefix dcat: <http://www.w3.org/ns/dcat#>
+//             Prefix o: <http://example.org/ontology/>
+
+// Select * {
+// ?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s . ?x dcat:accessURL ?a . Optional { ?x o:graph ?g } }
+// }
+
+        store.addMap({
+            name: 'dists',
+            template: [{
+                id: '?s',
+                accessUrl: '?a',
+                graphs: ['?g']
+            }],
+            from: '?s a dcat:Distribution ; dcat:accessURL ?a . Optional { ?s o:graph ?g } '
+        });
+
+
+        /*
+         * Create a list service for our mapping and decorate it with
+         * keyword search support
+         */
+        var listService = store.castles.getListService();
+
+        listService = new service.ListServiceTransformConcept(listService, function(searchString) {
+
+            var searchConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri('http://dbpedia.org/ontology/abstract'), vocab.rdfs.label]);
+
+            var result;
+            if(searchString == null || searchString.trim() === '') {
+                result = null;
+            } else {
+                var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
+
+                switch($scope.searchMode) {
+                case 'regex':
+                    result = sparql.KeywordSearchUtils.createConceptRegexLabelOnly(labelRelation, searchString);
+                    break;
+                case 'fulltext':
+                    result = sparql.KeywordSearchUtils.createConceptBifContains(labelRelation, searchString);
+                    break;
+                default:
+                    throw new Error('Unknown search mode: ', $scope.searchMode);
+                }
+            }
+
+            return result;
+        });
+
+        /*
+         * Angular setup
+         */
+        $scope.offset = 0;
+        $scope.numItemsPerPage = 10;
+        $scope.searchString = '';
+        $scope.searchMode = 'fulltext';
+        $scope.totalItems = null;
+        $scope.currentPage = 1;
+
+        $scope.focusLangInput = false;
+
+        $scope.refresh = function() {
+            $q.when(listService.fetchCount($scope.searchString)).then(function(countInfo) {
+                $scope.totalItems = countInfo.count;
+            });
+
+            $q.when(listService.fetchItems($scope.searchString, $scope.numItemsPerPage, $scope.offset)).then(function(items) {
+                $scope.items = items.map(function(item) {
+                    return item.val;
+                });
+
+                console.log('ITEMS ', $scope.items);
+            });
+        };
+
+        $scope.$watch('currentPage', function() {
+            $scope.offset = ($scope.currentPage - 1) * $scope.numItemsPerPage;
+        });
+
+        $scope.$watchCollection('[offset, numItems]', $scope.refresh);
+        $scope.$watchCollection('langs', $scope.refresh);
+
+        $scope.doFilter = function() {
+            $scope.currentPage = 1;
+            $scope.refresh();
+        };
+
+
+        // TODO Load languages dynamically
+        // TODO Add labels to it
+        $scope.availableLangs = ['de', 'en', 'jp', 'ko'];
+    }]);
+
+    </script>
+
+</head>
+
+<body ng-controller="AppCtrl">
+
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <a class="navbar-brand" style="padding: 3px 15px;" href="http://aksw.org" target="_blank"><img style="height: 42px;" src="http://js.geoknow.eu/images/aksw-logo.png" alt=""></img></a>
+            <a class="navbar-brand" href="#">Jassa/Sponate Demo</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://aksw.org/ClausStadler" target="_blank">by Claus Stadler</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+<div class="row">
+<div class="col-md-12">
+
+<div class="alert alert-success" role="alert">
+    <form role="form" ng-submit="doFilter()" novalidate>
+        <div class="form-group">
+            <div class="input-group">
+                <input
+                    ng-model="searchString"
+                    type="text"
+                    class="form-control"
+                    placeholder="Find ...">
+
+                <div class="input-group-btn">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{searchMode}} <span class="caret"></span></button>
+                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <li><a ng-click="searchMode='regex'" href="#">regex</a></li>
+                        <li><a ng-click="searchMode='fulltext'" href="#">fulltext</a></li>
+                    </ul>
+                </div>
+
+                <span class="input-group-btn">
+                    <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
+                </span>
+            </div>
+        </div>
+    </form>
+
+    <div>
+        <ul class="list-inline">
+            <li><span>Language Settings: </span></li>
+            <li><lang-select langs="langs" available-langs="availableLangs"></lang-select></li>
+        </ul>
+    </div>
+
+    <div>
+        <strong>Found <span class="badge">{{totalItems}}</span> items</strong>
+    </div>
+</div>
+
+<div class="row">
+<div class="col-md-12" style="text-align: center">
+
+<pagination
+    ng-show="items.length"
+    class="pagination-tiny" max-size="7"
+    total-items="totalItems"
+    page="currentPage"
+    boundary-links="true"
+    rotate="false"
+    first-text="&lt;&lt;"
+    previous-text="&lt;"
+    next-text="&gt;"
+    last-text="&gt;&gt;">
+</pagination>
+
+</div>
+</div>
+
+<table class="table table-striped">
+        <tr ng-repeat="item in items">
+            <td>
+                <div class="thumbnail" style="width: 100px; height: 100px;">
+                    <img ng-src="{{item.depiction}}">
+                </div>
+            </td>
+            <td>
+                <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
+                <br />
+                 <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
+                <ul>
+                    <li ng-repeat="dist in item.distributions">
+                        {{dist.accessUrl}}
+                        <ul>
+                            <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li ng-repeat="joinSummary in item.joinSummaries">
+                        <ul>
+                            <li ng-repeat="dist in joinSummary.distributions">
+                                {{dist.accessUrl}}
+                                <ul>
+                                    <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+
+        <tr ng-show="!items.length">
+            <td colspan="2" style="text-align: center">
+                <div class="alert alert-danger" role="alert">
+                    There are no results that can be shown
+                </div>
+            </td>
+        </tr>
+</table>
+
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-12" style="text-align: center">
+
+<pagination
+    ng-show="items.length"
+    class="pagination-tiny" max-size="7"
+    total-items="totalItems"
+    page="currentPage"
+    boundary-links="true"
+    rotate="false"
+    first-text="&lt;&lt;"
+    previous-text="&lt;"
+    next-text="&gt;"
+    last-text="&gt;&gt;">
+</pagination>
+
+</div>
+</div>
+
+
+</div>
+
+</html>
