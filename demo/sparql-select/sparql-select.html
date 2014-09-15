@@ -26,45 +26,27 @@
     }
 
     .thumbnail-center {
-        display: -webkit-flexbox;
-        display: -ms-flexbox;
-        display: -webkit-flex;
-        display: flex;
-        -webkit-flex-align: center;
-        -ms-flex-align: center;
-        -webkit-align-items: center;
-        align-items: center;
+        display: table;
+        border-spacing: 1px;
+        border-collapse: separate;
+    }
+
+    .thumbnail-wrapper {
+        display:table-cell;
+        vertical-align:middle;
+    }
+
+    .thumbnail-wrapper > img {
+        width:100%;
     }
     </style>
 
 
-   <script type="text/ng-template" id="template/list-search/list-search.html">
-    <form role="form" ng-submit="onSubmit()" novalidate>
-        <div class="form-group">
-            <div class="input-group">
-                <input
-                    ng-model="ngModel"
-                    type="text"
-                    class="form-control"
-                    placeholder="Find ...">
-
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{activeSearchMode.label}} <span class="caret"></span></button>
-                    <ul class="dropdown-menu dropdown-menu-right" role="menu">
-                        <li ng-repeat="searchMode in searchModes"><a ng-click="setActiveSearchMode(searchMode)" href="#"><span bind-html-unsafe="searchMode.label"></span></a></li>
-                    </ul>
-                </div>
-
-                <span class="input-group-btn">
-                    <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button>
-                </span>
-            </div>
-        </div>
-    </form>
-    </script>
-
-
     <script type="text/javascript">
+    Promise.onPossiblyUnhandledRejection(function(e, promise) {
+        throw e;
+    });
+
     jassa = new Jassa(Promise, $.ajax);
 
     var vocab = jassa.vocab;
@@ -76,26 +58,6 @@
     var util = jassa.util;
 
     angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
-
-     .controller('ListSearchCtrl', ['$scope', function($scope) {
-         $scope.setActiveSearchMode = function(searchMode) {
-             $scope.activeSearchMode = searchMode;
-         }
-     }])
-
-    .directive('listSearch', function() {
-        return {
-            restrict: 'EA',
-            scope: {
-                searchModes: '=',
-                activeSearchMode: '=',
-                ngModel: '=',
-                onSubmit: '&submit'
-            },
-            controller: 'ListSearchCtrl',
-            templateUrl: 'template/list-search/list-search.html'
-        };
-    })
 
     .controller('ListResultCtrl', ['$scope', function($scope) {
     }])
@@ -143,6 +105,14 @@
         });
 
         $scope.langs = ['de', 'en', ''];
+
+        $scope.edit = {
+            id: null,
+            dataServiceIri: '',
+            dataGraphIris: '',
+            jsServiceIri: '',
+            jsGraphIris: ''
+        };
 
         var labelConfig = new sparql.BestLabelConfig($scope.langs);
         var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
@@ -211,6 +181,11 @@
             }
 
             return result;
+        });
+
+        listService = new service.ListServiceTransformItems(listService, function(items) {
+            // TODO Tag the distributions and joinSummaries
+            return items;
         });
 
         /*
@@ -310,7 +285,7 @@
 
 <pagination
     ng-show="items.length"
-    class="pagination-tiny" max-size="7"
+    class="pagination" max-size="7"
     total-items="totalItems"
     page="currentPage"
     boundary-links="true"
@@ -323,39 +298,56 @@
 
 </div>
 </div>
+<div class="row">
+<div class="col-md-12">
 
-<table class="table table-striped">
+
+{{edit | json}}
+
+<table class="table table-striped table-condensed">
         <tr ng-repeat="item in items">
             <td>
                 <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
-                    <img ng-src="{{item.depiction}}">
+                    <div class="thumbnail-wrapper">
+                        <img ng-src="{{item.depiction}}">
+                    </div>
                 </div>
             </td>
             <td>
                 <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
                 <br />
-                 <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
-                <ul>
-                    <li ng-repeat="dist in item.distributions">
-                        {{dist.accessUrl}}
-                        <ul>
-                            <li ng-repeat="graph in dist.graphs">{{graph}}</li>
-                        </ul>
-                    </li>
+                <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
+                <hr />
+                <ul class="list-inline">
+                    <li ng-show="item.distributions.length"><a href="" ng-click="item.showTab=(item.showTab==0 ? null : 0)"><span class="label" ng-class="item.showTab===0 ? 'label-success' : 'label-default'">{{item.distributions.length}} Distributions</span></a></li>
+                    <li ng-show="item.joinSummaries.length"><a href="" ng-click="item.showTab=(item.showTab==1 ? null : 1)"><span class="label" ng-class="item.showTab===1 ? 'label-success' : 'label-default'">{{item.joinSummaries.length}} Join Summaries</span></a></li>
                 </ul>
-                <ul>
-                    <li ng-repeat="joinSummary in item.joinSummaries">
-                        {{joinSummary.label}}
-                        <ul>
-                            <li ng-repeat="dist in joinSummary.distributions">
+
+                <div ng-show="item.showTab===0">
+                    <ul class="list-inline">
+                        <li ng-repeat="dist in item.distributions">
+                            <button type="button" class="btn btn-default" ng-click="edit.dataServiceIri = dist.accessUrl; edit.dataGraphIris = dist.graphs;">
                                 {{dist.accessUrl}}
-                                <ul>
+                                <ul style="list-style-type: none;">
                                     <li ng-repeat="graph in dist.graphs">{{graph}}</li>
                                 </ul>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div ng-show="item.showTab===1">
+                    <ul ng-repeat="joinSummary in item.joinSummaries" class="list-inline">
+                        <li ng-repeat="dist in joinSummary.distributions">
+                            <button type="button" class="btn btn-default" ng-click="edit.jsServiceUri = dist.accessUrl; edit.jsGraphIris = dist.graphs;">
+                                {{dist.accessUrl}}
+                                <ul style="list-style-type: none;">
+                                    <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+                                </ul>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </td>
         </tr>
 
@@ -376,7 +368,7 @@
 
 <pagination
     ng-show="items.length"
-    class="pagination-tiny" max-size="7"
+    class="pagination" max-size="7"
     total-items="totalItems"
     page="currentPage"
     boundary-links="true"
@@ -392,31 +384,8 @@
 
 
 </div>
-
-
-<!--     <form role="form" ng-submit="doFilter()" novalidate> -->
-<!--         </div> -->
-<!--     </form> -->
-
-<!--         <div class="form-group"> -->
-<!--             <div class="input-group"> -->
-<!--                 <input -->
-<!--                     ng-model="searchString" -->
-<!--                     type="text" -->
-<!--                     class="form-control" -->
-<!--                     placeholder="Find ..."> -->
-
-<!--                 <div class="input-group-btn"> -->
-<!--                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">{{searchMode}} <span class="caret"></span></button> -->
-<!--                     <ul class="dropdown-menu dropdown-menu-right" role="menu"> -->
-<!--                         <li><a ng-click="searchMode='regex'" href="#">regex</a></li> -->
-<!--                         <li><a ng-click="searchMode='fulltext'" href="#">fulltext</a></li> -->
-<!--                     </ul> -->
-<!--                 </div> -->
-
-<!--                 <span class="input-group-btn"> -->
-<!--                     <button type="submit" class="btn btn-default" type="button"><span class="glyphicon glyphicon-search"></span></button> -->
-<!--                 </span> -->
-<!--             </div> -->
+</div>
+</div>
+</body>
 
 </html>
