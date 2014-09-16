@@ -43,8 +43,9 @@
 
         //var linkSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org']);
         var linkSparqlService = new service.SparqlServiceHttp('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/'], {type: 'POST'});
-        //var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
-        var dbpediaSparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
+        var dbpediaSparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        var dbpediaSparqlService = new service.SparqlServiceHttp('http://localhost/data/dbpedia/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        //var dbpediaSparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org']);
         var lgdSparqlService = new service.SparqlServiceHttp('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org'], {type: 'POST'});
 
         linkStore = new sponate.StoreFacade(linkSparqlService, {

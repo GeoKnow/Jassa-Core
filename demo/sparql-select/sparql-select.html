@@ -3,6 +3,7 @@
 <head>
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
     <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
+<!--     <link rel="stylesheet" href="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular.css"> -->
 
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
@@ -11,42 +12,17 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
-<!--     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script> -->
-    <script src="../../dist/jassa.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
+<!--     <script src="../../dist/jassa.js"></script> -->
     <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
+<!--     <script src="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular-tpls.js"></script> -->
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
 
-    <style>
-    /* Force pointer cursor on 'a' elements - even without href attribute */
-    a {
-        cursor: pointer
-    }
-
-    .thumbnail-center {
-        display: table;
-        border-spacing: 1px;
-        border-collapse: separate;
-    }
-
-    .thumbnail-wrapper {
-        display:table-cell;
-        vertical-align:middle;
-    }
-
-    .thumbnail-wrapper > img {
-        width:100%;
-    }
-    </style>
-
 
     <script type="text/javascript">
-    Promise.onPossiblyUnhandledRejection(function(e, promise) {
-        throw e;
-    });
-
     jassa = new Jassa(Promise, $.ajax);
 
     var vocab = jassa.vocab;
@@ -59,33 +35,12 @@
 
     angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
 
-    .controller('ListResultCtrl', ['$scope', function($scope) {
-    }])
-
-    .directive('listResult', [function() {
-        return {
-            restrict: 'EA',
-            replace: true,
-            templateUrl: 'template/sparql-select/facet-value-list.html',
-            transclude: false,
-            scope: {
-                listService: '=',
-                templateUrl: '=',
-
-            },
-            controller: 'ListResultCtrl'
-        };
-    }])
-
-
     .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
 
         /*
          * Set up the sparql service with as many buffs (decorations) as we like
          */
-        //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
-        //var sparqlService = new service.SparqlServiceHttp('http://localhost/data/servicecat/sparql', ['http://datacat.aksw.org/'], {type: 'POST'});
-        var sparqlService = new service.SparqlServiceHttp('http://localhost/data/servicecat/sparql', ['http://datacat.aksw.org/']);
+        var sparqlService = new service.SparqlServiceHttp('http://cstadler.aksw.org/data/misc/sparql', ['http://datacat.aksw.org/']);
         sparqlService = new service.SparqlServiceCache(sparqlService);
         sparqlService = new service.SparqlServiceVirtFix(sparqlService);
         sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
@@ -150,86 +105,52 @@
         });
 
 
-
-        $scope.searchModes = [{
-            label: 'regex',
-            fn: sparql.KeywordSearchUtils.createConceptRegexLabelOnly //(labelRelation, searchString);
-        }, {
-            label: 'fulltext',
-            fn: sparql.KeywordSearchUtils.createConceptBifContains
-        }];
-
-        $scope.activeSearchMode = $scope.searchModes[0];
-
         /*
          * Create a list service for our mapping and decorate it with
          * keyword search support
          */
-        var listService = store.primaryDatasets.getListService();
+        $scope.searchModes = [{
+            label: 'regex',
+            mode: 'regex'
+        }, {
+            label: 'fulltext',
+            mode: 'fulltext'
+        }];
 
-        listService = new service.ListServiceTransformConcept(listService, function(searchString) {
+        $scope.activeSearchMode = $scope.searchModes[0];
 
+        $scope.listService = store.primaryDatasets.getListService();
+
+        $scope.listService = new service.ListServiceTransformConceptMode($scope.listService, function() {
             var searchConfig = new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment, vocab.rdfs.label]);
-
-            var result;
-            var searchFn = $scope.activeSearchMode.fn;
-            if(searchString == null || searchString.trim() === '' || !searchFn) {
-                result = null;
-            } else {
-                var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
-                result = searchFn(labelRelation, searchString);
-            }
-
-            return result;
-        });
-
-        listService = new service.ListServiceTransformItems(listService, function(items) {
-            // TODO Tag the distributions and joinSummaries
-            return items;
+            var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
+            return labelRelation;
         });
 
         /*
          * Angular setup
          */
+        $scope.availableLangs = ['de', 'en', 'jp', 'ko'];
+
+
+        $scope.filter = {
+            searchString: '',
+            mode: $scope.activeSearchMode.mode
+        };
         $scope.offset = 0;
-        $scope.numItemsPerPage = 10;
-        $scope.searchString = '';
-        $scope.searchMode = 'fulltext';
-        $scope.totalItems = null;
+        $scope.limit = 10;
+        $scope.totalItems = 0;
         $scope.currentPage = 1;
+        $scope.items = [];
+
+        $scope.doFilter = function(searchString) {
+            $scope.filter.searchString = searchString;
+            console.log('filter: ', $scope.filter);
+            $scope.currentPage = 1;
+        };
+
 
         $scope.focusLangInput = false;
-
-        $scope.refresh = function() {
-            $q.when(listService.fetchCount($scope.searchString)).then(function(countInfo) {
-                $scope.totalItems = countInfo.count;
-            });
-
-            $q.when(listService.fetchItems($scope.searchString, $scope.numItemsPerPage, $scope.offset)).then(function(items) {
-                $scope.items = items.map(function(item) {
-                    return item.val;
-                });
-
-                console.log('ITEMS ', $scope.items);
-            });
-        };
-
-        $scope.$watch('currentPage', function() {
-            $scope.offset = ($scope.currentPage - 1) * $scope.numItemsPerPage;
-        });
-
-        $scope.$watchCollection('[offset, numItems]', $scope.refresh);
-        $scope.$watchCollection('langs', $scope.refresh);
-
-        $scope.doFilter = function() {
-            $scope.currentPage = 1;
-            $scope.refresh();
-        };
-
-
-        // TODO Load languages dynamically
-        // TODO Add labels to it
-        $scope.availableLangs = ['de', 'en', 'jp', 'ko'];
     }]);
 
     </script>
@@ -267,7 +188,7 @@
 
 <div class="alert alert-success" role="alert">
 
-    <list-search ng-model="searchString" submit="doFilter()" search-modes="searchModes" active-search-mode="activeSearchMode"></list-search>
+    <list-search ng-model="searchString" submit="doFilter(searchString)" search-modes="searchModes" active-search-mode="activeSearchMode"></list-search>
     <div>
         <ul class="list-inline">
             <li><span>Language Settings: </span></li>
@@ -280,111 +201,67 @@
     </div>
 </div>
 
-<div class="row">
-<div class="col-md-12" style="text-align: center">
-
-<pagination
-    ng-show="items.length"
-    class="pagination" max-size="7"
-    total-items="totalItems"
-    page="currentPage"
-    boundary-links="true"
-    rotate="false"
-    first-text="&lt;&lt;"
-    previous-text="&lt;"
-    next-text="&gt;"
-    last-text="&gt;&gt;">
-</pagination>
-
 </div>
 </div>
+
 <div class="row">
 <div class="col-md-12">
 
 
-{{edit | json}}
-
-<table class="table table-striped table-condensed">
-        <tr ng-repeat="item in items">
-            <td>
-                <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
-                    <div class="thumbnail-wrapper">
-                        <img ng-src="{{item.depiction}}">
-                    </div>
+<jassa-media-list list-service="listService" offset="offset" limit="limit" filter="filter" current-page="currentPage" total-items="totalItems" items="items" refresh="langs">
+    <li class="media" ng-repeat="item in items">
+        <a class="pull-left" href="#">
+            <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
+                <div class="thumbnail-wrapper">
+                    <img ng-src="{{item.depiction}}">
                 </div>
-            </td>
-            <td>
-                <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
-                <br />
-                <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
-                <hr />
+            </div>
+        </a>
+
+        <div class="media-body">
+
+            <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
+            <br />
+            <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
+            <hr />
+            <ul class="list-inline">
+                <li ng-show="item.distributions.length"><a href="" ng-click="item.showTab=(item.showTab==0 ? null : 0)"><span class="label" ng-class="item.showTab===0 ? 'label-success' : 'label-default'">{{item.distributions.length}} Distributions</span></a></li>
+                <li ng-show="item.joinSummaries.length"><a href="" ng-click="item.showTab=(item.showTab==1 ? null : 1)"><span class="label" ng-class="item.showTab===1 ? 'label-success' : 'label-default'">{{item.joinSummaries.length}} Join Summaries</span></a></li>
+            </ul>
+
+            <div ng-show="item.showTab===0">
                 <ul class="list-inline">
-                    <li ng-show="item.distributions.length"><a href="" ng-click="item.showTab=(item.showTab==0 ? null : 0)"><span class="label" ng-class="item.showTab===0 ? 'label-success' : 'label-default'">{{item.distributions.length}} Distributions</span></a></li>
-                    <li ng-show="item.joinSummaries.length"><a href="" ng-click="item.showTab=(item.showTab==1 ? null : 1)"><span class="label" ng-class="item.showTab===1 ? 'label-success' : 'label-default'">{{item.joinSummaries.length}} Join Summaries</span></a></li>
+                    <li ng-repeat="dist in item.distributions">
+                        <button type="button" class="btn btn-default" ng-click="edit.dataServiceIri = dist.accessUrl; edit.dataGraphIris = dist.graphs;">
+                            {{dist.accessUrl}}
+                            <ul style="list-style-type: none;">
+                                <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+                            </ul>
+                        </button>
+                    </li>
                 </ul>
+            </div>
 
-                <div ng-show="item.showTab===0">
-                    <ul class="list-inline">
-                        <li ng-repeat="dist in item.distributions">
-                            <button type="button" class="btn btn-default" ng-click="edit.dataServiceIri = dist.accessUrl; edit.dataGraphIris = dist.graphs;">
-                                {{dist.accessUrl}}
-                                <ul style="list-style-type: none;">
-                                    <li ng-repeat="graph in dist.graphs">{{graph}}</li>
-                                </ul>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
+            <div ng-show="item.showTab===1">
+                <ul ng-repeat="joinSummary in item.joinSummaries" class="list-inline">
+                    <li ng-repeat="dist in joinSummary.distributions">
+                        <button type="button" class="btn btn-default" ng-click="edit.jsServiceUri = dist.accessUrl; edit.jsGraphIris = dist.graphs;">
+                            {{dist.accessUrl}}
+                            <ul style="list-style-type: none;">
+                                <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+                            </ul>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
-                <div ng-show="item.showTab===1">
-                    <ul ng-repeat="joinSummary in item.joinSummaries" class="list-inline">
-                        <li ng-repeat="dist in joinSummary.distributions">
-                            <button type="button" class="btn btn-default" ng-click="edit.jsServiceUri = dist.accessUrl; edit.jsGraphIris = dist.graphs;">
-                                {{dist.accessUrl}}
-                                <ul style="list-style-type: none;">
-                                    <li ng-repeat="graph in dist.graphs">{{graph}}</li>
-                                </ul>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </td>
-        </tr>
-
-        <tr ng-show="!items.length">
-            <td colspan="2" style="text-align: center">
-                <div class="alert alert-danger" role="alert">
-                    There are no results that can be shown
-                </div>
-            </td>
-        </tr>
-</table>
+    </li>
+</jassa-media-list>
 
 </div>
 </div>
 
-<div class="row">
-<div class="col-md-12" style="text-align: center">
-
-<pagination
-    ng-show="items.length"
-    class="pagination" max-size="7"
-    total-items="totalItems"
-    page="currentPage"
-    boundary-links="true"
-    rotate="false"
-    first-text="&lt;&lt;"
-    previous-text="&lt;"
-    next-text="&gt;"
-    last-text="&gt;&gt;">
-</pagination>
-
-</div>
-</div>
-
-
-</div>
-</div>
 </div>
 </body>
 
