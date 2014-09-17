@@ -183,25 +183,6 @@
             $scope.offset = 0;
         };
 
-        // Set up the facet typeahead config (ftac)
-        // Create the SPARQL concept that identifies datasets
-        var baseConcept = new sparql.ConceptUtils.createSubjectConcept();
-
-        // Create a facetTreeConfig with the dataset config as its base
-        var facetConfig = new facete.FacetConfig();
-        facetConfig.setBaseConcept(baseConcept);
-
-        $scope.ftac = {
-            sparqlService: sparqlService,
-            facetConfig: facetConfig,
-            store: store,
-            search: function(searchString) {
-                var relation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
-                var r = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString, true);
-                return r;
-            }
-        };
-
         $scope.context = {
             buildAccessUrl: function(accessUrl, graphUrls) {
                 var defaultQuery = 'Select * { ?s ?p ?o } Limit 10'
