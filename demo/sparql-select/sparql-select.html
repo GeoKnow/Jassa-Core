@@ -12,14 +12,40 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
-    <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
-<!--     <script src="../../dist/jassa.js"></script> -->
+
+
+<!--     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script> -->
+    <script src="../../dist/jassa.js"></script>
+
     <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
 <!--     <script src="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular-tpls.js"></script> -->
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+
+    <script src="../facet-typeahead/facet-typeahead.js"></script>
+
+
+    <script type="text/ng-template" id="basicDescriptionTemplate.html">
+        <a href="" style="font-family: verdana;">
+            <span title="{{match.model.id}}" bind-html-unsafe="(match.model.displayLabel || match.model.id) | typeaheadHighlight:query"></span>
+        </a>
+    </script>
+
+
+    <script type="text/ng-template" id="sparqlAccess.html">
+        <ul class="list-inline">
+            <li ng-repeat="dist in dists">
+                <button type="button" class="btn btn-default" ng-click="edit.dataServiceIri = dist.accessUrl; edit.dataGraphIris = dist.graphs;">
+                    {{dist.accessUrl}}
+                    <ul style="list-style-type: none;">
+                        <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+                    </ul>
+                </button>
+            </li>
+        </ul>
+    </script>
 
 
     <script type="text/javascript">
@@ -42,6 +68,7 @@
          */
         var sparqlService = new service.SparqlServiceHttp('http://cstadler.aksw.org/data/misc/sparql', ['http://datacat.aksw.org/']);
         sparqlService = new service.SparqlServiceCache(sparqlService);
+        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
         sparqlService = new service.SparqlServiceVirtFix(sparqlService);
         sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
         sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
@@ -78,8 +105,18 @@
             label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
             comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
             depiction: '?d',
-            distributions: [{ $ref: {target: 'distributions', on: '?x'} }],
-            joinSummaries: [{ $ref: { target: 'datasets', on: '?j'}}] // <-- here be recursive reference :)
+            resources: [{
+                label: 'Distributions',
+                items: [{ $ref: { target: 'distributions', on: '?x'} }],
+                template: 'sparqlAccess.html'
+            }, {
+                label: 'Join Summaries',
+                items: [[{ $ref: { target: 'datasets', on: '?j'} }], function(items) {
+                    var r = _(items).chain().map(function(item) { return item.resources[0].items; }).flatten(true).value();
+                    return r;
+                }],
+                template: 'sparqlAccess.html'
+            }]
         }];
 
         store.addMap({
@@ -105,6 +142,12 @@
         });
 
 
+        store.addMap({
+            name: 'basicDescriptions',
+            template: labelTemplate
+            //from: '?s ?p ?o'
+        });
+
         /*
          * Create a list service for our mapping and decorate it with
          * keyword search support
@@ -127,30 +170,73 @@
             return labelRelation;
         });
 
+        $scope.listService.fetchItems();
+
         /*
          * Angular setup
          */
         $scope.availableLangs = ['de', 'en', 'jp', 'ko'];
 
 
-        $scope.filter = {
-            searchString: '',
-            mode: $scope.activeSearchMode.mode
-        };
         $scope.offset = 0;
         $scope.limit = 10;
         $scope.totalItems = 0;
-        $scope.currentPage = 1;
         $scope.items = [];
+        $scope.maxSize = 7;
 
         $scope.doFilter = function(searchString) {
-            $scope.filter.searchString = searchString;
-            console.log('filter: ', $scope.filter);
-            $scope.currentPage = 1;
+            $scope.filter = {
+                searchString: searchString,
+                mode: $scope.activeSearchMode.mode
+            };
+            $scope.offset = 0;
         };
 
 
         $scope.focusLangInput = false;
+
+        $scope.$watch('items', function(items) {
+            console.log('items', items);
+        });
+
+
+        // Set up the facet typeahead config (ftac)
+        // Create the SPARQL concept that identifies datasets
+        var baseConcept = new sparql.ConceptUtils.createSubjectConcept();
+
+        // Create a facetTreeConfig with the dataset config as its base
+        var facetConfig = new facete.FacetConfig();
+        facetConfig.setBaseConcept(baseConcept);
+
+        $scope.ftac = {
+            sparqlService: sparqlService,
+            facetConfig: facetConfig,
+            store: store,
+            search: function(searchString) {
+                var relation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
+                var r = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString, true);
+                return r;
+            }
+        };
+
+
+        $scope.ui = {
+            facetConfigs: [{
+                placeholder: 'Group',
+                path: 'http://example.org/ontology/group',
+                model: ''
+            }, {
+                placeholder: 'Artifact',
+                path: 'http://example.org/ontology/artifact',
+                model: ''
+            }, {
+                placeholder: 'Version',
+                path: 'http://example.org/ontology/version',
+                model: ''
+            }]
+        };
+
+        $scope.facets = {};
     }]);
 
     </script>
@@ -205,10 +291,47 @@
 </div>
 
 <div class="row">
-<div class="col-md-12">
 
 
-<jassa-media-list list-service="listService" offset="offset" limit="limit" filter="filter" current-page="currentPage" total-items="totalItems" items="items" refresh="langs">
+<div class="col-md-3">
+
+<div class="alert alert-info" role="alert">
+<form role="form">
+
+    <div class="form-group" ng-repeat="config in ui.facetConfigs">
+        <div class="input-group">
+            <input
+                ng-model="config.model"
+                facet-typeahead="ftac"
+                facet-typeahead-path="config.path"
+                facet-typeahead-suggestions="'basicDescriptions'"
+                facet-typeahead-label="displayLabel"
+                facet-typeahead-model="id"
+                typeahead-template-url="basicDescriptionTemplate.html"
+                typeahead-loading="config.isLoadingSuggestions"
+                type="text"
+                class="form-control"
+                placeholder="{{config.placeholder}}"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="config == null || config.model ===''" ng-click="config.model=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="config.isLoadingSuggestions ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+
+</form>
+</div>
+
+</div>
+
+
+<div class="col-md-9">
+
+
+<jassa-media-list list-service="listService" offset="offset" limit="limit" filter="filter" total-items="totalItems" items="items" refresh="langs">
     <li class="media" ng-repeat="item in items">
         <a class="pull-left" href="#">
             <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
@@ -225,38 +348,18 @@
             <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
             <hr />
             <ul class="list-inline">
-                <li ng-show="item.distributions.length"><a href="" ng-click="item.showTab=(item.showTab==0 ? null : 0)"><span class="label" ng-class="item.showTab===0 ? 'label-success' : 'label-default'">{{item.distributions.length}} Distributions</span></a></li>
-                <li ng-show="item.joinSummaries.length"><a href="" ng-click="item.showTab=(item.showTab==1 ? null : 1)"><span class="label" ng-class="item.showTab===1 ? 'label-success' : 'label-default'">{{item.joinSummaries.length}} Join Summaries</span></a></li>
+                <li ng-repeat="resource in item.resources" ng-show="resource.items.length">
+                    <a href="" ng-click="item.showTab=(item.showTab===$index ? -1 : $index)"><span class="label" ng-class="item.showTab===$index ? 'label-success' : 'label-default'">{{resource.items.length}} {{resource.label}}</span></a>
+                </li>
             </ul>
 
-            <div ng-show="item.showTab===0">
-                <ul class="list-inline">
-                    <li ng-repeat="dist in item.distributions">
-                        <button type="button" class="btn btn-default" ng-click="edit.dataServiceIri = dist.accessUrl; edit.dataGraphIris = dist.graphs;">
-                            {{dist.accessUrl}}
-                            <ul style="list-style-type: none;">
-                                <li ng-repeat="graph in dist.graphs">{{graph}}</li>
-                            </ul>
-                        </button>
-                    </li>
-                </ul>
-            </div>
-
-            <div ng-show="item.showTab===1">
-                <ul ng-repeat="joinSummary in item.joinSummaries" class="list-inline">
-                    <li ng-repeat="dist in joinSummary.distributions">
-                        <button type="button" class="btn btn-default" ng-click="edit.jsServiceUri = dist.accessUrl; edit.jsGraphIris = dist.graphs;">
-                            {{dist.accessUrl}}
-                            <ul style="list-style-type: none;">
-                                <li ng-repeat="graph in dist.graphs">{{graph}}</li>
-                            </ul>
-                        </button>
-                    </li>
-                </ul>
+            <div ng-repeat="resource in item.resources">
+                <div ng-include="resource.template" ng-show="$index===item.showTab" ng-init="dists=resource.items"></div>
             </div>
         </div>
 
     </li>
+    <li ng-show="!items.length" class="alert alert-danger" style="text-align: center" role="alert">No results</li>
 </jassa-media-list>
 
 </div>

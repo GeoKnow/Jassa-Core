@@ -4,7 +4,10 @@ This is WIP...
 
 ## Introduction
 
-Sponate exploits the JavaScript language to express mappings from SPARQL result sets to RDF.
+The Sponate system comprises a JavaScript-based language to express mappings from SPARQL result sets to JavaScript objects, an engine to execute these mappings, and a set of interfaces.
+The fundamental principle is, that the JavaScript object tree structures may references to other trees.
+
+
 
 ## Basic Concepts
 * BindingMapper: Maps a binding to a literal value
@@ -16,9 +19,12 @@ Sponate exploits the JavaScript language to express mappings from SPARQL result 
 ### Arrays
 The meaning of the array construct depends on the provided arguments.
 
+ISSUE How to create a static array - i.e. an array with a fixed number of items?
+  [{ id: '?o}] will create new items for each now id. Maybe it is sufficient if we only set a fixed id?
+
+
 In general:
 * Arrays with functions as the last argument evaluate to an object
-* 
 
 
 * [ '?o' ] An array of objects. By default, distinct / uniq is applied, using the provided comparator.
@@ -26,12 +32,16 @@ In general:
 * [ '?o', function(o) { }] If the last argument is a function, all prior arguments are considered as value references (todo defined referenecs), and will be passed as function arguments in the specified order.
 * [ [ '?o' ], function(array) { } ] Declarations can be nested. This example creates an array of objects that is then passed into a transformation function
 * [ '?o', '?i' ] Use ?i as the index
-* [ '?o', ['?i', function(i) { return i + 1; }]] Create an array of objects based on transforming ?i
-* [ '?o', '?i', function(i) { return i + 1; }] This will pass ?o to the function and eventually yield ?o + 1.
 
 Functions can be placed into the sponate context for references by name
 context.declare('length', function(x) { return x.length; });
 * [ [ '?o' ], 'length' ]  Will yield the length of the array of ?o's
+
+
+Combinations
+* [ '?o', ['?i', function(i) { return i + 1; }]] Create an array of objects based on transforming ?i
+* [ '?o', '?i', function(i) { return i + 1; }] This will pass ?o to the function and eventually yield ?o + 1.
+
 
 
 * Default Context
