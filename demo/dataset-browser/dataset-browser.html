@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="SponateDemo">
+<html ng-app="DatasetBrowser">
 <head>
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
     <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
@@ -59,7 +59,7 @@
     var facete = jassa.facete;
     var util = jassa.util;
 
-    angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
+    angular.module('DatasetBrowser', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
 
     .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
 
@@ -232,7 +232,7 @@
             </button>
 
             <a class="navbar-brand" style="padding: 3px 15px;" href="http://aksw.org" target="_blank"><img style="height: 42px;" src="http://js.geoknow.eu/images/aksw-logo.png" alt=""></img></a>
-            <a class="navbar-brand" href="#">Jassa/Sponate Demo</a>
+            <a class="navbar-brand" href="#">Dataset Browser</a>
         </div>
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
