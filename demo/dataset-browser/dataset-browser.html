@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html ng-app="SponateDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+    <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
+<!--     <link rel="stylesheet" href="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular.css"> -->
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+
+
+<!--     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script> -->
+    <script src="../../dist/jassa.js"></script>
+
+    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
+<!--     <script src="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular-tpls.js"></script> -->
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+
+    <script src="../facet-typeahead/facet-typeahead.js"></script>
+
+
+    <script type="text/ng-template" id="basicDescriptionTemplate.html">
+        <a href="" style="font-family: verdana;">
+            <span title="{{match.model.id}}" bind-html-unsafe="(match.model.displayLabel || match.model.id) | typeaheadHighlight:query"></span>
+        </a>
+    </script>
+
+
+    <script type="text/ng-template" id="sparqlAccess.html">
+        <ul class="list-inline">
+            <li ng-repeat="dist in dists">
+                <a class="btn btn-primary" ng-init="href=context.buildAccessUrl(dist.accessUrl, dist.graphs)" ng-href="{{href}}" target="_blank">
+                    {{dist.accessUrl}}
+                    <ul style="list-style-type: none;">
+                        <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+                    </ul>
+                </a>
+            </li>
+        </ul>
+    </script>
+
+
+    <script type="text/javascript">
+    jassa = new Jassa(Promise, $.ajax);
+
+    var vocab = jassa.vocab;
+    var rdf = jassa.rdf;
+    var sparql = jassa.sparql;
+    var service = jassa.service;
+    var sponate = jassa.sponate;
+    var facete = jassa.facete;
+    var util = jassa.util;
+
+    angular.module('SponateDemo', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
+
+    .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
+
+        /*
+         * Set up the sparql service with as many buffs (decorations) as we like
+         */
+        var sparqlService = new service.SparqlServiceHttp('http://cstadler.aksw.org/data/misc/sparql', ['http://datacat.aksw.org/']);
+        sparqlService = new service.SparqlServiceCache(sparqlService);
+        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
+        sparqlService = new service.SparqlServiceVirtFix(sparqlService);
+        sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
+        sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
+
+
+        /*
+         * Set up the Sponate mapping for the data we are interested in
+         */
+        var store = new sponate.StoreFacade(sparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'dbpedia-owl': 'http://dbpedia.org/ontology/',
+            'foaf': 'http://xmlns.com/foaf/0.1/',
+            'dcat': 'http://www.w3.org/ns/dcat#',
+            'theme': 'http://example.org/resource/theme/',
+            'o': 'http://example.org/ontology/'
+        });
+
+        $scope.langs = ['de', 'en', ''];
+
+        $scope.edit = {
+            id: null,
+            dataServiceIri: '',
+            dataGraphIris: '',
+            jsServiceIri: '',
+            jsGraphIris: ''
+        };
+
+        var labelConfig = new sparql.BestLabelConfig($scope.langs);
+        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+        var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment]));
+
+        var template = [{
+            id: '?s',
+            label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+            comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+            depiction: '?d',
+            resources: [{
+                label: 'Distributions',
+                items: [{ $ref: { target: 'distributions', on: '?x'} }],
+                template: 'sparqlAccess.html'
+            }, {
+                label: 'Join Summaries',
+                items: [[{ $ref: { target: 'datasets', on: '?j'} }], function(items) {
+                    var r = _(items).chain().map(function(item) { return item.resources[0].items; }).flatten(true).value();
+                    return r;
+                }],
+                template: 'sparqlAccess.html'
+            }]
+        }];
+
+        store.addMap({
+            name: 'primaryDatasets',
+            template: template,
+            from: '?s a dcat:Dataset ; dcat:theme theme:primary . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
+        });
+
+        store.addMap({
+            name: 'datasets',
+            template: template,
+            from: '?s a dcat:Dataset . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
+        });
+
+        store.addMap({
+            name: 'distributions',
+            template: [{
+                id: '?s',
+                accessUrl: '?a',
+                graphs: ['?g']
+            }],
+            from: '?s a dcat:Distribution ; dcat:accessURL ?a . Optional { ?s o:graph ?g } '
+        });
+
+        /*
+         * Create a list service for our mapping and decorate it with
+         * keyword search support
+         */
+        $scope.searchModes = [{
+            label: 'regex',
+            mode: 'regex'
+        }, {
+            label: 'fulltext',
+            mode: 'fulltext'
+        }];
+
+        $scope.activeSearchMode = $scope.searchModes[0];
+
+        $scope.listService = store.primaryDatasets.getListService();
+
+        $scope.listService = new service.ListServiceTransformConceptMode($scope.listService, function() {
+            var searchConfig = new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment, vocab.rdfs.label]);
+            var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
+            return labelRelation;
+        });
+
+        /*
+         * Angular setup
+         */
+        $scope.availableLangs = ['de', 'en', 'jp', 'ko'];
+
+
+        $scope.offset = 0;
+        $scope.limit = 10;
+        $scope.totalItems = 0;
+        $scope.items = [];
+        $scope.maxSize = 7;
+
+        $scope.doFilter = function(searchString) {
+            $scope.filter = {
+                searchString: searchString,
+                mode: $scope.activeSearchMode.mode
+            };
+            $scope.offset = 0;
+        };
+
+        // Set up the facet typeahead config (ftac)
+        // Create the SPARQL concept that identifies datasets
+        var baseConcept = new sparql.ConceptUtils.createSubjectConcept();
+
+        // Create a facetTreeConfig with the dataset config as its base
+        var facetConfig = new facete.FacetConfig();
+        facetConfig.setBaseConcept(baseConcept);
+
+        $scope.ftac = {
+            sparqlService: sparqlService,
+            facetConfig: facetConfig,
+            store: store,
+            search: function(searchString) {
+                var relation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
+                var r = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString, true);
+                return r;
+            }
+        };
+
+        $scope.context = {
+            buildAccessUrl: function(accessUrl, graphUrls) {
+                var defaultQuery = 'Select * { ?s ?p ?o } Limit 10'
+                return accessUrl + '?qtxt=' + encodeURIComponent(defaultQuery) + (
+                    graphUrls && graphUrls.length > 0
+                        ? '&' + graphUrls.map(function(item) { return 'default-graph-uri=' + encodeURIComponent(item); }).join('&')
+                        : ''
+                );
+            }
+        };
+    }]);
+
+    </script>
+
+</head>
+
+<body ng-controller="AppCtrl">
+
+<nav class="navbar navbar-default" role="navigation">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <a class="navbar-brand" style="padding: 3px 15px;" href="http://aksw.org" target="_blank"><img style="height: 42px;" src="http://js.geoknow.eu/images/aksw-logo.png" alt=""></img></a>
+            <a class="navbar-brand" href="#">Jassa/Sponate Demo</a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://aksw.org/ClausStadler" target="_blank">by Claus Stadler</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+<div class="row">
+<div class="col-md-12">
+
+<div class="alert alert-success" role="alert">
+
+    <list-search ng-model="searchString" submit="doFilter(searchString)" search-modes="searchModes" active-search-mode="activeSearchMode"></list-search>
+    <div>
+        <ul class="list-inline">
+            <li><span>Language Settings: </span></li>
+            <li><lang-select langs="langs" available-langs="availableLangs"></lang-select></li>
+        </ul>
+    </div>
+
+    <div>
+        <strong>Found <span class="badge">{{totalItems}}</span> items</strong>
+    </div>
+</div>
+
+</div>
+</div>
+
+<div class="row">
+
+<div class="col-md-12">
+
+
+<jassa-media-list list-service="listService" offset="offset" limit="limit" filter="filter" total-items="totalItems" items="items" refresh="langs" context="context">
+    <li class="media" ng-repeat="item in items">
+        <a class="pull-left" href="#">
+            <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
+                <div class="thumbnail-wrapper">
+                    <img ng-src="{{item.depiction}}">
+                </div>
+            </div>
+        </a>
+
+        <div class="media-body">
+
+            <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
+            <br />
+            <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
+            <hr />
+            <ul class="list-inline">
+                <li ng-repeat="resource in item.resources" ng-show="resource.items.length">
+                    <a href="" ng-click="item.showTab=(item.showTab===$index ? -1 : $index)"><span class="label" ng-class="item.showTab===$index ? 'label-success' : 'label-default'">{{resource.items.length}} {{resource.label}}</span></a>
+                </li>
+            </ul>
+
+            <div style="margin-top: 5px">
+                <div ng-repeat="resource in item.resources">
+                    <div class="panel panel-default" ng-show="$index===item.showTab" ng-init="dists=resource.items">
+                        <div class="panel-heading">{{resource.label}}</div>
+                        <div class="panel-body">
+                            <div ng-include="resource.template"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </li>
+    <li ng-show="!items.length" class="alert alert-danger" style="text-align: center" role="alert">No results</li>
+</jassa-media-list>
+
+</div>
+</div>
+
+</div>
+</body>
+
+</html>

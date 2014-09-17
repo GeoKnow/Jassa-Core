@@ -37,12 +37,12 @@
     <script type="text/ng-template" id="sparqlAccess.html">
         <ul class="list-inline">
             <li ng-repeat="dist in dists">
-                <button type="button" class="btn btn-default" ng-click="edit.dataServiceIri = dist.accessUrl; edit.dataGraphIris = dist.graphs;">
+                <a class="btn btn-primary" ng-init="href=context.buildAccessUrl(dist.accessUrl, dist.graphs)" ng-href="{{href}}" target="_blank">
                     {{dist.accessUrl}}
                     <ul style="list-style-type: none;">
                         <li ng-repeat="graph in dist.graphs">{{graph}}</li>
                     </ul>
-                </button>
+                </a>
             </li>
         </ul>
     </script>
@@ -237,6 +237,18 @@
         };
 
         $scope.facets = {};
+
+
+        $scope.context = {
+            buildAccessUrl: function(accessUrl, graphUrls) {
+                var defaultQuery = 'Select * { ?s ?p ?o } Limit 10'
+                return accessUrl + '?qtxt=' + encodeURIComponent(defaultQuery) + (
+                    graphUrls && graphUrls.length > 0
+                        ? '&' + graphUrls.map(function(item) { return 'default-graph-uri=' + encodeURIComponent(item); }).join('&')
+                        : ''
+                );
+            }
+        };
     }]);
 
     </script>
@@ -293,45 +305,44 @@
 <div class="row">
 
 
-<div class="col-md-3">
+<!-- <div class="col-md-3"> -->
 
-<div class="alert alert-info" role="alert">
-<form role="form">
+<!--     <div class="alert alert-info" role="alert"> -->
+<!--         <form role="form"> -->
 
-    <div class="form-group" ng-repeat="config in ui.facetConfigs">
-        <div class="input-group">
-            <input
-                ng-model="config.model"
-                facet-typeahead="ftac"
-                facet-typeahead-path="config.path"
-                facet-typeahead-suggestions="'basicDescriptions'"
-                facet-typeahead-label="displayLabel"
-                facet-typeahead-model="id"
-                typeahead-template-url="basicDescriptionTemplate.html"
-                typeahead-loading="config.isLoadingSuggestions"
-                type="text"
-                class="form-control"
-                placeholder="{{config.placeholder}}"
-            >
-            <span class="input-group-btn">
-                <button ng-disabled="config == null || config.model ===''" ng-click="config.model=''" class="btn btn-default" type="button">
-                    <span class="glyphicon" ng-class="config.isLoadingSuggestions ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
-                </button>
-            </span>
-        </div>
-    </div>
+<!-- 		    <div class="form-group" ng-repeat="config in ui.facetConfigs"> -->
+<!-- 		        <div class="input-group"> -->
+<!-- 		            <input -->
+<!-- 		                ng-model="config.model" -->
+<!-- 		                facet-typeahead="ftac" -->
+<!-- 		                facet-typeahead-path="config.path" -->
+<!-- 		                facet-typeahead-suggestions="'basicDescriptions'" -->
+<!-- 		                facet-typeahead-label="displayLabel" -->
+<!-- 		                facet-typeahead-model="id" -->
+<!-- 		                typeahead-template-url="basicDescriptionTemplate.html" -->
+<!-- 		                typeahead-loading="config.isLoadingSuggestions" -->
+<!-- 		                type="text" -->
+<!-- 		                class="form-control" -->
+<!-- 		                placeholder="{{config.placeholder}}" -->
+<!-- 		            > -->
+<!-- 		            <span class="input-group-btn"> -->
+<!-- 		                <button ng-disabled="config == null || config.model ===''" ng-click="config.model=''" class="btn btn-default" type="button"> -->
+<!-- 		                    <span class="glyphicon" ng-class="config.isLoadingSuggestions ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span> -->
+<!-- 		                </button> -->
+<!-- 		            </span> -->
+<!-- 		        </div> -->
+<!-- 		    </div> -->
 
+<!--         </form> -->
+<!--     </div> -->
 
-</form>
-</div>
-
-</div>
-
-
-<div class="col-md-9">
+<!-- </div> -->
 
 
-<jassa-media-list list-service="listService" offset="offset" limit="limit" filter="filter" total-items="totalItems" items="items" refresh="langs">
+<div class="col-md-12">
+
+
+<jassa-media-list list-service="listService" offset="offset" limit="limit" filter="filter" total-items="totalItems" items="items" refresh="langs" context="context">
     <li class="media" ng-repeat="item in items">
         <a class="pull-left" href="#">
             <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
@@ -353,8 +364,15 @@
                 </li>
             </ul>
 
-            <div ng-repeat="resource in item.resources">
-                <div ng-include="resource.template" ng-show="$index===item.showTab" ng-init="dists=resource.items"></div>
+            <div style="margin-top: 5px">
+                <div ng-repeat="resource in item.resources">
+                    <div class="panel panel-default" ng-show="$index===item.showTab" ng-init="dists=resource.items">
+                        <div class="panel-heading">{{resource.label}}</div>
+                        <div class="panel-body">
+                            <div ng-include="resource.template"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
