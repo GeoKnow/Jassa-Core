@@ -65,14 +65,6 @@
 
         $scope.langs = ['de', 'en', ''];
 
-        $scope.edit = {
-            id: null,
-            dataServiceIri: '',
-            dataGraphIris: '',
-            jsServiceIri: '',
-            jsGraphIris: ''
-        };
-
         var labelConfig = new sparql.BestLabelConfig($scope.langs);
         var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
         var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment]));
