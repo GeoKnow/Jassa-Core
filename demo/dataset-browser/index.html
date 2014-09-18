@@ -24,29 +24,6 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
 
-    <script src="../facet-typeahead/facet-typeahead.js"></script>
-
-
-    <script type="text/ng-template" id="basicDescriptionTemplate.html">
-        <a href="" style="font-family: verdana;">
-            <span title="{{match.model.id}}" bind-html-unsafe="(match.model.displayLabel || match.model.id) | typeaheadHighlight:query"></span>
-        </a>
-    </script>
-
-
-    <script type="text/ng-template" id="sparqlAccess.html">
-        <ul class="list-inline">
-            <li ng-repeat="dist in dists">
-                <a class="btn btn-primary" ng-init="href=context.buildAccessUrl(dist.accessUrl, dist.graphs)" ng-href="{{href}}" target="_blank">
-                    {{dist.accessUrl}}
-                    <ul style="list-style-type: none;">
-                        <li ng-repeat="graph in dist.graphs">{{graph}}</li>
-                    </ul>
-                </a>
-            </li>
-        </ul>
-    </script>
-
 
     <script type="text/javascript">
     jassa = new Jassa(Promise, $.ajax);
@@ -108,14 +85,14 @@
             resources: [{
                 label: 'Distributions',
                 items: [{ $ref: { target: 'distributions', on: '?x'} }],
-                template: 'sparqlAccess.html'
+                template: 'distribution-list.html'
             }, {
                 label: 'Join Summaries',
                 items: [[{ $ref: { target: 'datasets', on: '?j'} }], function(items) {
                     var r = _(items).chain().map(function(item) { return item.resources[0].items; }).flatten(true).value();
                     return r;
                 }],
-                template: 'sparqlAccess.html'
+                template: 'distribution-list.html'
             }]
         }];
 
@@ -184,6 +161,9 @@
         };
 
         $scope.context = {
+            // TODO Get rid of the limitation of having to pass in the itemTemplate via a 'context' object
+            itemTemplate: 'dataset-item.html',
+
             buildAccessUrl: function(accessUrl, graphUrls) {
                 var defaultQuery = 'Select * { ?s ?p ?o } Limit 10'
                 return accessUrl + '?qtxt=' + encodeURIComponent(defaultQuery) + (
@@ -201,98 +181,42 @@
 
 <body ng-controller="AppCtrl">
 
-<nav class="navbar navbar-default" role="navigation">
-    <div class="container-fluid">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
 
-            <a class="navbar-brand" style="padding: 3px 15px;" href="http://aksw.org" target="_blank"><img style="height: 42px;" src="http://js.geoknow.eu/images/aksw-logo.png" alt=""></img></a>
-            <a class="navbar-brand" href="#">Dataset Browser</a>
-        </div>
-
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="http://aksw.org/ClausStadler" target="_blank">by Claus Stadler</a></li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<div class="container">
-<div class="row">
-<div class="col-md-12">
-
-<div class="alert alert-success" role="alert">
-
-    <list-search ng-model="searchString" submit="doFilter(searchString)" search-modes="searchModes" active-search-mode="activeSearchMode"></list-search>
-    <div>
-        <ul class="list-inline">
-            <li><span>Language Settings: </span></li>
-            <li><lang-select langs="langs" available-langs="availableLangs"></lang-select></li>
-        </ul>
-    </div>
-
-    <div>
-        <strong>Found <span class="badge">{{totalItems}}</span> items</strong>
-    </div>
-</div>
-
-</div>
-</div>
-
-<div class="row">
-
-<div class="col-md-12">
-
-
-<jassa-media-list list-service="listService" offset="offset" limit="limit" filter="filter" total-items="totalItems" items="items" refresh="langs" context="context">
-    <li class="media" ng-repeat="item in items">
-        <a class="pull-left" href="#">
-            <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
-                <div class="thumbnail-wrapper">
-                    <img ng-src="{{item.depiction}}">
-                </div>
+                <a class="navbar-brand" style="padding: 3px 15px;" href="http://aksw.org" target="_blank"><img style="height: 42px;" src="http://js.geoknow.eu/images/aksw-logo.png" alt=""></img></a>
+                <a class="navbar-brand" href="#">Dataset Browser</a>
             </div>
-        </a>
 
-        <div class="media-body">
-
-            <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
-            <br />
-            <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
-            <hr />
-            <ul class="list-inline">
-                <li ng-repeat="resource in item.resources" ng-show="resource.items.length">
-                    <a href="" ng-click="item.showTab=(item.showTab===$index ? -1 : $index)"><span class="label" ng-class="item.showTab===$index ? 'label-success' : 'label-default'">{{resource.items.length}} {{resource.label}}</span></a>
-                </li>
-            </ul>
-
-            <div style="margin-top: 5px">
-                <div ng-repeat="resource in item.resources">
-                    <div class="panel panel-default" ng-show="$index===item.showTab" ng-init="dists=resource.items">
-                        <div class="panel-heading">{{resource.label}}</div>
-                        <div class="panel-body">
-                            <div ng-include="resource.template"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="http://aksw.org/ClausStadler" target="_blank">by Claus Stadler</a></li>
+                </ul>
             </div>
         </div>
+    </nav>
 
-    </li>
-    <li ng-show="!items.length" class="alert alert-danger" style="text-align: center" role="alert">No results</li>
-</jassa-media-list>
+    <jassa-list-browser
+        list-service="listService"
+        offset="offset"
+        limit="limit"
+        filter="filter"
+        total-items="totalItems"
+        items="items"
+        langs="langs"
+        availableLangs="availableLangs"
+        context="context"
+        item-template="itemTemplate"
+    ></jassa-list-browser>
 
-</div>
-</div>
-
-</div>
 </body>
 
 </html>
