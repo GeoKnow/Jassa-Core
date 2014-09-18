@@ -80,7 +80,7 @@
                 template: 'distribution-list.html'
             }, {
                 label: 'Join Summaries',
-                items: [[{ $ref: { target: 'datasets', on: '?j'} }], function(items) {
+                items: [[{ $ref: { target: 'datasets', on: '?j'} }], function(items) { // <- here be recursion
                     var r = _(items).chain().map(function(item) { return item.resources[0].items; }).flatten(true).value();
                     return r;
                 }],
