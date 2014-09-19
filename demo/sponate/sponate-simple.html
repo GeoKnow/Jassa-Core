@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html ng-app="SponateDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+    <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+<!--     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script> -->
+    <script src="../../dist/jassa.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+
+    <style>
+    /* Force pointer cursor on 'a' elements - even without href attribute */
+    a {
+        cursor: pointer
+    }
+    </style>
+
+    <script type="text/javascript">
+    jassa = new Jassa(Promise, $.ajax);
+
+    var vocab = jassa.vocab;
+    var rdf = jassa.rdf;
+    var sparql = jassa.sparql;
+    var service = jassa.service;
+    var sponate = jassa.sponate;
+    var facete = jassa.facete;
+    var util = jassa.util;
+
+    angular.module('SponateDemo', [])
+
+    .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
+
+        /*
+         * Set up the sparql service with as many buffs (decorations) as we like
+         */
+        //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org'], {type: 'POST'});
+        sparqlService = new service.SparqlServiceCache(sparqlService);
+        sparqlService = new service.SparqlServiceVirtFix(sparqlService);
+        sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
+        sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
+
+
+        /*
+         * Set up the Sponate mapping for the data we are interested in
+         */
+        var store = new sponate.StoreFacade(sparqlService, {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'dbpedia-owl': 'http://dbpedia.org/ontology/',
+            'foaf': 'http://xmlns.com/foaf/0.1/'
+        });
+
+        $scope.langs = ['de', 'en', ''];
+
+        var labelConfig = new sparql.BestLabelConfig($scope.langs);
+        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+
+        store.addMap({
+            name: 'people',
+            template: [{
+                id: '?parent',
+                rows: [{
+                    id: '?rowId',
+                    parent: {
+                        id: '?parent',
+                        label: { $ref: { target: labelTemplate, on: '?parent', attr: 'displayLabel' }},
+                    },
+                    child: {
+                        id: '?child',
+                        label: { $ref: { target: labelTemplate, on: '?child', attr: 'displayLabel' }},
+                    }
+                }]
+            }],
+            from: '?parent <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Person> . ?parent <http://dbpedia.org/ontology/child> ?child'
+        });
+
+
+        /*
+         * Create a list service for our mapping and decorate it with
+         * keyword search support
+         */
+        var listService = store.people.getListService();
+
+//         var p = listService.fetchItems(null, 10).then(function(entries) {
+//             console.log(entries);
+//         });
+
+        var p = listService.fetchItems(null, 10);
+        $q.when(p).then(function(entries) {
+            $scope.items = _(entries).chain().pluck('val').pluck('rows').flatten(true).value();
+            console.log($scope.items);
+        });
+
+    }]);
+
+    </script>
+
+</head>
+
+<body ng-controller="AppCtrl">
+
+<table>
+    <tr ng-repeat="item in items">
+        <td>{{item.parent.label}}</td><td>{{item.child.label || item.child.id}}</td>
+    </tr>
+</table>
+
+</body>
+
+</html>
