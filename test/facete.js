@@ -65,7 +65,7 @@ describe('Facete Basics', function() {
 
     it('#Service test', function() {
 
-        if(false) {
+        if(true) {
             var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
             sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
 
@@ -74,12 +74,13 @@ describe('Facete Basics', function() {
             var facetService = facetSystem.createFacetService(constraintManager);
 
             var ftc = new facete.FacetTreeConfig();
-            ftc.setState(new facete.Path(), new facete.FacetNodeState(1, 10, null, 'funding'));
+            ftc.setState(new facete.Path(), new facete.FacetNodeState(1, new facete.ListFilter('funding', 10)));
 
-            ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding'), new facete.FacetNodeState(1, 10, null, null));
+            ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding'), new facete.FacetNodeState(1, new facete.ListFilter(null, 10)));
 
+            var facetTreeService = new facete.FacetTreeService(facetService, ftc);
 
-            facete.FacetTreeService.fetchFacetTree(facetService, ftc).then(function(items) {
+            facetTreeService.fetchFacetTree(new facete.Path()).then(function(items) {
 
                 var json = prettifyFacetTreeChildren(items);
                 console.log('TREE: ' + JSON.stringify(json, null, 4));
