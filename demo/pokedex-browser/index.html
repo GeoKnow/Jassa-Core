@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html ng-app="DatasetBrowser">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+    <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
+<!--     <link rel="stylesheet" href="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular.css"> -->
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.11.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+
+
+<!--     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script> -->
+    <script src="../../dist/jassa.js"></script>
+
+    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
+<!--     <script src="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular-tpls.js"></script> -->
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+
+
+    <script type="text/javascript">
+    jassa = new Jassa(Promise, $.ajax);
+
+    var vocab = jassa.vocab;
+    var rdf = jassa.rdf;
+    var sparql = jassa.sparql;
+    var service = jassa.service;
+    var sponate = jassa.sponate;
+    var facete = jassa.facete;
+    var util = jassa.util;
+
+    angular.module('DatasetBrowser', ['ui.jassa', 'ui.bootstrap', 'ui.sortable', 'ui.keypress', 'ngSanitize'])
+
+    .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
+
+        /*
+         * Set up the sparql service with as many buffs (decorations) as we like
+         */
+        var sparqlService = new service.SparqlServiceBuilder
+           .http('http://akswnc3.informatik.uni-leipzig.de/data/misc/sparql', ['http://pokedex.org'])
+           .cache().virtFix().paginate(1000).pageExpand(100).create();
+
+
+        /*
+         * Set up the Sponate mapping for the data we are interested in
+         */
+        var prefixes = {
+             'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+             'dbpedia-owl': 'http://dbpedia.org/ontology/',
+             'foaf': 'http://xmlns.com/foaf/0.1/',
+             'dcat': 'http://www.w3.org/ns/dcat#',
+             'theme': 'http://example.org/resource/theme/',
+             'o': 'http://example.org/ontology/',
+             'pokedex': 'http://pokedex.dataincubator.org/pkm/'
+         };
+
+        var store = new sponate.StoreFacade(sparqlService, prefixes);
+
+        $scope.langs = ['de', 'en', 'fr', 'ja', 'it', 'es', ''];
+
+        var labelConfig = new sparql.BestLabelConfig($scope.langs);
+        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+        var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description')]));
+
+        var template = [{
+            id: '?s',
+            label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+            comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+            depiction: '?d',
+        }];
+
+        store.addMap({
+            name: 'pokemons',
+            template: template,
+            from: '?s a pokedex:Pokemon . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
+        });
+
+        /*
+         * Create a list service for our mapping and decorate it with
+         * keyword search support
+         */
+        $scope.searchModes = [{
+            label: 'regex',
+            mode: 'regex'
+        }, {
+            label: 'fulltext',
+            mode: 'fulltext'
+        }];
+
+        $scope.activeSearchMode = $scope.searchModes[0];
+
+        $scope.listService = store.pokemons.getListService();
+        $scope.listService = new service.ListServicePageExpand($scope.listService, 100);
+
+        $scope.listService = new service.ListServiceTransformConceptMode($scope.listService, function() {
+            var searchConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description'), vocab.rdfs.label]);
+            var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
+            return labelRelation;
+        });
+
+        /*
+         * Angular setup
+         */
+        $scope.availableLangs = ['de', 'en', 'jp', 'ko'];
+
+
+        $scope.offset = 0;
+        $scope.limit = 10;
+        $scope.totalItems = 0;
+        $scope.items = [];
+        $scope.maxSize = 7;
+
+        $scope.doFilter = function(searchString) {
+            $scope.filter = {
+                searchString: searchString,
+                mode: $scope.activeSearchMode.mode
+            };
+            $scope.offset = 0;
+        };
+
+        $scope.context = {
+            // TODO Get rid of the limitation of having to pass in the itemTemplate via a 'context' object
+            itemTemplate: 'dataset-item.html',
+
+            buildAccessUrl: function(accessUrl, graphUrls) {
+                var defaultQuery = 'Select * { ?s ?p ?o } Limit 10'
+                return accessUrl + '?qtxt=' + encodeURIComponent(defaultQuery) + (
+                    graphUrls && graphUrls.length > 0
+                        ? '&' + graphUrls.map(function(item) { return 'default-graph-uri=' + encodeURIComponent(item); }).join('&')
+                        : ''
+                );
+            }
+        };
+    }]);
+
+    </script>
+
+</head>
+
+<body ng-controller="AppCtrl">
+
+    <nav class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+                <a class="navbar-brand" style="padding: 3px 15px;" href="http://aksw.org" target="_blank"><img style="height: 42px;" src="http://js.geoknow.eu/images/aksw-logo.png" alt=""></img></a>
+                <a class="navbar-brand" href="#">Dataset Browser</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="http://aksw.org/ClausStadler" target="_blank">by Claus Stadler</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <jassa-list-browser
+        list-service="listService"
+        offset="offset"
+        limit="limit"
+        max-size="maxSize"
+        filter="filter"
+        do-filter="doFilter"
+        total-items="totalItems"
+        items="items"
+        langs="langs"
+        availableLangs="availableLangs"
+        search-modes="searchModes"
+        active-search-mode="activeSearchMode"
+        context="context"
+        item-template="itemTemplate"
+    ></jassa-list-browser>
+
+</body>
+
+</html>
