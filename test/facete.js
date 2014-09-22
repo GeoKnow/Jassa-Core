@@ -28,6 +28,7 @@ var facete = jassa.facete;
 var util = jassa.util;
 
 
+/*
 function prettifyFacetTreeChildren(children) {
     var root = {
         labelInfo: { displayLabel: 'root' },
@@ -38,6 +39,7 @@ function prettifyFacetTreeChildren(children) {
     var result = prettifyFacetTree(root);
     return result;
 };
+*/
 
 function prettifyFacetTree(node) {
     var ci = node.countInfo;
@@ -46,7 +48,7 @@ function prettifyFacetTree(node) {
     var children = node.outgoing || node.incoming || [];
 
     var dir = node.outgoing ? '->' : '<-';
-    var label = li.displayLabel || node.id; //.getUri();
+    var label = '' + (li.displayLabel || node.id) + ' (' + node.id + ')'; //.getUri();
     var count = ci.hasMoreItems ? '*' : ci.count;
 
     var str = dir + ' ' + label + ' (' + count + ') with tags: ' + JSON.stringify(node.tags);
@@ -85,6 +87,11 @@ describe('Facete Basics', function() {
             //var facetService = facetSystem.createFacetService(constraintManager);
 
             var ftc = new facete.FacetTreeConfig();
+            ftc.setState(null, new facete.FacetNodeState(1, new facete.ListFilter()));
+
+            var xxx = ftc.getState(null);
+            console.log('STATUS: ' + JSON.stringify(xxx));
+
             ftc.setState(new facete.Path(), new facete.FacetNodeState(1, new facete.ListFilter('funding', 10)));
 
             ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding'), new facete.FacetNodeState(1, new facete.ListFilter(null, 10)));
@@ -92,9 +99,10 @@ describe('Facete Basics', function() {
 
             var facetTreeService = new facete.FacetTreeService(facetService, ftc);
 
-            facetTreeService.fetchFacetTree(new facete.Path()).then(function(items) {
+            // new facete.Path()
+            facetTreeService.fetchFacetTree().then(function(items) {
 
-                var json = prettifyFacetTreeChildren(items);
+                var json = prettifyFacetTree(items[0]);
                 //json = items;
                 console.log('TREE: ' + JSON.stringify(json, null, 4));
             });

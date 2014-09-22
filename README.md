@@ -12,6 +12,20 @@
 [![Build Status](https://travis-ci.org/GeoKnow/Jassa-Core.png?branch=develop)](https://travis-ci.org/GeoKnow/Jassa-Core)
 [![Coverage Status Develop](https://coveralls.io/repos/GeoKnow/Jassa-Core/badge.png?branch=develop)](https://coveralls.io/r/GeoKnow/Jassa-Core?branch=develop)
 
+
+This library is a swiss army knife for dealing with SPARQL queries and result sets from JavaScript.
+It is comprised of a set of layered modules, ranging from a (low-level) RDF API over a service abstraction layer, a SPARQL-JSON mapping layer up to a faceted browsing layer. Jassa lets you focus on application development rather than getting tangled up in SPARQL details.
+
+## Getting started
+* Create a SPARQL service
+ * FlowAPI: This is the easiest approach. It uses the decorator approach under the hood.
+ * Decorator-based
+
+* Create a Query
+
+* 
+
+
 ## Terminology
 
 You may have noticed that we repeatedly used the term '''class'''. While it is true that plain JavaScript does not offer them (yet), there are however frameworks which introduce this level of abstraction. For Jassa we chose the [Class object](https://github.com/sstephenson/prototype/blob/master/src/prototype/lang/class.js) of the [prototype.js framework](http://prototypejs.org/).
