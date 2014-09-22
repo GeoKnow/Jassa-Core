@@ -46,10 +46,10 @@ function prettifyFacetTree(node) {
     var children = node.outgoing || node.incoming || [];
 
     var dir = node.outgoing ? '->' : '<-';
-    var label = li.displayLabel || node.id.getUri();
+    var label = li.displayLabel || node.id; //.getUri();
     var count = ci.hasMoreItems ? '*' : ci.count;
 
-    var str = dir + ' ' + label + ' (' + count + ')';
+    var str = dir + ' ' + label + ' (' + count + ') with tags: ' + JSON.stringify(node.tags);
 
     var cs = children.map(prettifyFacetTree);
 
@@ -68,21 +68,34 @@ describe('Facete Basics', function() {
         if(true) {
             var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
             sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
+            sparqlService = new service.SparqlServiceCache(sparqlService);
 
-            var facetSystem = new facete.FacetSystemSparql(sparqlService);
-            var constraintManager = new facete.ConstraintManager();
-            var facetService = facetSystem.createFacetService(constraintManager);
+            var tagMap = new util.HashMap();
+
+            var facetConfig = new facete.FacetConfig();
+            var facetService = new facete.FacetServiceUtils.createFacetService(sparqlService, facetConfig, function(path) {
+                //console.log('PathTagger: ' + path);
+                var r = tagMap.get(path);
+                return r;
+               // return {'foo': 'bar'};
+            });
+            //var constraintManager = new facete.ConstraintManager();
+
+
+            //var facetService = facetSystem.createFacetService(constraintManager);
 
             var ftc = new facete.FacetTreeConfig();
             ftc.setState(new facete.Path(), new facete.FacetNodeState(1, new facete.ListFilter('funding', 10)));
 
             ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding'), new facete.FacetNodeState(1, new facete.ListFilter(null, 10)));
+            ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding http://fp7-pp.publicdata.eu/ontology/partner'), new facete.FacetNodeState(1, new facete.ListFilter(null, 10)));
 
             var facetTreeService = new facete.FacetTreeService(facetService, ftc);
 
             facetTreeService.fetchFacetTree(new facete.Path()).then(function(items) {
 
                 var json = prettifyFacetTreeChildren(items);
+                //json = items;
                 console.log('TREE: ' + JSON.stringify(json, null, 4));
             });
         }

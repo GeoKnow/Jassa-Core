@@ -11,8 +11,8 @@ var FacetServiceBase = Class.create({
         this.sparqlService = sparqlService;
         this.facetConfig = facetConfig;
     },
-    
-    createListService: function(path) {
-        
+
+    prepareListService: function(path) {
+
     }
 });
