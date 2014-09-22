@@ -1,0 +1,10 @@
+<ul class="list-inline">
+    <li ng-repeat="dist in dists">
+        <a class="btn btn-primary" ng-init="href=context.buildAccessUrl(dist.accessUrl, dist.graphs)" ng-href="{{href}}" target="_blank">
+            {{dist.accessUrl}}
+            <ul style="list-style-type: none;">
+                <li ng-repeat="graph in dist.graphs">{{graph}}</li>
+            </ul>
+        </a>
+    </li>
+</ul>
