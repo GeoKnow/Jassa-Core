@@ -43,7 +43,7 @@
         /*
          * Set up the sparql service with as many buffs (decorations) as we like
          */
-        var sparqlService = new service.SparqlServiceBuilder
+        var sparqlService = service.SparqlServiceBuilder
            .http('http://akswnc3.informatik.uni-leipzig.de/data/misc/sparql', ['http://pokedex.org'])
            .cache().virtFix().paginate(1000).pageExpand(100).create();
 
