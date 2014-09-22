@@ -1,0 +1,35 @@
+<li class="media" ng-repeat="item in items">
+    <a class="pull-left" href="#">
+        <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
+            <div class="thumbnail-wrapper">
+                <img ng-src="{{item.depiction}}">
+            </div>
+        </div>
+    </a>
+
+    <div class="media-body">
+
+        <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
+        <br />
+        <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
+        <hr />
+        <ul class="list-inline">
+            <li ng-repeat="resource in item.resources" ng-show="resource.items.length">
+                <a href="" ng-click="item.showTab=(item.showTab===$index ? -1 : $index)"><span class="label" ng-class="item.showTab===$index ? 'label-success' : 'label-default'">{{resource.items.length}} {{resource.label}}</span></a>
+            </li>
+        </ul>
+
+        <div style="margin-top: 5px">
+            <div ng-repeat="resource in item.resources">
+                <div class="panel panel-default" ng-show="$index===item.showTab" ng-init="dists=resource.items">
+                    <div class="panel-heading">{{resource.label}}</div>
+                    <div class="panel-body">
+                        <div ng-include="resource.template"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</li>
+<li ng-show="!items.length" class="alert alert-danger" style="text-align: center" role="alert">No results</li>
