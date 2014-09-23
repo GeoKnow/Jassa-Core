@@ -42,12 +42,9 @@
          * Set up the sparql service with as many buffs (decorations) as we like
          */
         //var sparqlService = new service.SparqlServiceHttp('http://lod.openlinksw.com/sparql', ['http://dbpedia.org'], {type: 'POST'});
-        var sparqlService = new service.SparqlServiceHttp('http://dbpedia.org/sparql', ['http://dbpedia.org'], {type: 'POST'});
-        sparqlService = new service.SparqlServiceCache(sparqlService);
-        sparqlService = new service.SparqlServiceVirtFix(sparqlService);
-        sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
-        sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
-
+        var sparqlService = service.SparqlServiceBuilder
+           .http('http://dbpedia.org/sparql', ['http://dbpedia.org'], {type: 'POST'})
+           .cache().virtFix().paginate(1000).pageExpand(100).create();
 
         /*
          * Set up the Sponate mapping for the data we are interested in
@@ -88,10 +85,6 @@
          * keyword search support
          */
         var listService = store.people.getListService();
-
-//         var p = listService.fetchItems(null, 10).then(function(entries) {
-//             console.log(entries);
-//         });
 
         var p = listService.fetchItems(null, 10);
         $q.when(p).then(function(entries) {
