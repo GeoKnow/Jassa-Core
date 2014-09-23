@@ -25,6 +25,26 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
 
 
+    <script type="text/ng-template" id="default-list-item.html">
+        <li class="media" ng-repeat="item in items">
+            <a class="pull-left" href="#">
+                <div class="thumbnail thumbnail-center" style="width: 100px; height: 100px;">
+                    <div class="thumbnail-wrapper">
+                        <img ng-src="{{item.depiction}}">
+                    </div>
+                </div>
+            </a>
+
+            <div class="media-body">
+
+                <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
+                <br />
+                <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
+            </div>
+        </li>
+        <li ng-show="!items.length" class="alert alert-danger" style="text-align: center" role="alert">No results</li>
+    </script>
+
     <script type="text/javascript">
     jassa = new Jassa(Promise, $.ajax);
 
@@ -52,12 +72,7 @@
          * Set up the Sponate mapping for the data we are interested in
          */
         var prefixes = {
-             'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
-             'dbpedia-owl': 'http://dbpedia.org/ontology/',
              'foaf': 'http://xmlns.com/foaf/0.1/',
-             'dcat': 'http://www.w3.org/ns/dcat#',
-             'theme': 'http://example.org/resource/theme/',
-             'o': 'http://example.org/ontology/',
              'pokedex': 'http://pokedex.dataincubator.org/pkm/'
          };
 
@@ -69,17 +84,15 @@
         var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
         var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description')]));
 
-        var template = [{
-            id: '?s',
-            label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
-            comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
-            depiction: '?d',
-        }];
-
         store.addMap({
             name: 'pokemons',
-            template: template,
-            from: '?s a pokedex:Pokemon . Optional { ?s foaf:depiction ?d } . Optional { ?x o:distributionOf ?s } Optional { ?j o:joinSummaryOf ?s }'
+            template: [{
+                id: '?s',
+                label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+                comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+                depiction: '?d',
+            }],
+            from: '?s a pokedex:Pokemon . Optional { ?s foaf:depiction ?d }'
         });
 
         /*
@@ -97,6 +110,12 @@
         $scope.activeSearchMode = $scope.searchModes[0];
 
         $scope.listService = store.pokemons.getListService();
+
+        /* This line internally transparently adjusts limit/offset of requests to the list service to a
+         * given page size - of course only the requested range will be returned.
+         * This feature is combination with the caching (in this case support stems from the sparql service)
+         * will preload at least 100 items whenever the offset hits a 100 items boundary.
+         */
         $scope.listService = new service.ListServicePageExpand($scope.listService, 100);
 
         $scope.listService = new service.ListServiceTransformConceptMode($scope.listService, function() {
@@ -127,16 +146,7 @@
 
         $scope.context = {
             // TODO Get rid of the limitation of having to pass in the itemTemplate via a 'context' object
-            itemTemplate: 'dataset-item.html',
-
-            buildAccessUrl: function(accessUrl, graphUrls) {
-                var defaultQuery = 'Select * { ?s ?p ?o } Limit 10'
-                return accessUrl + '?qtxt=' + encodeURIComponent(defaultQuery) + (
-                    graphUrls && graphUrls.length > 0
-                        ? '&' + graphUrls.map(function(item) { return 'default-graph-uri=' + encodeURIComponent(item); }).join('&')
-                        : ''
-                );
-            }
+            itemTemplate: 'default-list-item.html',
         };
     }]);
 
