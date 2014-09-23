@@ -76,6 +76,25 @@ describe('ArrayUtils', function() {
     ArrayUtils.filter(inputArr, filterEven).should.eql(expctdRes);
   });
 
+  it('should return the correct first index w.r.t. a given equality function', function() {
+    var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+    var eqFn = function(val1, val2) {
+      return (val1 % 3) === (val2 % 3);
+    };
+
+    var comparator = 4;
+
+    // var expctdRes1 = [1];
+    var expctdIndex1 = 0;
+    ArrayUtils.indexOf(inputArr, comparator, eqFn).should.eql(expctdIndex1);
+
+    // fallback in case no equality function is provided
+    // var expctdRes2 = [4];
+    var expctdIndex2 = 3;
+    ArrayUtils.indexOf(inputArr, comparator).should.eql(expctdIndex2);
+  });
+
   it('should return the correct indexes w.r.t. a given equality function', function() {
     var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
