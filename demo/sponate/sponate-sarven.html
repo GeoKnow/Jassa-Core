@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html ng-app="SponateDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+    <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
+<!--     <script src="../../dist/jassa.js"></script> -->
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+
+    <style>
+    /* Force pointer cursor on 'a' elements - even without href attribute */
+    a {
+        cursor: pointer
+    }
+    </style>
+
+    <script type="text/javascript">
+    jassa = new Jassa(Promise, $.ajax);
+
+    var vocab = jassa.vocab;
+    var rdf = jassa.rdf;
+    var sparql = jassa.sparql;
+    var service = jassa.service;
+    var sponate = jassa.sponate;
+    var facete = jassa.facete;
+    var util = jassa.util;
+
+    angular.module('SponateDemo', [])
+
+    .controller('AppCtrl', ['$scope', '$q', function($scope, $q) {
+
+        var sparqlService = service.SparqlServiceBuilder
+           .http('http://uis.270a.info/sparql', [], {type: 'POST'})
+           .cache().virtFix().paginate(1000).pageExpand(100).create();
+
+        /*
+         * Set up the Sponate mapping for the data we are interested in
+         */
+        var prefixes = {
+            'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+            'qb': 'http://purl.org/linked-data/cube#',
+            'skos': 'http://www.w3.org/2004/02/skos/core#'
+        };
+
+        var store = new sponate.StoreFacade(sparqlService, prefixes);
+
+        $scope.langs = ['de', 'en', ''];
+
+        var labelConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.skos + 'prefLabel')]);
+        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig, []);
+
+        store.addMap({
+            name: 'dimensionProperties',
+            template: [{
+                id: '?s',
+                label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
+                concepts: [{
+                    id: '?c',
+                    label: { $ref: { target: labelTemplate, attr: 'displayLabel', on: '?c' } }
+                }]
+            }],
+            from: '?s a qb:DimensionProperty . Optional { ?s qb:concept ?c }'
+        });
+
+        //?s a qb:DimensionProperty . {?s skos:prefLabel ?prefLabel .} UNION {?s qb:concept/skos:prefLabel ?prefLabel} }
+
+        var listService = store.dimensionProperties.getListService();
+
+        var p = listService.fetchItems(null, 10);
+        $q.when(p).then(function(entries) {
+            $scope.items = _.pluck(entries, 'val');
+        });
+
+    }]);
+
+    </script>
+
+</head>
+
+<body ng-controller="AppCtrl">
+
+<table class="table table-striped">
+    <tr ng-repeat="item in items">
+        <td>{{item.id}}</td><td>{{item.label || item.id}}</td><td>{{item.concepts}}</td>
+    </tr>
+</table>
+
+</body>
+
+</html>
