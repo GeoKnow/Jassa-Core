@@ -18,8 +18,6 @@ var ajax = function(param) {
 var jassa = require('../../lib')(Promise, ajax);
 
 var MapUtils = require('../../lib/util/MapUtils');
-var ObjectUtils = require('../../lib/util/ObjectUtils');
-
 
 describe('MapUtils', function() {
   it('should index array items by key correctly', function() {
