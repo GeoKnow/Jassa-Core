@@ -55,7 +55,6 @@ describe('PrefixUtils', function() {
     var expctdURI2 = '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>';
     PrefixUtils.expandPrefixes(prefixMappings, qualifiedName2).should.equal(expctdURI2);
 
-
     var qualifiedName3 = 'unknwn:sth';
     PrefixUtils.expandPrefixes(prefixMappings, qualifiedName3).should.equal(qualifiedName3);
   });
