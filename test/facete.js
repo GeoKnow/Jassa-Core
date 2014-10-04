@@ -74,10 +74,17 @@ describe('Facete Basics', function() {
 
             var facetTreeConfig = new facete.FacetTreeConfig();
 
-            var pathToState = facetTreeConfig.getPathToState();
-            pathToState.put(null, new facete.FacetNodeState(1, new facete.ListFilter()));
-            pathToState.put(new facete.Path(), new facete.FacetNodeState(1, new facete.ListFilter('funding', 10)));
-            pathToState.put(new facete.Path(), new facete.FacetNodeState(1, new facete.ListFilter(null, 10)));
+            var facetTreeState = facetTreeConfig.getFacetTreeState();
+
+            facetTreeState.getPathExpansions().add(new facete.Path());
+            //facetTreeState.getPathToDirection().put(new facete>path())
+            facetTreeState.getPathHeadToFilter(new facete.PathHead(new facete.Path(), false), new facete.ListFilter('funding', 10));
+
+
+            //var pathToState = facetTreeConfig.getPathToState();
+            //pathToState.put(null, new facete.FacetNodeState(true, false, new facete.ListFilter()));
+            //pathToState.put(new facete.Path(), new facete.FacetNodeState(true, false, new facete.ListFilter('funding', 10)));
+            //pathToState.put(new facete.Path(), new facete.FacetNodeState(true, false, new facete.ListFilter(null, 10)));
 
 
             var facetTreeService = facete.FacetTreeServiceUtils.createFacetTreeService(sparqlService, facetTreeConfig);
@@ -125,9 +132,9 @@ describe('Facete Basics', function() {
             //var facetTreeService = new facete.FacetTreeService(facetService, pathToState.asFn());
 
             // new facete.Path()
-            facetTreeService.fetchFacetTree().then(function(root) {
+            facetTreeService.fetchFacetTree().then(function(json) {
 
-                var json = prettifyFacetTree(root);
+                //var json = prettifyFacetTree(json);
                 //json = items;
                 console.log('TREE: ' + JSON.stringify(json, null, 4));
             });
