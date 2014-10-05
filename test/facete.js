@@ -78,7 +78,7 @@ describe('Facete Basics', function() {
 
             facetTreeState.getPathExpansions().add(new facete.Path());
             //facetTreeState.getPathToDirection().put(new facete>path())
-            facetTreeState.getPathHeadToFilter(new facete.PathHead(new facete.Path(), false), new facete.ListFilter('funding', 10));
+            facetTreeState.getPathHeadToFilter().put(new facete.PathHead(new facete.Path(), false), new facete.ListFilter('funding', 10));
 
 
             //var pathToState = facetTreeConfig.getPathToState();
