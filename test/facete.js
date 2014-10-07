@@ -77,61 +77,11 @@ describe('Facete Basics', function() {
             var facetTreeState = facetTreeConfig.getFacetTreeState();
 
             facetTreeState.getPathExpansions().add(new facete.Path());
-            //facetTreeState.getPathToDirection().put(new facete>path())
             facetTreeState.getPathHeadToFilter().put(new facete.PathHead(new facete.Path(), false), new facete.ListFilter('funding', 10));
-
-
-            //var pathToState = facetTreeConfig.getPathToState();
-            //pathToState.put(null, new facete.FacetNodeState(true, false, new facete.ListFilter()));
-            //pathToState.put(new facete.Path(), new facete.FacetNodeState(true, false, new facete.ListFilter('funding', 10)));
-            //pathToState.put(new facete.Path(), new facete.FacetNodeState(true, false, new facete.ListFilter(null, 10)));
 
 
             var facetTreeService = facete.FacetTreeServiceUtils.createFacetTreeService(sparqlService, facetTreeConfig);
 
-            /*
-            var tagMap = new util.HashMap();
-            tagMap.put(null, {foo: 'bar'});
-
-            //var ftc = new facete.FacetTreeConfig();
-            var pathToState = new util.HashMap();
-
-            var facetConfig = new facete.FacetConfig();
-            //var facetService = new facete.FacetServiceUtils.createFacetService(sparqlService, facetConfig, tagMap.asFn());
-            var facetService = facete.FacetServiceBuilder
-                .core(sparqlService, facetConfig)
-                .labelConfig()
-                .index()
-                .tagMap(tagMap)
-                .tagFn(function(entry) {
-                    var key = entry.key;
-
-                    var state = pathToState.get(key);
-                    if(!state) {
-                        state = new facete.FacetNodeState();
-                        pathToState.put(key, state)
-                    }
-
-                    entry.val.tags.state = state;
-                    return entry;
-                })
-                .create();
-*/
-            //var constraintManager = new facete.ConstraintManager();
-
-
-            //var facetService = facetSystem.createFacetService(constraintManager);
-
-
-
-            //ftc.setState(new facete.Path(), new facete.FacetNodeState(1, new facete.ListFilter('funding', 10)));
-            //ftc.setState(new facete.Path(), new facete.FacetNodeState(1, new facete.ListFilter('funding', 10)));
-            //ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding'), new facete.FacetNodeState(1, new facete.ListFilter(null, 10)));
-            //ftc.setState(facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding http://fp7-pp.publicdata.eu/ontology/partner'), new facete.FacetNodeState(1, new facete.ListFilter(null, 10)));
-
-            //var facetTreeService = new facete.FacetTreeService(facetService, pathToState.asFn());
-
-            // new facete.Path()
             facetTreeService.fetchFacetTree().then(function(json) {
 
                 //var json = prettifyFacetTree(json);
@@ -142,6 +92,14 @@ describe('Facete Basics', function() {
     });
 
     it('#Resource list', function() {
+
+        /*
+         ListServiceFluent
+         .base(someListService)
+         .lookup('someAttr', lookupService, optionalPostTransform).
+         .subList('someAttr', someListService) -> This will pass on the filter concept to this list service
+         .bind('someAttr').lookupList(listService) // will wrap the list service as a lookup service
+         */
 
         var sparqlService = new service.SparqlServiceHttp('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/']);
         sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
