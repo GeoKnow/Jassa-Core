@@ -14,11 +14,11 @@
     <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
 
 
-    <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
-<!--     <script src="../../dist/jassa.js"></script> -->
+<!--     <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script> -->
+    <script src="../../dist/jassa.js"></script>
 
-    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
-<!--     <script src="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular-tpls.js"></script> -->
+<!--     <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script> -->
+    <script src="file:///home/raven/Projects/Eclipse/jassa-ui-angular-parent/jassa-ui-angular-core/target/release/repo/jassa-ui-angular-tpls.js"></script>
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
@@ -64,7 +64,7 @@
          * Set up the sparql service with as many buffs (decorations) as we like
          */
         var sparqlService = service.SparqlServiceBuilder
-           .http('http://akswnc3.informatik.uni-leipzig.de/data/misc/sparql', ['http://pokedex.org'])
+           .http('http://akswnc3.informatik.uni-leipzig.de/data/misc/sparql', ['http://pokedex.org'], {type: 'POST'})
            .cache().virtFix().paginate(1000).pageExpand(100).create();
 
 
@@ -118,11 +118,86 @@
          */
         $scope.listService = new service.ListServicePageExpand($scope.listService, 100);
 
-        $scope.listService = new service.ListServiceTransformConceptMode($scope.listService, function() {
-            var searchConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description'), vocab.rdfs.label]);
-            var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
-            return labelRelation;
+
+
+
+
+//         $scope.listService = new service.ListServiceTransformConceptMode($scope.listService, function() {
+//             var searchConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description'), vocab.rdfs.label]);
+//             var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
+//             return labelRelation;
+//         });
+
+        $scope.listService = new service.ListServiceTransformConcept($scope.listService, function(searchString) {
+
+            var concept = null;
+            if(searchString != null) {
+                var searchConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description'), vocab.rdfs.label]);
+                var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
+                concept = sparql.KeywordSearchUtils.createConceptRegexLabelOnly(labelRelation, searchString);
+            }
+
+            return concept;
         });
+
+
+
+
+        var filterSupplierFn = function(searchString) {
+            var result;
+
+            if(searchString != null) {
+                var re = new RegExp(searchString, 'mi');
+
+                result = function(entry) {
+                    var item = entry.val;
+                    var labels = [item.id, item.label, item.comment];
+
+                    var r = labels && labels.some(function(x) {
+                        return re.test(x);
+                    });
+
+                    return r;
+                };
+            } else {
+                result = function(entry) { return true; };
+            }
+
+            return result;
+        };
+
+        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn);
+
+
+        $scope.listService = new service.ListServiceTransformConcept($scope.listService, function(concept) {
+            return concept ? concept.searchString : null;
+        });
+
+
+/*
+        var a = $scope.listService;
+        var b = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn);
+
+
+        $scope.listService = jassa.ext.Class.create({
+            initialize
+            fetchItems: function() {
+
+            },
+
+            fetchCount: function() {
+
+            }
+        });
+
+
+            new service.ListServiceTransformConcept(function(searchMode) {
+            if(searchMode.mode === 'regex') {
+                b
+            }
+        });
+*/
+
 
         /*
          * Angular setup
