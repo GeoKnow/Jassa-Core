@@ -146,17 +146,26 @@
         var filterSupplierFn = function(searchString) {
             var result;
 
+            var addLabels = function(arr, labelInfo) {
+                if(labelInfo) {
+                    labelInfo.displayLabel && arr.push(labelInfo.displayLabel);
+                    labelInfo.hiddenLabels && arr.push.apply(arr, labelInfo.hiddenLabels);
+                }
+            };
+
             if(searchString != null) {
                 var re = new RegExp(searchString, 'mi');
 
                 result = function(entry) {
                     var item = entry.val;
-                    var labels = [item.id, item.label.displayLabel, item.comment.displayLabel];
-                    labels.push.apply(labels, item.label.hiddenLabels);
-                    labels.push.apply(labels, item.comment.hiddenLabels);
+                    var labels = [item.id];
+
+                    addLabels(labels, item.label);
+                    addLabels(labels, item.comment);
 
                     var r = labels && labels.some(function(x) {
-                        return re.test(x);
+                        var s = re.test(x);
+                        return s;
                     });
 
                     return r;
@@ -168,7 +177,7 @@
             return result;
         };
 
-        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn, 10);
+        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn, 1000);
 
 
         $scope.listService = new service.ListServiceTransformConcept($scope.listService, function(concept) {
