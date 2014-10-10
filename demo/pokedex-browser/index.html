@@ -37,9 +37,9 @@
 
             <div class="media-body">
 
-                <b>{{item.label || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
+                <b>{{item.label.displayLabel || 'Sorry, there is no title available in your preferred languages'}}</b> <a href="{{item.id}}" target="_blank"><span class="glyphicon glyphicon-new-window"></span></a>
                 <br />
-                <span bind-html-unsafe="item.comment || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
+                <span bind-html-unsafe="item.comment.displayLabel || 'Sorry, there is no description available in your preferred languages' | typeaheadHighlight:searchString"></span>
             </div>
         </li>
         <li ng-show="!items.length" class="alert alert-danger" style="text-align: center" role="alert">No results</li>
@@ -88,8 +88,8 @@
             name: 'pokemons',
             template: [{
                 id: '?s',
-                label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
-                comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+                label: { $ref: { target: labelTemplate }},
+                comment: { $ref: { target: commentTemplate }},
                 depiction: '?d',
             }],
             from: '?s a pokedex:Pokemon . Optional { ?s foaf:depiction ?d }'
@@ -151,7 +151,9 @@
 
                 result = function(entry) {
                     var item = entry.val;
-                    var labels = [item.id, item.label, item.comment];
+                    var labels = [item.id, item.label.displayLabel, item.comment.displayLabel];
+                    labels.push.apply(labels, item.label.hiddenLabels);
+                    labels.push.apply(labels, item.comment.hiddenLabels);
 
                     var r = labels && labels.some(function(x) {
                         return re.test(x);
@@ -166,7 +168,7 @@
             return result;
         };
 
-        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn);
+        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn, 10);
 
 
         $scope.listService = new service.ListServiceTransformConcept($scope.listService, function(concept) {
