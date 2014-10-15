@@ -177,7 +177,7 @@
             return result;
         };
 
-        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn, 1000);
+        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn, 100);
 
 
         $scope.listService = new service.ListServiceTransformConcept($scope.listService, function(concept) {
