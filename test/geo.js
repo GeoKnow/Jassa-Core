@@ -27,6 +27,7 @@ var sparql = jassa.sparql;
 var service = jassa.service;
 var sponate = jassa.sponate;
 var util = jassa.util;
+var facete = jassa.facete;
 var geo = jassa.geo;
 
 // tests
@@ -49,9 +50,9 @@ describe('Geo Tests', function() {
         var sparqlServiceB = createSparqlService('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
         var sparqlServiceC = createSparqlService('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
 
-        var conceptA = facete.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Airport');
-        var conceptB = facete.ConceptUtils.createTypeConcept('http://linkedgeodata.org/ontology/Airport');
-        var conceptC = facete.ConceptUtils.createTypeConcept('http://www.linklion.org/ontology#Link');
+        var conceptA = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Airport');
+        var conceptB = sparql.ConceptUtils.createTypeConcept('http://linkedgeodata.org/ontology/Airport');
+        var conceptC = sparql.ConceptUtils.createTypeConcept('http://www.linklion.org/ontology#Link');
 
         var createMapDataSource = function(sparqlService, geoMapFactory, concept, fillColor) {
 
@@ -69,7 +70,7 @@ describe('Geo Tests', function() {
 
             var result = geo.GeoDataSourceUtils.createGeoDataSourceLabels(sparqlService, geoMapFactory, concept, attrs);
             return result;
-        }
+        };
 
         var bounds = new geo.Bounds(7.0, 49.0, 9, 51.0);
 
