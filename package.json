@@ -26,6 +26,7 @@
     "lodash.values": "^2.4.1",
     "lodash.find": "^2.4.1",
     "lodash.foreach": "^2.4.1",
+    "lodash.reduce": "^2.4.1",
     "lodash": "^2.4.1",
     "sparqljs": "1.0.1"
   },
