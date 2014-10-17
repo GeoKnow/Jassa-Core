@@ -38,7 +38,7 @@ describe('Geo Tests', function() {
             var result = new service.SparqlServiceBuilder.http(url, graphUris)
                 .cache().virtFix().paginate(1000).create();
 
-            result = new service.SparqlServiceConsoleLog(result);
+            //result = new service.SparqlServiceConsoleLog(result);
 
             return result;
         };
@@ -77,10 +77,8 @@ describe('Geo Tests', function() {
         var bounds = new geo.Bounds(7.0, 49.0, 9, 51.0);
 
         var dataSource = createMapDataSource(sparqlServiceA, geoMapFactoryVirt, conceptA, '#CC0020');
-        dataSource.fetchData(bounds).then(function(items) {
-           console.log('GEO-RESULT: ' + items);
-        }, function(err) {
-           throw new Error('Fail: ' + err);
+        dataSource.fetchData(bounds).then(function(entries) {
+           //console.log('GEO-RESULT: ' + JSON.stringify(entries));
         });
 
     });
