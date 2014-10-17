@@ -34,10 +34,12 @@ var geo = jassa.geo;
 describe('Geo Tests', function() {
 
     it('#DataSource test', function() {
-
         var createSparqlService = function(url, graphUris) {
             var result = new service.SparqlServiceBuilder.http(url, graphUris)
                 .cache().virtFix().paginate(1000).create();
+
+            result = new service.SparqlServiceConsoleLog(result);
+
             return result;
         };
 
@@ -77,9 +79,11 @@ describe('Geo Tests', function() {
         var dataSource = createMapDataSource(sparqlServiceA, geoMapFactoryVirt, conceptA, '#CC0020');
         dataSource.fetchData(bounds).then(function(items) {
            console.log('GEO-RESULT: ' + items);
+        }, function(err) {
+           throw new Error('Fail: ' + err);
         });
 
-    })
+    });
 
 });
 
