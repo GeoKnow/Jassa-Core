@@ -23,7 +23,7 @@ Note, that Jassa-Core can be used in both server- and client-side scenarios.
 A good point to get started with Jassa is to have a look at the demos and see what can be achieved and how.
 The demos make use of widgets from the related [jassa-ui-angular](https://github.com/GeoKnow/Jassa-UI-Angular) project.
 
-_Browsers_
+_Data Browsers_
 
 * [Castle-Browser](http://js.geoknow.eu/demos/jassa/sponate/sponate-castles.html)
 * [Pokedex-Browser](http://js.geoknow.eu/demos/jassa/pokedex-browser/)
