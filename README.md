@@ -16,6 +16,25 @@
 This library is a swiss army knife for dealing with SPARQL queries and result sets from JavaScript.
 It is comprised of a set of layered modules, ranging from a (low-level) RDF API over a service abstraction layer, a SPARQL-JSON mapping layer up to a faceted browsing layer. Jassa lets you focus on application development rather than getting tangled up in SPARQL details.
 
+
+## Demos
+
+_Browsers_
+
+* [Castle-Browser](http://js.geoknow.eu/demos/jassa/sponate/sponate-castles.html)
+* [Pokedex-Browser](http://js.geoknow.eu/demos/jassa/pokedex-browser/)
+* [Dataset-Browser](http://js.geoknow.eu/demos/jassa/dataset-browser/)
+
+_Faceted Search_
+
+* Coming soon
+
+_Applications_
+
+* [Facete2 Generic SPARQL Browser](http://cstadler.aksw.org/facete2)
+
+
+
 ## Getting started
 * Create a SPARQL service
  * FlowAPI: This is the easiest approach. It uses the decorator approach under the hood.
