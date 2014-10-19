@@ -15,11 +15,13 @@
 
 This library is a swiss army knife for dealing with SPARQL queries and result sets from JavaScript.
 It is comprised of a set of layered modules, ranging from a (low-level) RDF API over a service abstraction layer, a SPARQL-JSON mapping layer up to a faceted browsing layer. Jassa lets you focus on application development rather than getting tangled up in SPARQL details.
+Note, that Jassa-Core can be used in both server- and client-side scenarios.
 
 
 ## Demos
 
 A good point to get started with Jassa is to have a look at the demos and see what can be achieved and how.
+The demos make use of widgets from the related [jassa-ui-angular](https://github.com/GeoKnow/Jassa-UI-Angular) project.
 
 _Browsers_
 
