@@ -19,6 +19,8 @@ It is comprised of a set of layered modules, ranging from a (low-level) RDF API 
 
 ## Demos
 
+A good point to get started with Jassa is to have a look at the demos and see what can be achieved and how.
+
 _Browsers_
 
 * [Castle-Browser](http://js.geoknow.eu/demos/jassa/sponate/sponate-castles.html)
@@ -33,27 +35,20 @@ _Applications_
 
 * [Facete2 Generic SPARQL Browser](http://cstadler.aksw.org/facete2)
 
+## Components and Usage
 
+The `jassa` object defines the following modules, of which each has its own documentation page.
 
-## Getting started
-* Create a SPARQL service
- * FlowAPI: This is the easiest approach. It uses the decorator approach under the hood.
- * Decorator-based
+* (rdf)[lib/rdf] Core RDF classes closely following the Jena API
+* (vocab)[lib/vocab] Essential vocabulary definitions
+* (sparql)[lib/sparql] Classes for the syntactic representation of SPARQL queries
+* (sponate)[lib/sponate] SPARQL-to-JSON mapping module
+* (facete)[lib/facete] A powerful faceted search API
 
-* Create a Query
-
-* 
-
-
-## Terminology
-
-You may have noticed that we repeatedly used the term '''class'''. While it is true that plain JavaScript does not offer them (yet), there are however frameworks which introduce this level of abstraction. For Jassa we chose the [Class object](https://github.com/sstephenson/prototype/blob/master/src/prototype/lang/class.js) of the [prototype.js framework](http://prototypejs.org/).
-
-Personal anecdote: Use of classes (and inheritance) at least doubled my JavaScript productivity - if you are working on a sufficiently complex project, never ever listen to the voices that tell you that design is overrated (and there are many in the JS community) - its everything! (TODO Most likely someone famous could be quoted here) ;)
-
-## Module Overview
+An overview of the modules is shown below:
 
 ![Jassa Module Overview](jassa-doc/images/jassa-module-overview.png)
+
 
 ## How to obtain
 
@@ -127,95 +122,5 @@ var ajax = function(param) {
 var jassa = require('jassa')(Promise, ajax);
 ```
 
-## Components and Usage
 
-The `jassa` object defines the following modules
-
-### The `rdf` and `vocab` modules
-
-The `rdf` module holds core RDF classes which are similar to those of Jena.
-The `vocab` module defines the following vocabularies (work in progress):
-
-* xsd
-* rdf
-* rdfs
-* owl
-* wgs84
-
-These two modules depend on each other (and thus cannot be used separately), because the vocabulary is expressed in
-terms of `rdf` classes, however literals require the xsd vocabulary.
-
-Example usage:
-
-```js
-var rdf = jassa.rdf;
-var vocab = jassa.vocab;
-
-var s = rdf.NodeFactory.createVar("s");
-var p = vocab.rdf.type;
-var o = rdf.NodeFactory.createUri("http://example.org/ontology/MyClass");
-
-var triple = new rdf.Triple(s, p, o);
-
-console.log("Triple: " + triple);
-console.log("Subject is a variable: " + triple.getSubject().isVariable());
-```
-
-### The `sparql` module
-
-The `sparql` module contains several classes for the syntactic
-representation of SPARQL queries. In addition to the `Query` class, there
-alse exist the `Expr` and `Element` class hierarchies known from Apache Jena.
-
-Example usage:
-
-```js
-var rdf = jassa.rdf;
-var sparql = jassa.sparql;
-
-var query = new sparql.Query();
-var s = rdf.NodeFactory.createVar("s");
-var p = rdf.NodeFactory.createVar("p");
-var o = rdf.NodeFactory.createVar("o");
-
-var triple = new rdf.Triple(s, p, o);
-
-query.setQueryPattern(new sparql.ElementTriplesBlock([triple]));
-query.setResultStar(true);
-query.setLimit(10);
-
-console.log("QueryString: " + query);
-```
-
-### The `service` module
-
-The service module provides an abstraction layer for communicating with a SPARQL endpoint.
-
-```js
-var service = jassa.service;
-
-var sparqlService = new service.SparqlServiceHttp(
-          "http://dbpedia.org/sparql",
-          ["http://dbpedia.org"]
-);
-
-var qe = sparqlService.createQueryExecution("Select * { ?s ?p ?o } Limit 10");
-qe.setTimeout(5000); // timout in milliseconds
-
-qe.execSelect()
-    .then(function(rs) {
-        while(rs.hasNext()) {
-            var binding = rs.nextBinding();
-            console.log("Got binding: " + binding);
-        }
-    })
-    .catch(function(err) {
-        console.log("An error occurred: ", err);
-    });
-```
-
-Successful execution of a SPARQL queries yields a `ResultSet` object, which is essentially an iterator over `Binding` objects.
-A binding is a map that associates variables with values (instances of `rdf.Node`) or null.
-Obviously, this API in principle frees you from the hassle of dealing with a concrete SPARQL result set format.
-Currently, the API is only implemented for SPARQL endpoints that yield [Talis RDF JSON](http://docs.api.talis.com/platform-api/output-types/rdf-json).
 

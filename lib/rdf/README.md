@@ -21,6 +21,38 @@ All classes reside in the `rdf` namespace of the Jassa object:
     var rdf = Jassa.rdf;
 
 
+
+### Example usage of the `rdf` and `vocab` modules
+
+The `rdf` module holds core RDF classes which are similar to those of Jena.
+The `vocab` module defines the following vocabularies (work in progress):
+
+* xsd
+* rdf
+* rdfs
+* owl
+* wgs84
+
+These two modules depend on each other (and thus cannot be used separately), because the vocabulary is expressed in
+terms of `rdf` classes, however literals require the xsd vocabulary.
+
+Example usage:
+
+```js
+var rdf = jassa.rdf;
+var vocab = jassa.vocab;
+
+var s = rdf.NodeFactory.createVar("s");
+var p = vocab.rdf.type;
+var o = rdf.NodeFactory.createUri("http://example.org/ontology/MyClass");
+
+var triple = new rdf.Triple(s, p, o);
+
+console.log("Triple: " + triple);
+console.log("Subject is a variable: " + triple.getSubject().isVariable());
+```
+
+
 ### Public API
 
 The RDF module is based on the files [rdf-core.js](rdf-core.js) and [rdf-literals.js](rdf-literals.js).
