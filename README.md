@@ -51,6 +51,13 @@ An overview of the modules is shown below:
 
 ![Jassa Module Overview](jassa-doc/images/jassa-module-overview.png)
 
+## Community
+
+The github issue tracker is the preferred place to discuss issues with the this project, however,
+you can also discuss project-related things on the jassa mailing lists on source forge:
+
+* [Users](http://sourceforge.net/p/jassa/mailman/jassa-users/)
+* [Developer](http://sourceforge.net/p/jassa/mailman/jassa-devel/)
 
 ## How to obtain
 
