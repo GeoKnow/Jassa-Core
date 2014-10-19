@@ -39,11 +39,11 @@ _Applications_
 
 The `jassa` object defines the following modules, of which each has its own documentation page.
 
-* (rdf)[lib/rdf] Core RDF classes closely following the Jena API
-* (vocab)[lib/vocab] Essential vocabulary definitions
-* (sparql)[lib/sparql] Classes for the syntactic representation of SPARQL queries
-* (sponate)[lib/sponate] SPARQL-to-JSON mapping module
-* (facete)[lib/facete] A powerful faceted search API
+* [rdf](lib/rdf) Core RDF classes closely following the Jena API
+* [vocab](lib/vocab) Essential vocabulary definitions
+* [sparql](lib/sparql) Classes for the syntactic representation of SPARQL queries
+* [sponate](lib/sponate) SPARQL-to-JSON mapping module
+* [facete](lib/facete) A powerful faceted search API
 
 An overview of the modules is shown below:
 
