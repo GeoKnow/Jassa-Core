@@ -65,9 +65,37 @@ function prettifyFacetTree(node) {
 // tests
 describe('Facete Basics', function() {
 
-    it('#Service test', function() {
+
+    it('#Facete - Declared Properties', function() {
 
         if(true) {
+            var sparqlService = service.SparqlServiceBuilder
+                .http('http://dbpedia.org/sparql', ['http://dbpedia.org'])
+                //.http('http://localhost/data/freebase/germany/sparql', ['http://freebase.com/2013-09-22/data/'])
+                .cache().create();
+
+            var facetTreeConfig = new facete.FacetTreeConfig();
+
+            var facetTreeState = facetTreeConfig.getFacetTreeState();
+
+            facetTreeState.getPathExpansions().add(new facete.Path());
+            facetTreeState.getPathHeadToFilter().put(new facete.PathHead(new facete.Path(), false), new facete.ListFilter(null, 10));
+
+
+            var facetTreeService = facete.FacetTreeServiceUtils.createFacetTreeService(sparqlService, facetTreeConfig);
+
+            facetTreeService.fetchFacetTree().then(function(json) {
+
+                //var json = prettifyFacetTree(json);
+                //json = items;
+                console.log('TREE: ' + JSON.stringify(json, null, 4));
+            });
+        }
+    });
+
+    it('#Service test', function() {
+
+        if(false) {
             var sparqlService =
                 service.SparqlServiceBuilder.http('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/'])
                 .cache().create();

@@ -31,6 +31,46 @@ var util = jassa.util;
 // tests
 describe('Sponate tests', function() {
 
+    it('#Sponate Mapping Extension', function() {
+
+        var sparqlService = new service.SparqlServiceBuilder
+            .http('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/'])
+            .create();
+
+        var store = new sponate.StoreFacade(sparqlService, {
+          fp7o: 'http://fp7-pp.publicdata.eu/ontology/'
+        });
+
+        store.addMap({
+            name: 'projects',
+            template: [{
+                id: '?s',
+                // displayName: labelAggregator // Aggregator fields cannot be filtered server side.
+                // name: '?l',
+                partners: [{
+                    id: '?o',
+                    //name: '?pl',
+                    amount: '?a',
+                }]
+                //partnersTest: ['?o']
+            }],
+            from: '?s a fp7o:Project ; rdfs:label ?l ; fp7o:funding ?f . ?f fp7o:partner ?o . ?o rdfs:label ?pl . ?f fp7o:amount ?a'
+        });
+
+        // TODO: Having to get the subAgg is not really nice
+        // Maybe we could have a convention which allows us for the main agg to be a AggObjectCustom
+        var agg = store.projects.getSource().getMappedConcept().getAgg().getSubAgg();
+        console.log('AGG: ', agg);
+
+
+        agg.add('name', '?l');
+
+        store.projects.getListService().fetchItems(null, 10).then(function(entries) {
+           console.log('ENTRIES: ' + JSON.stringify(entries));
+        });
+
+    });
+
     it('#Simple low mapping', function() {
 
 //        var prefixMapping = new rdf.PrefixMappingImpl({
