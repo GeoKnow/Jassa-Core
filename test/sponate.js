@@ -38,8 +38,9 @@ describe('Sponate tests', function() {
             .create();
 
         var store = new sponate.StoreFacade(sparqlService, {
-          fp7o: 'http://fp7-pp.publicdata.eu/ontology/'
+            'fp7o': 'http://fp7-pp.publicdata.eu/ontology/'
         });
+
 
         store.addMap({
             name: 'projects',
@@ -59,11 +60,23 @@ describe('Sponate tests', function() {
 
         // TODO: Having to get the subAgg is not really nice
         // Maybe we could have a convention which allows us for the main agg to be a AggObjectCustom
-        var agg = store.projects.getSource().getMappedConcept().getAgg().getSubAgg();
+        var agg = store.projects.getAggObject();
         console.log('AGG: ', agg);
 
 
         agg.add('name', '?l');
+        agg.add('yaaaay', '"xxx"');
+
+        var blc = new sparql.BestLabelConfig(['ja', 'ko', 'en', '']);
+        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(blc);
+
+
+        // ISSUE: Currently we can't inject mappedConcepts, because they become
+        // preprocessed and inserted into the context
+
+        // So the sponate engine should actually build the context on request
+
+        agg.add('foooo', { $ref: { target: function() { return mappedConcept; }, on: '?s' } });
 
         store.projects.getListService().fetchItems(null, 10).then(function(entries) {
            console.log('ENTRIES: ' + JSON.stringify(entries));
