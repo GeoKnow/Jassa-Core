@@ -64,17 +64,11 @@ describe('Sponate tests', function() {
         console.log('AGG: ', agg);
 
 
-        agg.add('name', '?l');
+        agg.add('nameL', '?l');
         agg.add('yaaaay', '"xxx"');
 
         var blc = new sparql.BestLabelConfig(['ja', 'ko', 'en', '']);
         var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(blc);
-
-
-        // ISSUE: Currently we can't inject mappedConcepts, because they become
-        // preprocessed and inserted into the context
-
-        // So the sponate engine should actually build the context on request
 
         agg.add('foooo', { $ref: { target: function() { return mappedConcept; }, on: '?s' } });
 

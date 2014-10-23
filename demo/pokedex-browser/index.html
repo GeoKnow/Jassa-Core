@@ -78,18 +78,27 @@
 
         var store = new sponate.StoreFacade(sparqlService, prefixes);
 
-        $scope.langs = ['de', 'en', 'fr', 'ja', 'it', 'es', ''];
+        $scope.langs = ['de', 'en', '']; //, 'fr', 'ja', 'it', 'es', ''];
 
-        var labelConfig = new sparql.BestLabelConfig($scope.langs);
-        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
-        var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description')]));
+        var labelTemplateFn = function() {
+            console.log('Refresh: ', $scope.langs);
+            var labelConfig = new sparql.BestLabelConfig($scope.langs);
+            return sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+        };
+
+        var commentTemplateFn = function() {
+            var labelConfig = new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri(prefixes.pokedex + 'description')]);
+            return sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
+        };
+
+        //console.log('labelConfig ', labelConfig);
 
         store.addMap({
             name: 'pokemons',
             template: [{
                 id: '?s',
-                label: { $ref: { target: labelTemplate }},
-                comment: { $ref: { target: commentTemplate }},
+                label: { $ref: { target: labelTemplateFn } },
+                comment: { $ref: { target: commentTemplateFn} },
                 depiction: '?d',
             }],
             from: '?s a pokedex:Pokemon . Optional { ?s foaf:depiction ?d }'
@@ -177,13 +186,17 @@
             return result;
         };
 
-        $scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn, 100);
+        //$scope.listService = new service.ListServiceIndexSubString($scope.listService, filterSupplierFn, 100);
 
 
         $scope.listService = new service.ListServiceTransformConcept($scope.listService, function(concept) {
             return concept ? concept.searchString : null;
         });
 
+
+        $scope.listService.fetchItems(null, 10).then(function(entries) {
+            console.log('foo: ', entries);
+        });
 
 /*
         var a = $scope.listService;
