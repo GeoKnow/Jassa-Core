@@ -133,4 +133,12 @@ describe('NodeUtils', function() {
     var resValue = NodeUtils.getValue(node);
     resValue.should.equal(value);
   });
+
+  it('should return a pretty string', function() {
+    var node = NodeFactory.createUri('http://dbpedia.org/resource/Leipzig');
+
+    var resValue = NodeUtils.toPrettyString(node);
+    resValue.should.equal('Leipzig');
+  });
+
 });

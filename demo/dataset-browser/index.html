@@ -43,13 +43,15 @@
         /*
          * Set up the sparql service with as many buffs (decorations) as we like
          */
-        var sparqlService = new service.SparqlServiceHttp('http://cstadler.aksw.org/data/misc/sparql', ['http://datacat.aksw.org/']);
-        sparqlService = new service.SparqlServiceCache(sparqlService);
-        sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
-        sparqlService = new service.SparqlServiceVirtFix(sparqlService);
-        sparqlService = new service.SparqlServicePaginate(sparqlService, 1000);
-        sparqlService = new service.SparqlServicePageExpand(sparqlService, 100);
+        var sparqlService = service.SparqlServiceBuilder
+            .http('http://cstadler.aksw.org/data/misc/sparql', ['http://datacat.aksw.org/'])
+            .cache()
+            .virtFix()
+            .paginate(1000)
+            .pageExpand(100)
+            .create();
 
+        //sparqlService = new service.SparqlServiceConsoleLog(sparqlService);
 
         /*
          * Set up the Sponate mapping for the data we are interested in
@@ -66,13 +68,13 @@
         $scope.langs = ['de', 'en', ''];
 
         var labelConfig = new sparql.BestLabelConfig($scope.langs);
-        var labelTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig);
-        var commentTemplate = sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment]));
+        var labelTemplateFn = function() { return sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig); };
+        var commentTemplateFn = function() { return sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment])); };
 
         var template = [{
             id: '?s',
-            label: { $ref: { target: labelTemplate, attr: 'displayLabel' }},
-            comment: { $ref: { target: commentTemplate, attr: 'displayLabel' }},
+            label: { $ref: { target: labelTemplateFn, attr: 'displayLabel' }},
+            comment: { $ref: { target: commentTemplateFn, attr: 'displayLabel' }},
             depiction: '?d',
             resources: [{
                 label: 'Distributions',
@@ -132,6 +134,10 @@
             return labelRelation;
         });
 
+//         $scope.listService.fetchItems().then(function(entries) {
+//            console.log('entries: ', entries);
+//         });
+
         /*
          * Angular setup
          */
@@ -165,6 +171,8 @@
                 );
             }
         };
+
+        //$scope.itemTemplate = 'dataset-item.html';
     }]);
 
     </script>
