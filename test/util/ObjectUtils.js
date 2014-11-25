@@ -128,4 +128,13 @@ describe('ObjectUtils', function() {
     var expectedHash = '{\"a\":23,\"foo\":\"bar\",\"tt\":\"23\"}';
     ObjectUtils.hashCode(parentObj).should.equal(expectedHash);
   });
+
+  it('should correctly test for empty strings', function() {
+      ObjectUtils.isEmptyString(null).should.equal.true;
+      ObjectUtils.isEmptyString(undefined).should.equal.true;
+      ObjectUtils.isEmptyString('').should.equal.true;
+      ObjectUtils.isEmptyString('     ').should.equal.true;
+      ObjectUtils.isEmptyString('    x ').should.equal.false;
+  });
+
 });
