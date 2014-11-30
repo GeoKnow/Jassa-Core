@@ -34,6 +34,18 @@ describe('PrefixMappingImpl', function() {
   };
   var prefixMapping = new PrefixMappingImpl(prefixMap);
 
+  it('should correctly expand a prefix', function() {
+    var uri = prefixMapping.expandPrefix('rdf:type');
+    uri.should.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
+  });
+
+  it('should correctly return the name uri', function() {
+    var uri = prefixMapping.expandPrefix('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
+    uri.should.equal('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
+  });
+
+
+
   it('should return its prefix map correctly', function() {  // ...a really hard job...
     var resPrefixMap = prefixMapping.getNsPrefixMap();
     resPrefixMap.should.equal(prefixMap);
