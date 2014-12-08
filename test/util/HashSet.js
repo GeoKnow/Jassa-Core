@@ -33,16 +33,16 @@ describe('HashSet', function() {
 
     var item1 = 'aa';
     hashSet.add(item1);
-    hashSet.map.hashToBucket.should.have.keys(itemHash);
-    hashSet.map.hashToBucket[itemHash].should.have.length(1);
-    hashSet.map.hashToBucket[itemHash][0].key.should.equal(item1);
-    hashSet.map.hashToBucket[itemHash][0].val.should.equal(true);
+    hashSet._map.hashToBucket.should.have.keys(itemHash);
+    hashSet._map.hashToBucket[itemHash].should.have.length(1);
+    hashSet._map.hashToBucket[itemHash][0].key.should.equal(item1);
+    hashSet._map.hashToBucket[itemHash][0].val.should.equal(true);
 
     var item2 = 'bb';
     hashSet.add(item2);
-    hashSet.map.hashToBucket[itemHash].should.have.length(2);
-    hashSet.map.hashToBucket[itemHash][1].key.should.equal(item2);
-    hashSet.map.hashToBucket[itemHash][1].val.should.equal(true);
+    hashSet._map.hashToBucket[itemHash].should.have.length(2);
+    hashSet._map.hashToBucket[itemHash][1].key.should.equal(item2);
+    hashSet._map.hashToBucket[itemHash][1].val.should.equal(true);
   });
 
   it('should determine correctly whether it contains a given item', function() {
@@ -66,40 +66,40 @@ describe('HashSet', function() {
     hashSet.add(item3);
 
     // briefly check if items are added correctly
-    hashSet.map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
-    hashSet.map.hashToBucket[item1and2Hash].should.have.length(2);
-    hashSet.map.hashToBucket[item3Hash].should.have.length(1);
+    hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
+    hashSet._map.hashToBucket[item1and2Hash].should.have.length(2);
+    hashSet._map.hashToBucket[item3Hash].should.have.length(1);
 
     // nothing should be deleted
     hashSet.remove('notAnItem');
 
-    hashSet.map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
-    hashSet.map.hashToBucket[item1and2Hash].should.have.length(2);
-    hashSet.map.hashToBucket[item3Hash].should.have.length(1);
+    hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
+    hashSet._map.hashToBucket[item1and2Hash].should.have.length(2);
+    hashSet._map.hashToBucket[item3Hash].should.have.length(1);
 
     // delete item1
     hashSet.remove(item1);
-    hashSet.map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
-    hashSet.map.hashToBucket[item1and2Hash].should.have.length(1);
-    hashSet.map.hashToBucket[item1and2Hash][0].key.should.equal(item2);
-    hashSet.map.hashToBucket[item1and2Hash][0].val.should.equal(true);
-    hashSet.map.hashToBucket[item3Hash].should.have.length(1);
-    hashSet.map.hashToBucket[item3Hash][0].key.should.equal(item3);
-    hashSet.map.hashToBucket[item3Hash][0].val.should.equal(true);
+    hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
+    hashSet._map.hashToBucket[item1and2Hash].should.have.length(1);
+    hashSet._map.hashToBucket[item1and2Hash][0].key.should.equal(item2);
+    hashSet._map.hashToBucket[item1and2Hash][0].val.should.equal(true);
+    hashSet._map.hashToBucket[item3Hash].should.have.length(1);
+    hashSet._map.hashToBucket[item3Hash][0].key.should.equal(item3);
+    hashSet._map.hashToBucket[item3Hash][0].val.should.equal(true);
 
     // delete item2
     hashSet.remove(item2);
-    hashSet.map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
-    hashSet.map.hashToBucket[item1and2Hash].should.have.length(0);
-    hashSet.map.hashToBucket[item3Hash].should.have.length(1);
-    hashSet.map.hashToBucket[item3Hash][0].key.should.equal(item3);
-    hashSet.map.hashToBucket[item3Hash][0].val.should.equal(true);
+    hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
+    hashSet._map.hashToBucket[item1and2Hash].should.have.length(0);
+    hashSet._map.hashToBucket[item3Hash].should.have.length(1);
+    hashSet._map.hashToBucket[item3Hash][0].key.should.equal(item3);
+    hashSet._map.hashToBucket[item3Hash][0].val.should.equal(true);
 
     // delete item3
     hashSet.remove(item3);
-    hashSet.map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
-    hashSet.map.hashToBucket[item1and2Hash].should.have.length(0);
-    hashSet.map.hashToBucket[item3Hash].should.have.length(0);
+    hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
+    hashSet._map.hashToBucket[item1and2Hash].should.have.length(0);
+    hashSet._map.hashToBucket[item3Hash].should.have.length(0);
   });
 
   it('should return all its entries correctly', function() {
