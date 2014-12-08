@@ -49,8 +49,25 @@ describe('SPARQL update', function() {
 
         var element = sparql.QuadUtils.quadsToElement(quads);
         var update = new sparql.UpdateModify(o, null, null, quads, quads, element);
-        console.log('' + update);
+//        console.log('' + update);
 //        triple.toString().should.equal('?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ontology/MyClass>');
 //        triple.getSubject().isVariable().should.be.true;
     });
+
+
+    it('#Generate a valid SPARQL insert data request', function() {
+        //var g = rdf.NodeFactory.createUri('http://foobar');
+        var s = rdf.NodeFactory.createVar('s');
+        var p = vocab.rdf.type;
+        var o = rdf.NodeFactory.createUri('http://example.org/ontology/MyClass');
+
+        //console.log('vocab: ' + JSON.stringify(vocab.rdf));
+        var quad = new sparql.Quad(sparql.Quad.defaultGraphNodeGenerated, s, p, o);
+        var quads = [quad];
+
+        var update = new sparql.UpdateDataInsert(quads);
+        console.log('' + update);
+        update.toString().should.equal('Insert Data { ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example.org/ontology/MyClass> }');
+    });
+
 });
