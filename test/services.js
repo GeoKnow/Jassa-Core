@@ -10,9 +10,7 @@ var ajax = function(param) {
         json: true,
         form: param.data,
     }).then(function(res) {
-        return new Promise(function(resolve) {
-            resolve(res[0].body);
-        });
+        return res[0].body;
     });
 };
 
@@ -85,4 +83,18 @@ describe('Services', function() {
 */
     });
 
+    it('#Sparql Update should work', function() {
+
+        var sparqlUpdateService = new service.SparqlUpdateHttp('http://akswnc3.informatik.uni-leipzig.de/data/jassa/sparql', ['http://jassa.aksw.org/test']);
+
+        {
+            var ins = sparqlUpdateService.createUpdateExecution('Prefix ex: <http://example.org/resource/> Insert Data { ex:a ex:b ex:c }');
+            ins.execUpdate().then(function() {
+                var del = sparqlUpdateService.createUpdateExecution('Prefix ex: <http://example.org/resource/> Delete Data { ex:a ex:b ex:c }');
+                return del.execUpdate();
+            });
+        }
+
+
+    });
 });
