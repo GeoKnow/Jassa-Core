@@ -247,8 +247,7 @@ describe('Node_Literal', function() {
     thisLitNode.equals(otherNodeVar).should.be.false;
   });
 
-  it('should determine equality with other nodes correctly in case it has a ' +
-      'language tag', function() {
+  it('should determine equality with other nodes correctly in case it has a language tag', function() {
     var litVal = 'value';
     var litLang = 'pl';
     var litLabelPlain = new LiteralLabel(litVal, litVal, litLang, null);

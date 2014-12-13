@@ -79,6 +79,6 @@ describe('Node', function() {
   it('should throw an error if compared with another node instance', function() {
     var node2 = new Node();
 
-    node.equals.bind(node, node2).should.throw('not implemented yet')
+    node.equals.bind(node, node2).should.throw('not overridden')
   })
 });

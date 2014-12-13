@@ -89,17 +89,17 @@ describe('HashSet', function() {
 
     // delete item2
     hashSet.remove(item2);
-    hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
-    hashSet._map.hashToBucket[item1and2Hash].should.have.length(0);
+    hashSet._map.hashToBucket.should.have.keys(item3Hash);
+    //hashSet._map.hashToBucket[item1and2Hash].should.have.length(0);
     hashSet._map.hashToBucket[item3Hash].should.have.length(1);
     hashSet._map.hashToBucket[item3Hash][0].key.should.equal(item3);
     hashSet._map.hashToBucket[item3Hash][0].val.should.equal(true);
 
     // delete item3
     hashSet.remove(item3);
-    hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
-    hashSet._map.hashToBucket[item1and2Hash].should.have.length(0);
-    hashSet._map.hashToBucket[item3Hash].should.have.length(0);
+    //hashSet._map.hashToBucket.should.have.keys(item1and2Hash, item3Hash);
+    //hashSet._map.hashToBucket[item1and2Hash].should.have.length(0);
+    //hashSet._map.hashToBucket[item3Hash].should.have.length(0);
   });
 
   it('should return all its entries correctly', function() {
