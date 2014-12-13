@@ -103,13 +103,13 @@ describe('ObjectUtils', function() {
     };
     ObjectUtils.defaultHashCode(objWHashFunc).should.equal(objHashVal);
 
-    var objToStrVal = 'just a string';
-    var objWOHashFunc = {
-      toString: function() {
-        return objToStrVal;
-      }
-    };
-    ObjectUtils.defaultHashCode(objWOHashFunc).should.equal(objToStrVal);
+//    var objToStrVal = 'just a string';
+//    var objWOHashFunc = {
+//      toString: function() {
+//        return objToStrVal;
+//      }
+//    };
+//    ObjectUtils.defaultHashCode(objWOHashFunc).should.equal(objToStrVal);
   });
 
   it('should return an input object correctly', function() {
