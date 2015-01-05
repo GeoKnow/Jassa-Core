@@ -17,9 +17,12 @@ var ajax = function(param) {
 // lib
 var jassa = require('../../lib')(Promise, ajax);
 
+var HashSet = require('../../lib/util/collection/HashSet');
+var HashMap = require('../../lib/util/collection/HashMap');
 var MapUtils = require('../../lib/util/MapUtils');
 
 describe('MapUtils', function() {
+  // indexBy
   it('should index array items by key correctly', function() {
     var arrKey1 = 'one';
     var arrKey2 = 'two';
@@ -42,6 +45,7 @@ describe('MapUtils', function() {
     resHashMap.get(arrKey4).should.equal(arrItem4);
   });
 
+  // indexBy
   it('should index array items by key function correctly', function() {
     var keyFn = function(obj) {return obj.val};
 
@@ -62,5 +66,28 @@ describe('MapUtils', function() {
     resHashMap.get(arrVal2).should.equal(arrItem2);
     resHashMap.get(arrVal3).should.equal(arrItem3);
     resHashMap.get(arrVal4).should.equal(arrItem4);
+  });
+
+  // retainKeys
+  it('should remove all key-value pairs that do not match a given set' +
+     'of keys, correctly', function() {
+    var map = new HashMap();
+    map.put('one', 1);
+    map.put('two', 2);
+    map.put('three', 3);
+    map.put('four', 4);
+    map.put('five', 5);
+    map.put('six', 6);
+
+    var keySet = new HashSet();
+    keySet.add('three');
+    keySet.add('four');
+    keySet.add('six');
+
+    var expctdMap = {three: 3, four: 4, six: 6};
+
+    MapUtils.retainKeys(map, keySet);
+    map.keys().should.eql(['three', 'four', 'six']);
+    map.values().should.eql([3, 4, 6]);
   });
 });
