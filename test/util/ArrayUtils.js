@@ -20,6 +20,7 @@ var jassa = require('../../lib')(Promise, ajax);
 var ArrayUtils = require('../../lib/util/ArrayUtils');
 
 describe('ArrayUtils', function() {
+  // addAll
   it('should add array items to another array correctly', function() {
     var targetArr = [1, 2, 3];
     var items = [23, 34, 45];
@@ -29,6 +30,7 @@ describe('ArrayUtils', function() {
     targetArr.should.eql(expctdRes);
   });
 
+  // chunk
   it('should chunk arrays correctly', function() {
     var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -49,6 +51,7 @@ describe('ArrayUtils', function() {
     ArrayUtils.chunk(inputArr, size4).should.eql(expctdRes4);
   });
 
+  // clear
   it('should clear arrays correctly', function() {
     var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -56,6 +59,7 @@ describe('ArrayUtils', function() {
     inputArr.should.be.empty;
   });
 
+  // replace
   it('should replace one array with another array correctly', function() {
     var array1 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     var array2 = [12, 23, 34, 45, 56, 67, 78, 89];
@@ -64,6 +68,7 @@ describe('ArrayUtils', function() {
     array1.should.eql(array2);
   });
 
+  // filter
   it('should filter array items correctly', function() {
     var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -76,6 +81,18 @@ describe('ArrayUtils', function() {
     ArrayUtils.filter(inputArr, filterEven).should.eql(expctdRes);
   });
 
+  // find
+  it('should return the correct first item based on a predicate function correctly', function() {
+    var startsWithS = function(inputStr) {
+      return inputStr.indexOf('s') === 0;
+    };
+
+    var arr = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+    var expctdMatch = 'six';
+    ArrayUtils.find(arr, startsWithS).should.equal(expctdMatch);
+  });
+
+  // indexOf
   it('should return the correct first index w.r.t. a given equality function', function() {
     var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -95,6 +112,7 @@ describe('ArrayUtils', function() {
     ArrayUtils.indexOf(inputArr, comparator).should.eql(expctdIndex2);
   });
 
+  // indexesOf
   it('should return the correct indexes w.r.t. a given equality function', function() {
     var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -114,6 +132,7 @@ describe('ArrayUtils', function() {
     ArrayUtils.indexesOf(inputArr, comparator).should.eql(expctdIndexes2);
   });
 
+  // grep
   it('should return the correct indexes when grepping for items satisfying a ' +
       'certain condition', function() {
     var inputArr = ['one', 'two', 'three', 'four', 'five', 'six', 'seven',
@@ -130,6 +149,7 @@ describe('ArrayUtils', function() {
     ArrayUtils.grep(inputArr, filterFn).should.eql(expctdIndexes);
   });
 
+  // copyWithoutIndexes
   it('should copy an array omitting certain index positions', function() {
     var inputArr =      [1, 2, 3, 4, 5, 6, 7, 8, 9];
     var indexesToOmit = [         3,    5, 6, 7   ];
@@ -138,6 +158,26 @@ describe('ArrayUtils', function() {
     ArrayUtils.copyWithoutIndexes(inputArr, indexesToOmit).should.eql(expctdRes);
   });
 
+  // removeItemStrict
+  it('should remove items by strict item equality correctly', function() {
+    var item1 = {name: 'one'};
+    var item2 = {name: 'two'};
+    var item3 = {name: 'three'};
+    var item4 = {name: 'four'};
+
+    arr = [item1, item2, item3, item4];
+
+    ArrayUtils.removeItemStrict(arr, item3).should.eql([item1, item2, item4]);
+
+    ArrayUtils.removeItemStrict(arr, item2);
+    arr.should.eql([item1, item4]);
+
+    ArrayUtils.removeItemStrict(arr, item4);
+    ArrayUtils.removeItemStrict(arr, item1);
+    arr.should.be.empty;
+  });
+
+  // removeIndexes
   it('should remove array values of a certain set of indexes correctly', function() {
     var inputArr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     var indexesToRemove = [1, 2, 4, 8, 23];
@@ -146,6 +186,7 @@ describe('ArrayUtils', function() {
     ArrayUtils.removeIndexes(inputArr, indexesToRemove).should.eql(expctdRes);
   });
 
+  // removeByGrep
   it('should remove values based on a certain grep condition correctly', function() {
     var inputArr = ['one', 'two', 'three', 'four', 'five', 'six', 'seven',
                     'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen',
