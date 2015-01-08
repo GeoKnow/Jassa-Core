@@ -125,7 +125,7 @@ describe('PrefixMappingImpl', function() {
 
   it('should return the correct namespace of a given prefix', function() {
     var prefix = 'owl';
-    var resNs = prefixMapping.getPrefix(prefix);
+    var resNs = prefixMapping.getNsPrefixURI(prefix);
 
     resNs.should.equal(prefixMap[prefix]);
   });
@@ -150,4 +150,32 @@ describe('PrefixMappingImpl', function() {
   it('should return the correct prefix map', function() {
     prefixMapping.getJson().should.equal(prefixMap);
   });
+
+  it('should correctly retain applicable prefixes', function() {
+      var graph = [
+          new jassa.rdf.Triple(jassa.rdf.NodeFactory.createUri('http://dbpedia.org/resource/Foo'), jassa.vocab.rdf.type, jassa.rdf.NodeFactory.createUri('http://sw.opencyc.org/concept/Bar'))
+      ];
+
+      var prefixMapping = new jassa.rdf.PrefixMappingImpl({
+          'xsd'    : 'http://www.w3.org/2001/XMLSchema#',
+          'rdf'    : 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+          'rdfs'   : 'http://www.w3.org/2000/01/rdf-schema#',
+          'owl'    : 'http://www.w3.org/2002/07/owl#',
+          'dcterms': 'http://purl.org/dc/terms/',
+          'dbpedia': 'http://dbpedia.org/resource/',
+          'cyc'    : 'http://sw.opencyc.org/concept/'
+      });
+
+      var pm = prefixMapping.retainByGraph(graph);
+
+      var expected = {
+          'rdf'    : 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+          'dbpedia': 'http://dbpedia.org/resource/',
+          'cyc'    : 'http://sw.opencyc.org/concept/'
+      };
+
+      pm.getJson().should.eql(expected);
+  });
+
+
 });
