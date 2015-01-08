@@ -18,7 +18,6 @@ var ajax = function(param) {
 var jassa = require('../../lib')(Promise, ajax);
 
 var SerializationContext = require('../../lib/util/SerializationContext');
-var Class = require('../../lib/ext/Class');
 
 describe('SerializationContext', function() {
 
