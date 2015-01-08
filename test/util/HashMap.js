@@ -27,6 +27,189 @@ describe('HashMap', function() {
     return item1.toString() === item2.toString();
   };
 
+  // hashCode
+  it('should hash objects correcty', function() {
+    var hashMap1 = new HashMap();
+    var hashMap2 = new HashMap();
+    var key1 = 'foo';
+    var key2 = 'bar';
+
+    hashMap1.hashCode().should.equal(hashMap2.hashCode());
+
+    hashMap1.put(key1, {});
+    hashMap1.hashCode().should.not.equal(hashMap2.hashCode());
+
+    hashMap2.put(key1, {});
+    hashMap1.hashCode().should.equal(hashMap2.hashCode());
+
+    hashMap1.put(key2, 23);
+    hashMap1.hashCode().should.not.equal(hashMap2.hashCode());
+
+    hashMap2.put(key2, "23");
+    hashMap1.hashCode().should.not.equal(hashMap2.hashCode());
+  });
+
+  // equals TODO: function not implemented in HashMap; add test when done
+
+  // clear TODO
+  it('should clear a hash map correctly', function() {
+    var hashMap = new HashMap();
+    hashMap.put('attr1', 'var1');
+    hashMap.put('attr2', 'var2');
+    hashMap.put('attr3', 'var3');
+    hashMap.hashToBucket.should.not.be.empty;
+    (hashMap.hashCode() === null).should.be.false;
+
+    hashMap.clear();
+    hashMap.hashToBucket.should.be.empty;
+    (hashMap.hash === null).should.be.true;
+  });
+
+  // putEntry
+  it('should add entries (i.e. key-value pairs) correctly', function() {
+    var hashMap = new HashMap();
+    var key1 = 'Key 1';
+    var val1 = 'Value 1';
+    var key2 = 'Key 2';
+    var val2 = 'Value 2';
+    var entry1 = {key: key1, val: val1};
+    var entry2 = {key: key2, val: val2};
+
+    hashMap.putEntry(entry1);
+    hashMap.get(key1).should.equal(val1);
+
+    hashMap.putEntry(entry2);
+    hashMap.get(key2).should.equal(val2);
+  });
+
+  // putEntries
+  it('should add a set of entries (i.e. a set of key-value pairs) correctly', function() {
+    var hashMap = new HashMap();
+    var key1 = 'Key 1', val1 = 'Value 1';
+    var key2 = 'Key 2', val2 = 'Value 2';
+    var key3 = 'Key 3', val3 = 'Value 3';
+    var entries = [{key: key1, val: val1}, {key: key2, val: val2}, {key: key3, val: val3}];
+    hashMap.putEntries(entries);
+
+    hashMap.get(key1).should.equal(val1);
+    hashMap.get(key2).should.equal(val2);
+    hashMap.get(key3).should.equal(val3);
+  });
+
+  // putAll
+  it('should add another hash map of entries correctly (putAll)', function() {
+    var targetHashMap = new HashMap(testEqlFn, testHashFn);
+    var key1 = 'aa';
+    var val1 = 'value 1';
+    targetHashMap.put(key1, val1);
+
+    // fill hash map to add with values (there are two 'key groups' that have
+    // the same key hash)
+    var addHashMap = new HashMap(testEqlFn, testHashFn);
+    var key2 = 'bb';
+    var val2 = 'value 2';
+    addHashMap.put(key2, val2);
+    var key3 = 'cc';
+    var val3 = 'value 3';
+    addHashMap.put(key3, val3);
+    var keyGroup1Hash = '2';
+
+    var key4 = 'ddd';
+    var val4 = 'value 4';
+    addHashMap.put(key4, val4);
+    var key5 = 'eee';
+    var val5 = 'value 5';
+    addHashMap.put(key5, val5);
+    var keyGroup2Hash = '3';
+
+    targetHashMap.putAll(addHashMap);
+    // the hashes for both 'key groups' were added
+    targetHashMap.hashToBucket.should.have.keys([keyGroup1Hash, keyGroup2Hash]);
+    // the first 'key group' has 3 entries:
+    // [ { key: 'aa', val: 'value 1' },
+    //   { key: 'bb', val: 'value 2' },
+    //   { key: 'cc', val: 'value 3' } ]
+    targetHashMap.hashToBucket[keyGroup1Hash].should.have.length(3);
+    targetHashMap.hashToBucket[keyGroup1Hash][0].key.should.equal(key1);
+    targetHashMap.hashToBucket[keyGroup1Hash][0].val.should.equal(val1);
+    targetHashMap.hashToBucket[keyGroup1Hash][1].key.should.equal(key2);
+    targetHashMap.hashToBucket[keyGroup1Hash][1].val.should.equal(val2);
+    targetHashMap.hashToBucket[keyGroup1Hash][2].key.should.equal(key3);
+    targetHashMap.hashToBucket[keyGroup1Hash][2].val.should.equal(val3);
+
+    // the second 'key group' has 2 entries:
+    // [ { key: 'ddd', val: 'value 4' },
+    //   { key: 'eee', val: 'value 5' } ]
+    targetHashMap.hashToBucket[keyGroup2Hash].should.have.length(2);
+    targetHashMap.hashToBucket[keyGroup2Hash][0].key.should.equal(key4);
+    targetHashMap.hashToBucket[keyGroup2Hash][0].val.should.equal(val4);
+    targetHashMap.hashToBucket[keyGroup2Hash][1].key.should.equal(key5);
+    targetHashMap.hashToBucket[keyGroup2Hash][1].val.should.equal(val5);
+  });
+
+  // putMap
+  it('should add another hash map of entries correctly (putMap)', function() {
+    var targetHashMap = new HashMap(testEqlFn, testHashFn);
+    var key1 = 'aa';
+    var val1 = 'value 1';
+    targetHashMap.put(key1, val1);
+
+    // fill hash map to add with values (there are two 'key groups' that have
+    // the same key hash)
+    var addHashMap = new HashMap(testEqlFn, testHashFn);
+    var key2 = 'bb';
+    var val2 = 'value 2';
+    addHashMap.put(key2, val2);
+    var key3 = 'cc';
+    var val3 = 'value 3';
+    addHashMap.put(key3, val3);
+    var keyGroup1Hash = '2';
+
+    var key4 = 'ddd';
+    var val4 = 'value 4';
+    addHashMap.put(key4, val4);
+    var key5 = 'eee';
+    var val5 = 'value 5';
+    addHashMap.put(key5, val5);
+    var keyGroup2Hash = '3';
+
+    targetHashMap.putMap(addHashMap);
+    // the hashes for both 'key groups' were added
+    targetHashMap.hashToBucket.should.have.keys([keyGroup1Hash, keyGroup2Hash]);
+    // the first 'key group' has 3 entries:
+    // [ { key: 'aa', val: 'value 1' },
+    //   { key: 'bb', val: 'value 2' },
+    //   { key: 'cc', val: 'value 3' } ]
+    targetHashMap.hashToBucket[keyGroup1Hash].should.have.length(3);
+    targetHashMap.hashToBucket[keyGroup1Hash][0].key.should.equal(key1);
+    targetHashMap.hashToBucket[keyGroup1Hash][0].val.should.equal(val1);
+    targetHashMap.hashToBucket[keyGroup1Hash][1].key.should.equal(key2);
+    targetHashMap.hashToBucket[keyGroup1Hash][1].val.should.equal(val2);
+    targetHashMap.hashToBucket[keyGroup1Hash][2].key.should.equal(key3);
+    targetHashMap.hashToBucket[keyGroup1Hash][2].val.should.equal(val3);
+
+    // the second 'key group' has 2 entries:
+    // [ { key: 'ddd', val: 'value 4' },
+    //   { key: 'eee', val: 'value 5' } ]
+    targetHashMap.hashToBucket[keyGroup2Hash].should.have.length(2);
+    targetHashMap.hashToBucket[keyGroup2Hash][0].key.should.equal(key4);
+    targetHashMap.hashToBucket[keyGroup2Hash][0].val.should.equal(val4);
+    targetHashMap.hashToBucket[keyGroup2Hash][1].key.should.equal(key5);
+    targetHashMap.hashToBucket[keyGroup2Hash][1].val.should.equal(val5);
+  });
+
+  // getOrCreate
+  it('should return a map value correctly or create a new one if a given ' +
+     'key is unknown', function() {
+    var hashMap = new HashMap();
+    var key = 'Key 1', value = 'Value 1';
+
+    (hashMap.get(key) === null).should.be.true;
+    hashMap.getOrCreate(key, value).should.equal(value);
+    hashMap.get(key).should.equal(value);
+  });
+
+  // put
   it('should add key value pairs correctly', function() {
     /* test strategy:
      * 1) add first item
@@ -103,58 +286,9 @@ describe('HashMap', function() {
     hashMap.hashToBucket[key4Hash][1].val.should.equal(value4);
   });
 
-  it('should add another hash map of entries correctly', function() {
-    var targetHashMap = new HashMap(testEqlFn, testHashFn);
-    var key1 = 'aa';
-    var val1 = 'value 1';
-    targetHashMap.put(key1, val1);
-
-    // fill hash map to add with values (there are two 'key groups' that have
-    // the same key hash)
-    var addHashMap = new HashMap(testEqlFn, testHashFn);
-    var key2 = 'bb';
-    var val2 = 'value 2';
-    addHashMap.put(key2, val2);
-    var key3 = 'cc';
-    var val3 = 'value 3';
-    addHashMap.put(key3, val3);
-    var keyGroup1Hash = '2';
-
-    var key4 = 'ddd';
-    var val4 = 'value 4';
-    addHashMap.put(key4, val4);
-    var key5 = 'eee';
-    var val5 = 'value 5';
-    addHashMap.put(key5, val5);
-    var keyGroup2Hash = '3';
-
-    targetHashMap.putAll(addHashMap);
-    // the hashes for both 'key groups' were added
-    targetHashMap.hashToBucket.should.have.keys([keyGroup1Hash, keyGroup2Hash]);
-    // the first 'key group' has 3 entries:
-    // [ { key: 'aa', val: 'value 1' },
-    //   { key: 'bb', val: 'value 2' },
-    //   { key: 'cc', val: 'value 3' } ]
-    targetHashMap.hashToBucket[keyGroup1Hash].should.have.length(3);
-    targetHashMap.hashToBucket[keyGroup1Hash][0].key.should.equal(key1);
-    targetHashMap.hashToBucket[keyGroup1Hash][0].val.should.equal(val1);
-    targetHashMap.hashToBucket[keyGroup1Hash][1].key.should.equal(key2);
-    targetHashMap.hashToBucket[keyGroup1Hash][1].val.should.equal(val2);
-    targetHashMap.hashToBucket[keyGroup1Hash][2].key.should.equal(key3);
-    targetHashMap.hashToBucket[keyGroup1Hash][2].val.should.equal(val3);
-
-    // the second 'key group' has 2 entries:
-    // [ { key: 'ddd', val: 'value 4' },
-    //   { key: 'eee', val: 'value 5' } ]
-    targetHashMap.hashToBucket[keyGroup2Hash].should.have.length(2);
-    targetHashMap.hashToBucket[keyGroup2Hash][0].key.should.equal(key4);
-    targetHashMap.hashToBucket[keyGroup2Hash][0].val.should.equal(val4);
-    targetHashMap.hashToBucket[keyGroup2Hash][1].key.should.equal(key5);
-    targetHashMap.hashToBucket[keyGroup2Hash][1].val.should.equal(val5);
-  });
-
+  // _indexOfKey
   it('should determine the index position of an entry within a bucket ' +
-      'correctly', function() {
+     'correctly', function() {
 
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var keyHash = '3';  // holds for all keys used in this test
@@ -185,6 +319,7 @@ describe('HashMap', function() {
     hashMap._indexOfKey(bucket, 'doesnotexist').should.equal(-1);
   });
 
+  // get
   it('should return the correct values of a given key', function() {
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var key1 = 'aa';
@@ -209,6 +344,7 @@ describe('HashMap', function() {
     hashMap.get(key4).should.equal(val4);
   });
 
+  // remove
   it('should remove values of a given key correctly', function() {
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var key1and2Hash = '2';
@@ -246,6 +382,7 @@ describe('HashMap', function() {
     hashMap.hashToBucket[key3Hash][0].val.should.equal(val3);
   });
 
+  // containsKey
   it('should determine correctly whether it contains a given key', function() {
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var key1 = 'aa';
@@ -266,6 +403,7 @@ describe('HashMap', function() {
     hashMap.containsKey('notAKey').should.be.false;
   });
 
+  // keys
   it('should return its keys correctly', function() {
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var key1 = 'aa';
@@ -287,6 +425,7 @@ describe('HashMap', function() {
     keys.should.containEql(key3);
   });
 
+  // values
   it('should return its values correctly', function() {
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var key1 = 'aa';
@@ -308,6 +447,7 @@ describe('HashMap', function() {
     vals.should.containEql(val3);
   });
 
+  // entries
   it('should return its key-value entries correctly', function() {
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var key1 = 'aa';
@@ -332,6 +472,7 @@ describe('HashMap', function() {
     entries.should.containEql({key: key3, val: val3});
   });
 
+  // toString
   it('should be stringified correctly', function() {
     var hashMap = new HashMap(testEqlFn, testHashFn);
     var key1 = 'aa';
@@ -348,9 +489,24 @@ describe('HashMap', function() {
 
     var expctdStr =
       '{' + key1 + ': ' + val1 + ', ' +
-            key2 + ': ' + val2 + ', ' +
-            key3 + ': ' + val3 + '}';
+      key2 + ': ' + val2 + ', ' +
+      key3 + ': ' + val3 + '}';
     hashMap.toString().should.equal(expctdStr);
   });
 
+  // asFn
+  it('should return a function to retrieve the map values by key, ' +
+     'correctly', function() {
+    var hashMap = new HashMap();
+    var key1 = 'K1', val1 = 'V1', key2 = 'K2', val2 = 'V2', key3 = 'K3', val3 = 'V3';
+    hashMap.put(key1, val1);
+    hashMap.put(key2, val2);
+    hashMap.put(key3, val3);
+
+    var getFn = hashMap.asFn();
+
+    getFn(key1).should.equal(val1);
+    getFn(key2).should.equal(val2);
+    getFn(key3).should.equal(val3);
+  });
 });
