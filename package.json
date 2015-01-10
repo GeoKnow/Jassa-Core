@@ -31,7 +31,7 @@
     "sparqljs": "1.0.1"
   },
   "devDependencies": {
-    "bluebird": "^2.2.2",
+    "bluebird": "2.6.2",
     "browserify": "^5.9.3",
     "coveralls": "^2.11.1",
     "gulp": "^3.8.7",
