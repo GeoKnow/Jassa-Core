@@ -147,8 +147,8 @@ describe('Facete Basics', function() {
 
             return ls.fetchItems(filterConcept, 10);
         }).then(function(items) {
-            items[0].val.bindings[0].get(rdf.NodeFactory.createVar('c_1')).getLiteralValue().should.equal(1094);
             console.log('FACET VALUES\n ' + JSON.stringify(items, null, 4));
+            items[0].val.countInfo.count.should.equal(1094);
         });
 
     });
