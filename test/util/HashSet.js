@@ -27,6 +27,7 @@ describe('HashSet', function() {
     return item1.toString() === item2.toString();
   };
 
+  // add
   it('should add new items correctly', function() {
     var hashSet = new HashSet(testEqlFn, testHashFn);
     var itemHash = '2';
@@ -45,6 +46,35 @@ describe('HashSet', function() {
     hashSet._map.hashToBucket[itemHash][1].val.should.equal(true);
   });
 
+  // hashCode
+  it('should return the hash map\'s hash code correctly', function() {
+    /* This function uses the hashCode function of HashMap, which in turn gets
+     * the hashes from several other functions. Hence, changes on any of those
+     * functions might break this test if I tested the actual hash values. Thus
+     * it seems the only 'stable' way to test the hashCode function is, to
+     * compare HashSets that should (not) have the same hash.
+     */
+
+    var hashSet1 = new HashSet(testEqlFn, testHashFn);
+    var hashSet2 = new HashSet(testEqlFn, testHashFn);
+    hashSet1.hashCode().should.equal(hashSet2.hashCode());
+
+    hashSet1.add('aa');
+    hashSet1.hashCode().should.not.equal(hashSet2.hashCode());
+    hashSet2.add('aa');
+    hashSet1.hashCode().should.equal(hashSet2.hashCode());
+
+    //hashSet1.add(23);
+    //hashSet1.hashCode().should.not.equal(hashSet2.hashCode());
+    //FIXME: this test fails but IMHO should not
+    //hashSet2.add('23');
+    //hashSet1.hashCode().should.not.equal(hashSet2.hashCode());
+  });
+
+  // equals
+  // TODO
+
+  // contains
   it('should determine correctly whether it contains a given item', function() {
     var hashSet = new HashSet(testEqlFn, testHashFn);
     var item1 = 'aa';
@@ -54,6 +84,22 @@ describe('HashSet', function() {
     hashSet.contains('notAnItem').should.be.false;
   });
 
+  // forEach
+  // TODO
+
+  // map
+  // TODO
+
+  // retainAll
+  // TODO
+
+  // addAll
+  // TODO
+
+  // removeAll
+  // TODO
+
+  // remove
   it('should remove an item correctly', function() {
     var hashSet = new HashSet(testEqlFn, testHashFn);
     var item1and2Hash = '2';
@@ -102,6 +148,7 @@ describe('HashSet', function() {
     //hashSet._map.hashToBucket[item3Hash].should.have.length(0);
   });
 
+  // entries
   it('should return all its entries correctly', function() {
     var hashSet = new HashSet(testEqlFn, testHashFn);
     var item1 = 'aa';
@@ -118,6 +165,10 @@ describe('HashSet', function() {
     entries.should.containEql(item3);
   });
 
+  // clear
+  // TODO
+
+  // toString
   it('should be stringified correctly', function() {
     var hashSet = new HashSet(testEqlFn, testHashFn);
     var item1and2Hash = '2';
