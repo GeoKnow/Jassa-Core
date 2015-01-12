@@ -73,7 +73,7 @@ describe('ArrayList', function() {
 
     // equality with custom equality function
     var eqlFn = function(num1, num2) { return (num1 % 3) === (num2 % 3) };
-    var arrList2 = new ArrayList(eqlFn);
+    var arrList2 = new ArrayList(null, eqlFn);
     arrList2.setItems(items);
     var expctdIndexes2 = [1, 2, 4, 7];
     arrList2.indexesOf(searchedItem).should.eql(expctdIndexes2);
@@ -95,7 +95,7 @@ describe('ArrayList', function() {
       return item1.toString() === item2.toString();
     };
 
-    var arrList2 = new ArrayList(eqlFn);
+    var arrList2 = new ArrayList(null, eqlFn);
     arrList2.setItems(items);
 
     arrList2.contains(5).should.be.true;
@@ -116,7 +116,7 @@ describe('ArrayList', function() {
 
     // with custom equality function
     var eqlFn = function(item1, item2) { return (item1 % 3) === (item2 % 3) };
-    var arrList2 = new ArrayList(eqlFn);
+    var arrList2 = new ArrayList(null, eqlFn);
     arrList2.setItems(items);
     var expctdIdx2 = 1;
     arrList2.firstIndexOf(searchedItem).should.equal(expctdIdx2);
@@ -134,7 +134,7 @@ describe('ArrayList', function() {
 
     // with custom equality function
     var eqlFn = function(item1, item2) { return (item1 % 3) === (item2 % 3) };
-    var arrList2 = new ArrayList(eqlFn);
+    var arrList2 = new ArrayList(null, eqlFn);
     arrList2.setItems(items);
     var expctdIdx2 = 7;
     arrList2.lastIndexOf(searchedItem).should.equal(expctdIdx2);
@@ -154,7 +154,7 @@ describe('ArrayList', function() {
     // with custom equality function
     var items2 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     var eqlFn = function(item1, item2) { return (item1 % 3) === (item2 % 3) };
-    var arrList2 = new ArrayList(eqlFn);
+    var arrList2 = new ArrayList(null, eqlFn);
     arrList2.setItems(items2);
     var expctdRes2 = [1, 3, 4, 5, 6, 7, 8, 9];
     arrList2.remove(itemToRemove);
