@@ -1,0 +1,32 @@
+boundingsboxes berechnen für zoomstufen
+- lon:360/2^zoom
+- lat:180/2^zoom
+- http://wiki.openstreetmap.org/wiki/DE:Zoom_levels
+- http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates
+- http://stackoverflow.com/questions/238260/how-to-calculate-the-bounding-box-for-a-given-lat-lng-location
+
+- berlin, leipzig aus dbpedia abholen
+  - händisch
+  - Berlin: 52.516666666666666 13.383333333333333
+  - Leipzig: 51.333333333333336 12.383333333333333
+  - Leipzig - Berlin
+    LINESTRING(
+      12.3833 51.322313671875, 
+      12.5151359375 51.48710859375, 
+      12.619506054687 51.61894453125, 
+      12.723876171875 51.739794140625, 
+      12.84472578125 51.871630078125, 
+      12.949095898437 51.995226269531, 
+      13.0424796875 52.110582714844, 
+      13.135863476562 52.209459667969, 
+      13.229247265625 52.324816113281, 
+      13.295165234375 52.401720410156, 
+      13.37206953125 52.492357617188, 
+      13.37206953125 52.486864453125
+    )
+
+- Bounds um Leipzig (1000km)
+  LINESTRING (
+    -2.0239282899298066 42.33184174508855,
+    26.790594956596475 60.33482492157812
+  )
