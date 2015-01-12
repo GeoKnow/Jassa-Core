@@ -85,9 +85,10 @@ var WGS84EarthRadius = function(lat) {
 // Bounding box surrounding the point at given coordinates,
 // assuming local approximation of Earth surface as a sphere
 // of radius given by WGS84
-var boundingBox = function(latitudeInDegrees, longitudeInDegrees, halfSideInKm) {
+var boundingBox = function(latitudeInDegrees, longitudeInDegrees, halfSideInM) {
   var lat = deg2rad(latitudeInDegrees);
   var lon = deg2rad(longitudeInDegrees);
+  var halfSideInKm = halfSideInM/1000;
   var halfSide = 1000*halfSideInKm;
 
   // Radius of Earth at given latitude
@@ -133,11 +134,11 @@ var LEIPZIG_TO_BERLIN = [
   { lat: 52.324816113281, lon: 13.229247265625 },
   { lat: 52.401720410156, lon: 13.295165234375 },
   { lat: 52.492357617188, lon: 13.37206953125 },
-  BERLIN,
+  BERLIN
 ];
 
 // compute bounds in a 1000km radius of Leipzig
-var boundsLeipzig = boundingBox(LEIPZIG.lat, LEIPZIG.lon, 1000);
+var boundsLeipzig = boundingBox(LEIPZIG.lat, LEIPZIG.lon, 1000000);
 // OUTPUT
 // {
 //   latMin: 42.33184174508855,
