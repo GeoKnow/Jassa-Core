@@ -51,7 +51,7 @@ describe('HashMap', function() {
 
   // equals TODO: function not implemented in HashMap; add test when done
 
-  // clear TODO
+  // clear
   it('should clear a hash map correctly', function() {
     var hashMap = new HashMap();
     hashMap.put('attr1', 'var1');
