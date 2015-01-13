@@ -29,7 +29,7 @@ var geo = jassa.geo;
 var vocab = jassa.vocab;
 
 // test output
-console.log(jassa.rdf.NodeFactory.createUri('foo'));
+//console.log(jassa.rdf.NodeFactory.createUri('foo'));
 
 var createMapDataSource = function(sparqlService, geoMapFactory, concept, fillColor, moreAttrs) {
 
@@ -123,20 +123,114 @@ var LEIPZIG = {
 
 // coordinates from Leipzig to Berlin
 var LEIPZIG_TO_BERLIN = [
-  LEIPZIG,
-  { lat: 51.48710859375, lon: 12.5151359375 },
-  { lat: 51.61894453125, lon: 12.619506054687 },
-  { lat: 51.739794140625, lon: 12.723876171875 },
-  { lat: 51.871630078125, lon: 12.84472578125 },
-  { lat: 51.995226269531, lon: 12.949095898437 },
-  { lat: 52.110582714844, lon: 13.0424796875 },
-  { lat: 52.209459667969, lon: 13.135863476562 },
-  { lat: 52.324816113281, lon: 13.229247265625 },
-  { lat: 52.401720410156, lon: 13.295165234375 },
-  { lat: 52.492357617188, lon: 13.37206953125 },
-  BERLIN
+  extend(LEIPZIG, { radius: 250 }),
+  { lat: 51.48710859375, lon: 12.5151359375, radius: 1000 }, // 1km
+  { lat: 51.61894453125, lon: 12.619506054687, radius: 2500 }, // 2,5km
+  { lat: 51.739794140625, lon: 12.723876171875, radius: 500}, // 500m
+  { lat: 51.871630078125, lon: 12.84472578125, radius: 10000 }, // 10km
+  { lat: 51.995226269531, lon: 12.949095898437, radius: 50000 }, // 50km
+  { lat: 52.110582714844, lon: 13.0424796875, radius: 100000 }, // 100km
+  { lat: 52.209459667969, lon: 13.135863476562, radius: 500000 }, // 500km
+  { lat: 52.324816113281, lon: 13.229247265625, radius: 1000 }, // 1km
+  { lat: 52.401720410156, lon: 13.295165234375, radius: 200}, // 200m
+  { lat: 52.492357617188, lon: 13.37206953125, radius: 1000000 }, // 1.000km
+  extend(BERLIN, { radius: 1000 }) // 100m
 ];
 
+var actions = LEIPZIG_TO_BERLIN;
+
+var runAction = function(action) {
+  var bBox = boundingBox(action.lat, action.lon, action.radius);
+
+  var bounds = new geo.Bounds(bBox.latMin, bBox.lonMin, bBox.latMax, bBox.lonMax);
+
+  var stat = {
+    'action': action,
+    'duration': 0,
+    'itemCount' : 0,
+    'instanceCount' : 0,
+    'clusterCount' : 0,
+    'bounds': bounds
+  };
+
+  var hrTime = process.hrtime();
+
+  var sparqlServiceA = createSparqlService('http://akswnc3.informatik.uni-leipzig.de/data/dbpedia/sparql', ['http://dbpedia.org']);
+  var geoMapFactoryVirt = geo.GeoMapFactoryUtils.createWktMapFactory('http://www.w3.org/2003/01/geo/wgs84_pos#geometry', 'bif:st_intersects', 'bif:st_geomFromText');
+  var conceptA = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Place');
+
+  var dataSource = createMapDataSource(sparqlServiceA, geoMapFactoryVirt, conceptA, '#CC0020');
+
+  var result = dataSource.fetchData(bounds).then(function(items) {
+
+    var diff = process.hrtime(hrTime);
+
+    stat.duration = diff[0] + 's ' + diff[1]/1000000 + 'ms';
+
+    var clusterCount = 0;
+    var instanceCount = 0;
+
+    items.forEach(function(item) {
+      if(item.zoomClusterBounds) {
+        clusterCount++;
+      } else {
+        instanceCount++;
+      }
+    });
+
+    stat.itemCount = items.length;
+    stat.clusterCount = clusterCount;
+    stat.instanceCount = instanceCount;
+
+    return stat;
+
+  }).catch(function(e) {
+    console.log('error', e);
+  });
+
+
+  return result;
+};
+
+var nextActionGen = function(actions, offset) {
+  offset = offset || 0;
+  return function() {
+    var action = actions && actions.length && offset < actions.length ? actions[offset++] : null;
+    return action;
+  };
+};
+
+var runBenchmark = function(actions, runAction) {
+
+  var nextActionFn = nextActionGen(actions);
+
+  var stats = [];
+  return runActions(nextActionFn, stats);
+};
+
+var runActions = function(nextActionFn, stats) {
+  var nextAction = nextActionFn();
+
+  var result;
+  if(nextAction == null) {
+    result = Promise.resolve(stats);
+  } else {
+    result = runAction(nextAction).then(function(stat) {
+      stats.push(stat);
+      return runActions(nextActionFn, stats);
+    });
+  }
+  return result;
+};
+
+console.log('Benchmark is running...');
+/** RUN BENCHMARK */
+runBenchmark(actions, runAction).then(function(stats) {
+  // done
+  console.log('Result\n', stats);
+});
+
+/*
 // compute bounds in a 1000km radius of Leipzig
 var boundsLeipzig = boundingBox(LEIPZIG.lat, LEIPZIG.lon, 1000000);
 // OUTPUT
@@ -148,6 +242,8 @@ var boundsLeipzig = boundingBox(LEIPZIG.lat, LEIPZIG.lon, 1000000);
 // }
 
 console.log('bounding box for Leipzig', boundsLeipzig);
+
+
 
 var sparqlServiceA = createSparqlService('http://akswnc3.informatik.uni-leipzig.de/data/dbpedia/sparql', ['http://dbpedia.org']);
 var geoMapFactoryVirt = geo.GeoMapFactoryUtils.createWktMapFactory('http://www.w3.org/2003/01/geo/wgs84_pos#geometry', 'bif:st_intersects', 'bif:st_geomFromText');
@@ -175,5 +271,4 @@ dataSource.fetchData(bounds).then(function(items) {
   console.log('clusterCount', clusterCount);
   console.log('instanceCount', instanceCount);
 });
-
-
+*/
