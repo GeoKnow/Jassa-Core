@@ -147,6 +147,7 @@ var runAction = function(action) {
   var stat = {
     'action': action,
     'duration': 0,
+    'durationMs': 0,
     'itemCount' : 0,
     'instanceCount' : 0,
     'clusterCount' : 0,
@@ -166,6 +167,7 @@ var runAction = function(action) {
     var diff = process.hrtime(hrTime);
 
     stat.duration = diff[0] + 's ' + diff[1]/1000000 + 'ms';
+    stat.durationMs = Math.round(diff[0]*1000 + diff[1]/1000000);
 
     var clusterCount = 0;
     var instanceCount = 0;
@@ -213,6 +215,12 @@ var runActions = function(nextActionFn, stats) {
 
   var result;
   if(nextAction == null) {
+    var highchartsOutput = [];
+    stats.forEach(function(item) {
+      highchartsOutput.push(item.durationMs);
+    });
+    stats.push(highchartsOutput);
+    //console.log('highchartsOutput', highchartsOutput);
     result = Promise.resolve(stats);
   } else {
     result = runAction(nextAction).then(function(stat) {

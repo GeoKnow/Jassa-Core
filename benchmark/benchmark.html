@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title></title>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+  <script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
+  <script src="http://code.highcharts.com/modules/exporting.js"></script>
+  <script>
+    $(function () {
+      $('#container').highcharts({
+        title: {
+          text: 'Fetch instances for different locations and bounds',
+          x: -20 //center
+        },
+        subtitle: {
+          text: '',
+          x: -20
+        },
+        xAxis: {
+          categories: ['51.3333 12.3833 2500m', '2', '3', '4', '5', '6',
+            '7', '8', '9', '10', '11', '12']
+        },
+        yAxis: {
+          title: {
+            text: 'Milliseconds (ms)'
+          },
+          plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#808080'
+          }]
+        },
+        tooltip: {
+          valueSuffix: 'ms'
+        },
+        legend: {
+          layout: 'vertical',
+          align: 'right',
+          verticalAlign: 'middle',
+          borderWidth: 0
+        },
+        series: [{
+            name: '1st Run',
+            data: [ 515, 538, 514, 348, 469, 800, 693, 1495, 508, 364, 1224, 492 ]
+          },
+          {
+            name: '2nd Run',
+            data: [ 501, 521, 495, 350, 507, 837, 717, 1532, 498, 345, 1317, 466 ]
+          },
+          {
+            name: '3rd Run',
+            data: [ 506, 498, 476, 359, 472, 813, 704, 1437, 454, 342, 1186, 481 ]
+          }]
+      });
+    });
+  </script>
+</head>
+<body>
+  <div id="container">
+
+  </div>
+</body>
+</html>
