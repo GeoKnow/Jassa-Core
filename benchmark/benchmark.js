@@ -200,7 +200,7 @@ var runAction = function(action) {
   var conceptA = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Place');
   var conceptB = sparql.ConceptUtils.createSubjectConcept();
 
-  var dataSource = createMapDataSource(sparqlServiceB, geoMapFactoryAsWktVirt, conceptB, '#CC0020');
+  var dataSource = createMapDataSource(sparqlServiceB, geoMapFactoryWgs, conceptB, '#CC0020');
 
   var result = dataSource.fetchData(bounds).then(function(items) {
 

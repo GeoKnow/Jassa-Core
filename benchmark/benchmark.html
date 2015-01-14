@@ -8,13 +8,13 @@
   <script src="http://code.highcharts.com/modules/exporting.js"></script>
   <script>
     $(function () {
-      $('#container').highcharts({
+      $('#action-leipzig-zoom-in-and-out-1').highcharts({
         title: {
           text: 'LEIPZIG_ZOOM_IN_AND_OUT',
           x: -20 //center
         },
         subtitle: {
-          text: '',
+          text: 'http://akswnc3.informatik.uni-leipzig.de/data/dbpedia/sparql - geoMapFactoryVirt',
           x: -20
         },
         xAxis: {
@@ -62,9 +62,8 @@
           }]
       });
 
-      var charts = [],
-        $containers = $('#trellis td'),
-        datasets = [
+      var leipzigZoomInAndOutResults_DBP_charts = [],
+        leipzigZoomInAndOutResults_DBP_dataset = [
           {
             name: 'Action 1 - Area: 200*200km',
             data:[ 68, 68, 0 ]
@@ -96,17 +95,19 @@
         ];
 
 
-      $.each(datasets, function(i, dataset) {
-        charts.push(new Highcharts.Chart({
+      $.each(leipzigZoomInAndOutResults_DBP_dataset, function(i, leipzigZoomInAndOutResults_DBP_dataset) {
+        leipzigZoomInAndOutResults_DBP_charts.push(new Highcharts.Chart({
 
           chart: {
-            renderTo: $containers[i],
+            renderTo: $('#leipzig-zoom-in-and-out-results-1 td')[i],
             type: 'bar',
+            height: 250,
+            width: 250,
             marginLeft: i === 0 ? 100 : 10
           },
 
           title: {
-            text: dataset.name,
+            text: leipzigZoomInAndOutResults_DBP_dataset.name,
             align: 'left',
             x: i === 0 ? 90 : 0
           },
@@ -135,20 +136,169 @@
             enabled: false
           },
 
-          series: [dataset]
+          series: [leipzigZoomInAndOutResults_DBP_dataset]
 
         }));
       });
+
+
+      $('#action-leipzig-zoom-in-and-out-2').highcharts({
+        title: {
+          text: 'LEIPZIG_ZOOM_IN_AND_OUT',
+          x: -20 //center
+        },
+        subtitle: {
+          text: 'http://linkedgeodata.org/sparql - geoMapFactoryAsWktVirt',
+          x: -20
+        },
+        xAxis: {
+          categories: ['1', '2', '3', '4', '5', '6',
+            '7', '8', '9', '10', '11', '12']
+        },
+        yAxis: {
+          title: {
+            text: 'Milliseconds (ms)'
+          },
+          plotLines: [{
+            value: 0,
+            width: 1,
+            color: '#808080'
+          }]
+        },
+        tooltip: {
+          valueSuffix: 'ms'
+        },
+        legend: {
+          layout: 'vertical',
+          align: 'right',
+          verticalAlign: 'middle',
+          borderWidth: 0
+        },
+        series: [{
+          name: '1st Run',
+          data: [ 1818, 742, 807, 482, 1855, 1013, 328 ]
+        },
+          {
+            name: '2nd Run',
+            data: [ 1783, 770, 846, 489, 1826, 497, 320 ]
+          },
+          {
+            name: '3rd Run',
+            data: [ 1904, 742, 866, 530, 1903, 521, 352 ]
+          },
+          {
+            name: '4th Run',
+            data: [ 1855, 756, 799, 468, 1822, 501, 353 ]
+          },
+          {
+            name: '5th Run',
+            data: [ 1901, 768, 813, 507, 1931, 496, 357 ]
+          }]
+      });
+
+      var leipzigZoomInAndOutResults_LGD_charts = [],
+        leipzigZoomInAndOutResults_LGD_dataset = [
+          {
+            name: 'Action 1 - Area: 200*200km',
+            data:[ 1224, 1223, 1 ]
+          },
+          {
+            name: 'Action 2 - Area: 100*100km',
+            data:[ 136, 136, 0 ]
+          },
+          {
+            name: 'Action 3 - Area: 50*50km',
+            data:[ 38, 38, 0 ]
+          },
+          {
+            name: 'Action 4 - Area: 20*20km',
+            data:[ 0, 0, 0 ]
+          },
+          {
+            name: 'Action 5 - Area: 200*200km',
+            data:[ 1224, 1223, 1 ]
+          },
+          {
+            name: 'Action 6 - Area: 2.000*2.000km',
+            data:[ 8, 0, 8 ]
+          },
+          {
+            name: 'Action 7 - Area: 20.000*20.000km',
+            data:[ 4, 0, 4 ]
+          }
+        ];
+
+
+      $.each(leipzigZoomInAndOutResults_LGD_dataset, function(i, leipzigZoomInAndOutResults_LGD_dataset) {
+        leipzigZoomInAndOutResults_DBP_charts.push(new Highcharts.Chart({
+
+          chart: {
+            renderTo: $('#leipzig-zoom-in-and-out-results-2 td')[i],
+            type: 'bar',
+            height: 250,
+            width: 250,
+            marginLeft: i === 0 ? 100 : 10
+          },
+
+          title: {
+            text: leipzigZoomInAndOutResults_LGD_dataset.name,
+            align: 'left',
+            x: i === 0 ? 90 : 0
+          },
+
+          credits: {
+            enabled: false
+          },
+
+          xAxis: {
+            categories: ['Fetched Items', 'Instances', 'Cluster'],
+            labels: {
+              enabled: i === 0
+            }
+          },
+
+          yAxis: {
+            allowDecimals: false,
+            title: {
+              text: null
+            },
+            min: 0
+          },
+
+
+          legend: {
+            enabled: false
+          },
+
+          series: [leipzigZoomInAndOutResults_LGD_dataset]
+
+        }));
+      });
+
 
     });
   </script>
 </head>
 <body>
-  <div id="container"></div>
+  <div id="action-leipzig-zoom-in-and-out-1"></div>
 
-  <h1>Highcharts Trellis chart emulation</h2>
+  <h1>Items per Action(with count of instances and clusters)</h2>
+  <table id="leipzig-zoom-in-and-out-results-1">
+    <tr>
+      <td class="first"></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </table>
 
-    <table id="trellis">
+  <div id="action-leipzig-zoom-in-and-out-2"></div>
+
+  <h1>Items per Action(with count of instances and clusters)</h2>
+    <table id="leipzig-zoom-in-and-out-results-2">
       <tr>
         <td class="first"></td>
         <td></td>

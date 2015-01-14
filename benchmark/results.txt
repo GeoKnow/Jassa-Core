@@ -1,0 +1,264 @@
+LEIPZIG_ZOOM_IN_AND_OUT
+geoMapFactoryVirt
+http://akswnc3.informatik.uni-leipzig.de/data/dbpedia/sparql
+
+Runs:
+[ 1024, 677, 784, 519, 876, 1326, 375 ]
+[ 1086, 665, 769, 488, 910, 1298, 354 ]
+[ 1015, 674, 793, 537, 889, 1336, 400 ]
+[ 971, 698, 798, 496, 888, 1345, 356 ]
+[ 1014, 735, 798, 481, 905, 1440, 371 ]
+[ 1013, 693, 763, 494, 882, 1372, 369 ]
+[ 995, 691, 801, 463, 918, 1383, 393 ]
+[ 1020, 673, 804, 479, 898, 1291, 386 ]
+[ 1011, 712, 795, 481, 916, 1400, 397 ]
+[ 1013, 687, 780, 491, 914, 1395, 378 ]
+
+
+Results
+
+// 0 - itemCount 1 - instanceCount 2 - clusterCount
+[ 68, 68, 0 ]
+[ 8, 8, 0 ]
+[ 2, 2, 0 ]
+[ 0, 0, 0 ]
+[ 68, 68, 0 ]
+[ 447, 441, 6 ]
+[ 4, 0, 4 ]
+
+[ { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 100000 },
+    duration: '0s 958.593426ms',
+    durationMs: 959,
+    itemCount: 68,
+    instanceCount: 68,
+    clusterCount: 0,
+    bounds:
+     { left: 50.43318417450885,
+       right: 52.233482492157805,
+       bottom: 10.94260717100702,
+       top: 13.824059495659649 },
+    highchartsOutput: [ 68, 68, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 50000 },
+    duration: '0s 716.469111ms',
+    durationMs: 716,
+    itemCount: 8,
+    instanceCount: 8,
+    clusterCount: 0,
+    bounds:
+     { left: 50.88325875392109,
+       right: 51.783407912745574,
+       bottom: 11.662970252170176,
+       top: 13.103696414496492 },
+    highchartsOutput: [ 8, 8, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 25000 },
+    duration: '0s 804.494277ms',
+    durationMs: 804,
+    itemCount: 2,
+    instanceCount: 2,
+    clusterCount: 0,
+    bounds:
+     { left: 51.108296043627206,
+       right: 51.55837062303945,
+       bottom: 12.023151792751754,
+       top: 12.743514873914911 },
+    highchartsOutput: [ 2, 2, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 10000 },
+    duration: '0s 480.169674ms',
+    durationMs: 480,
+    itemCount: 0,
+    instanceCount: 0,
+    clusterCount: 0,
+    bounds:
+     { left: 51.24331841745088,
+       right: 51.42334824921578,
+       bottom: 12.239260717100702,
+       top: 12.527405949565967 },
+    highchartsOutput: [ 0, 0, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 100000 },
+    duration: '0s 883.237819ms',
+    durationMs: 883,
+    itemCount: 68,
+    instanceCount: 68,
+    clusterCount: 0,
+    bounds:
+     { left: 50.43318417450885,
+       right: 52.233482492157805,
+       bottom: 10.94260717100702,
+       top: 13.824059495659649 },
+    highchartsOutput: [ 68, 68, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 1000000 },
+    duration: '1s 400.984391ms',
+    durationMs: 1401,
+    itemCount: 447,
+    instanceCount: 441,
+    clusterCount: 6,
+    bounds:
+     { left: 42.33184174508855,
+       right: 60.33482492157812,
+       bottom: -2.0239282899298066,
+       top: 26.790594956596475 },
+    highchartsOutput: [ 447, 441, 6 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 10000000 },
+    duration: '0s 370.153972ms',
+    durationMs: 370,
+    itemCount: 4,
+    instanceCount: 0,
+    clusterCount: 4,
+    bounds:
+     { left: -38.68158254911448,
+       right: 141.34824921578115,
+       bottom: -131.68928289929806,
+       top: 156.45594956596474 },
+    highchartsOutput: [ 4, 0, 4 ] } ]
+
+LEIPZIG_ZOOM_IN_AND_OUT
+http://linkedgeodata.org/sparql
+geoMapFactoryAsWktVirt
+
+Runs:
+[ 1818, 742, 807, 482, 1855, 1013, 328 ]
+[ 1783, 770, 846, 489, 1826, 497, 320 ]
+[ 1904, 742, 866, 530, 1903, 521, 352 ]
+[ 1855, 756, 799, 468, 1822, 501, 353 ]
+[ 1901, 768, 813, 507, 1931, 496, 357 ]
+[ 1931, 767, 861, 488, 1829, 528, 339 ]
+[ 1871, 772, 821, 469, 1833, 496, 336 ]
+
+
+Results
+
+// 0 - itemCount 1 - instanceCount 2 - clusterCount
+[ 1224, 1223, 1 ]
+[ 136, 136, 0 ]
+[ 38, 38, 0 ]
+[ 0, 0, 0 ]
+[ 1224, 1223, 1 ]
+[ 8, 0, 8 ]
+[ 4, 0, 4 ]
+
+ [ { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 100000 },
+    duration: '1s 855.236292ms',
+    durationMs: 1855,
+    itemCount: 1224,
+    instanceCount: 1223,
+    clusterCount: 1,
+    bounds:
+     { left: 50.43318417450885,
+       right: 52.233482492157805,
+       bottom: 10.94260717100702,
+       top: 13.824059495659649 },
+    highchartsOutput: [ 1224, 1223, 1 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 50000 },
+    duration: '0s 755.528734ms',
+    durationMs: 756,
+    itemCount: 136,
+    instanceCount: 136,
+    clusterCount: 0,
+    bounds:
+     { left: 50.88325875392109,
+       right: 51.783407912745574,
+       bottom: 11.662970252170176,
+       top: 13.103696414496492 },
+    highchartsOutput: [ 136, 136, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 25000 },
+    duration: '0s 798.630497ms',
+    durationMs: 799,
+    itemCount: 38,
+    instanceCount: 38,
+    clusterCount: 0,
+    bounds:
+     { left: 51.108296043627206,
+       right: 51.55837062303945,
+       bottom: 12.023151792751754,
+       top: 12.743514873914911 },
+    highchartsOutput: [ 38, 38, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 10000 },
+    duration: '0s 468.007458ms',
+    durationMs: 468,
+    itemCount: 0,
+    instanceCount: 0,
+    clusterCount: 0,
+    bounds:
+     { left: 51.24331841745088,
+       right: 51.42334824921578,
+       bottom: 12.239260717100702,
+       top: 12.527405949565967 },
+    highchartsOutput: [ 0, 0, 0 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 100000 },
+    duration: '1s 821.507008ms',
+    durationMs: 1822,
+    itemCount: 1224,
+    instanceCount: 1223,
+    clusterCount: 1,
+    bounds:
+     { left: 50.43318417450885,
+       right: 52.233482492157805,
+       bottom: 10.94260717100702,
+       top: 13.824059495659649 },
+    highchartsOutput: [ 1224, 1223, 1 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 1000000 },
+    duration: '0s 500.554278ms',
+    durationMs: 501,
+    itemCount: 8,
+    instanceCount: 0,
+    clusterCount: 8,
+    bounds:
+     { left: 42.33184174508855,
+       right: 60.33482492157812,
+       bottom: -2.0239282899298066,
+       top: 26.790594956596475 },
+    highchartsOutput: [ 8, 0, 8 ] },
+  { action:
+     { lat: 51.333333333333336,
+       lon: 12.383333333333333,
+       radius: 10000000 },
+    duration: '0s 352.638207ms',
+    durationMs: 353,
+    itemCount: 4,
+    instanceCount: 0,
+    clusterCount: 4,
+    bounds:
+     { left: -38.68158254911448,
+       right: 141.34824921578115,
+       bottom: -131.68928289929806,
+       top: 156.45594956596474 },
+    highchartsOutput: [ 4, 0, 4 ] } ]
