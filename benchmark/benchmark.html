@@ -10,7 +10,7 @@
     $(function () {
       $('#container').highcharts({
         title: {
-          text: 'Fetch instances for different locations and bounds',
+          text: 'LEIPZIG_ZOOM_IN_AND_OUT',
           x: -20 //center
         },
         subtitle: {
@@ -18,7 +18,7 @@
           x: -20
         },
         xAxis: {
-          categories: ['51.3333 12.3833 2500m', '2', '3', '4', '5', '6',
+          categories: ['1', '2', '3', '4', '5', '6',
             '7', '8', '9', '10', '11', '12']
         },
         yAxis: {
@@ -42,23 +42,122 @@
         },
         series: [{
             name: '1st Run',
-            data: [ 515, 538, 514, 348, 469, 800, 693, 1495, 508, 364, 1224, 492 ]
+            data: [ 1024, 677, 784, 519, 876, 1326, 375 ]
           },
           {
             name: '2nd Run',
-            data: [ 501, 521, 495, 350, 507, 837, 717, 1532, 498, 345, 1317, 466 ]
+            data: [ 1086, 665, 769, 488, 910, 1298, 354 ]
           },
           {
             name: '3rd Run',
-            data: [ 506, 498, 476, 359, 472, 813, 704, 1437, 454, 342, 1186, 481 ]
+            data: [ 1015, 674, 793, 537, 889, 1336, 400 ]
+          },
+          {
+            name: '4th Run',
+            data: [ 971, 698, 798, 496, 888, 1345, 356 ]
+          },
+          {
+            name: '5th Run',
+            data: [ 1014, 735, 798, 481, 905, 1440, 371 ]
           }]
       });
+
+      var charts = [],
+        $containers = $('#trellis td'),
+        datasets = [
+          {
+            name: 'Action 1 - Area: 200*200km',
+            data:[ 68, 68, 0 ]
+          },
+          {
+            name: 'Action 2 - Area: 100*100km',
+            data:[ 8, 8, 0 ]
+          },
+          {
+            name: 'Action 3 - Area: 50*50km',
+            data:[ 2, 2, 0 ]
+          },
+          {
+            name: 'Action 4 - Area: 20*20km',
+            data:[ 0, 0, 0 ]
+          },
+          {
+            name: 'Action 5 - Area: 200*200km',
+            data:[ 68, 68, 0 ]
+          },
+          {
+            name: 'Action 6 - Area: 2.000*2.000km',
+            data:[ 447, 441, 6 ]
+          },
+          {
+            name: 'Action 7 - Area: 20.000*20.000km',
+            data:[ 4, 0, 4 ]
+          }
+        ];
+
+
+      $.each(datasets, function(i, dataset) {
+        charts.push(new Highcharts.Chart({
+
+          chart: {
+            renderTo: $containers[i],
+            type: 'bar',
+            marginLeft: i === 0 ? 100 : 10
+          },
+
+          title: {
+            text: dataset.name,
+            align: 'left',
+            x: i === 0 ? 90 : 0
+          },
+
+          credits: {
+            enabled: false
+          },
+
+          xAxis: {
+            categories: ['Fetched Items', 'Instances', 'Cluster'],
+            labels: {
+              enabled: i === 0
+            }
+          },
+
+          yAxis: {
+            allowDecimals: false,
+            title: {
+              text: null
+            },
+            min: 0
+          },
+
+
+          legend: {
+            enabled: false
+          },
+
+          series: [dataset]
+
+        }));
+      });
+
     });
   </script>
 </head>
 <body>
-  <div id="container">
+  <div id="container"></div>
 
-  </div>
+  <h1>Highcharts Trellis chart emulation</h2>
+
+    <table id="trellis">
+      <tr>
+        <td class="first"></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </table>
 </body>
 </html>

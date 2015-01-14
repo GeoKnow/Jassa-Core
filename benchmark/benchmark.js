@@ -58,6 +58,27 @@ var createSparqlService = function(url, graphUris) {
   return result;
 };
 
+var distance = function(lat1, lon1, lat2, lon2) {
+  var r = 6371.0; // approx. radius of earth in km
+  var lat1Radians = (lat1 * Math.PI) / 180.0;
+  var lon1Radians = (lon1 * Math.PI) / 180.0;
+  var lat2Radians = (lat2 * Math.PI) / 180.0;
+  var lon2Radians = (lon2 * Math.PI) / 180.0;
+  var diffLonRadians = lon2Radians - lon1Radians;
+  var step = Math.cos(lat1Radians) * Math.cos(lat2Radians) * Math.cos(diffLonRadians) + (Math.sin(lat1Radians) * Math.sin(lat2Radians));
+  var d = r * Math.acos(step);
+  return d;
+};
+
+var area = function(lat1, lon1, lat2, lon2)
+{
+  // lat1-lon1 is the upper-left corner, lat2-lon2 is the lower-right
+  var height = distance(lat1,lon1, lat2,lon1);
+  var width = distance(lat1,lon1, lat1,lon2);
+  return height * width;
+};
+
+
 // degrees to radians
 var deg2rad = function(degrees) {
   return Math.PI*degrees/180.0;
@@ -137,7 +158,18 @@ var LEIPZIG_TO_BERLIN = [
   extend(BERLIN, { radius: 1000 }) // 100m
 ];
 
-var actions = LEIPZIG_TO_BERLIN;
+var LEIPZIG_ZOOM_IN_AND_OUT = [
+  extend(LEIPZIG, { radius: 100000 }), // 100km
+  extend(LEIPZIG, { radius: 50000 }), // 50km
+  extend(LEIPZIG, { radius: 25000 }), // 25km
+  extend(LEIPZIG, { radius: 10000 }), // 10km
+  extend(LEIPZIG, { radius: 100000 }), // 100km
+  extend(LEIPZIG, { radius: 1000000 }), // 1.000km
+  extend(LEIPZIG, { radius: 10000000 }) // 1.000km
+];
+
+//var actions = LEIPZIG_TO_BERLIN;
+var actions = LEIPZIG_ZOOM_IN_AND_OUT;
 
 var runAction = function(action) {
   var bBox = boundingBox(action.lat, action.lon, action.radius);
@@ -151,16 +183,24 @@ var runAction = function(action) {
     'itemCount' : 0,
     'instanceCount' : 0,
     'clusterCount' : 0,
-    'bounds': bounds
+    'bounds': bounds,
+    'highchartsOutput': []
   };
 
   var hrTime = process.hrtime();
 
-  var sparqlServiceA = createSparqlService('http://akswnc3.informatik.uni-leipzig.de/data/dbpedia/sparql', ['http://dbpedia.org']);
-  var geoMapFactoryVirt = geo.GeoMapFactoryUtils.createWktMapFactory('http://www.w3.org/2003/01/geo/wgs84_pos#geometry', 'bif:st_intersects', 'bif:st_geomFromText');
-  var conceptA = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Place');
 
-  var dataSource = createMapDataSource(sparqlServiceA, geoMapFactoryVirt, conceptA, '#CC0020');
+
+  var sparqlServiceA = createSparqlService('http://akswnc3.informatik.uni-leipzig.de/data/dbpedia/sparql', ['http://dbpedia.org']);
+  var sparqlServiceB = createSparqlService('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org']);
+  var sparqlServiceC = createSparqlService('http://localhost/data/geolink/sparql', ['http://geolink.aksw.org/']);
+  var geoMapFactoryVirt = geo.GeoMapFactoryUtils.createWktMapFactory('http://www.w3.org/2003/01/geo/wgs84_pos#geometry', 'bif:st_intersects', 'bif:st_geomFromText');
+  var geoMapFactoryAsWktVirt = geo.GeoMapFactoryUtils.createWktMapFactory('http://www.opengis.net/ont/geosparql#asWKT', 'bif:st_intersects', 'bif:st_geomFromText');
+  var geoMapFactoryWgs =  geo.GeoMapFactoryUtils.wgs84MapFactory;
+  var conceptA = sparql.ConceptUtils.createTypeConcept('http://dbpedia.org/ontology/Place');
+  var conceptB = sparql.ConceptUtils.createSubjectConcept();
+
+  var dataSource = createMapDataSource(sparqlServiceB, geoMapFactoryAsWktVirt, conceptB, '#CC0020');
 
   var result = dataSource.fetchData(bounds).then(function(items) {
 
@@ -183,6 +223,9 @@ var runAction = function(action) {
     stat.itemCount = items.length;
     stat.clusterCount = clusterCount;
     stat.instanceCount = instanceCount;
+    stat.highchartsOutput.push(items.length);
+    stat.highchartsOutput.push(instanceCount);
+    stat.highchartsOutput.push(clusterCount);
 
     return stat;
 
@@ -231,12 +274,15 @@ var runActions = function(nextActionFn, stats) {
   return result;
 };
 
+
 console.log('Benchmark is running...');
 /** RUN BENCHMARK */
 runBenchmark(actions, runAction).then(function(stats) {
   // done
   console.log('Result\n', stats);
 });
+
+
 
 /*
 // compute bounds in a 1000km radius of Leipzig
