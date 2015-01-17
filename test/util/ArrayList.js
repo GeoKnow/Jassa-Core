@@ -161,6 +161,7 @@ describe('ArrayList', function() {
     arrList2.getArray().should.eql(expctdRes2);
   });
 
+/* removeByIndex is covered by splice
   it('should remove the item on a given index correctly', function() {
     var items = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
@@ -171,6 +172,7 @@ describe('ArrayList', function() {
     arrList.removeByIndex(idx);
     arrList.getArray().should.eql(expctdRes);
   });
+*/
 
   it('should return its correct size', function() {
     var items = [1, 2, 3, 4, 5, 6, 7, 8, 9];
