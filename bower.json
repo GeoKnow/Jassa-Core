@@ -8,10 +8,11 @@
   "description": "JAvascript Suite for Sparql Access",
   "main": "jassa.js",
   "repository": {
-      "type": "git",
-      "url": "git://github.com/GeoKnow/Jassa-Core.git"
+    "type": "git",
+    "url": "git://github.com/GeoKnow/Jassa-Core.git"
   },
   "dependencies": {
+    "bluebird": "2.3.5"
   },
   "keywords": [
     "rdf",
