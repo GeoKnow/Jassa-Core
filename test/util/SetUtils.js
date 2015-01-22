@@ -25,7 +25,7 @@ describe('SetUtils', function() {
   it('should convert an array to set correctly', function() {
     var arr = [1, 2, 3, 4, 4, 5];
     var set = SetUtils.arrayToSet(arr);
-    set.length.should.equal(5);
+    set.size().should.equal(5);
     set.should.containEql(1);
     set.should.containEql(2);
     set.should.containEql(3);
