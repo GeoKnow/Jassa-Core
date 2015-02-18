@@ -24,6 +24,32 @@ var service = jassa.service;
 
 // tests
 describe('Services', function() {
+    it('#Multiple requests to cache should work consistently', function() {
+        var sparqlService = jassa.service.SparqlServiceBuilder
+            .http('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org'])
+            .cache()
+            .create();
+
+        var attrQuery = new sparql.Query();
+
+        attrQuery.getProject().add(sparql.VarUtils.s);
+        attrQuery.setQueryPattern(new sparql.ElementTriplesBlock([new rdf.Triple(sparql.VarUtils.s, vocab.rdfs.label, sparql.VarUtils.o)]));
+        attrQuery.setLimit(10);
+
+
+        return sparqlService.createQueryExecution(attrQuery).execSelect().then(function(a) {
+            sparqlService.createQueryExecution(attrQuery).execSelect().then(function(b) {
+
+                var cmp = jassa.util.ObjectUtils.isEqual(a, b)
+                //console.log(JSON.stringify(a));
+                cmp.should.be.true;
+            });
+        });
+        ///throw new Error('fail');
+
+
+    }),
+
     it('#Service layers should work', function() {
 
         var attrQuery = new sparql.Query();
