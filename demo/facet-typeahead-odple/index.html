@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html ng-app="FacetTypeaheadDemo">
+<head>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.css">
+    <link rel="stylesheet" href="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular.css">
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/bluebird/1.2.2/bluebird.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.16/angular-sanitize.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.10.0/ui-bootstrap-tpls.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.js"></script>
+    <script src="http://js.geoknow.eu/libs/jassa/latest/jassa.js"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-sortable/0.12.8/sortable.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-utils/0.1.1/angular-ui-utils.min.js"></script>
+
+    <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
+
+
+    <script src="facet-typeahead.js"></script>
+
+
+    <script type="text/ng-template" id="personTemplate.html">
+        <a href="" style="font-family: verdana;">
+            <table>
+                <tr>
+                    <td style="vertical-align: center;">
+                        <div class="thumbnail href="" style="width: 48px; margin-right: 5px;">
+                            <img ng-if="match.model.gender==='Frau'" ng-src="images/user-297566_640.png">
+                            <img ng-if="match.model.gender==='Herr'" ng-src="images/person-311292_640.png">
+                            <img ng-if="!(match.model.gender==='Herr' || match.model.gender==='Frau')" ng-src="images/16708573-anonymous-vector-sign.jpg">
+
+                        </div>
+                    </td>
+                    <td style="vertical-align: text-top;">
+                            <strong><span title="match.model.id">{{match.model.gender}} {{match.model.firstName}} {{match.model.lastName}}</span></strong>
+							<p>
+                            <small><i>{{match.model.role}}</i></small>
+                            </p>
+                    
+                    <p>
+						{{match.model.basedAt.displayLabel}}, {{match.model.basedAt.streetAddress}}, {{match.model.basedAt.postalCode}}
+                    </p>
+                </tr>
+            </table>
+        </a>
+    </script>
+<!--
+<img ng-if="match.model.gender==='Frau'" ng-src="http://pixabay.com/static/uploads/photo/2014/03/25/16/54/user-297566_640.png">
+                            <img ng-if="match.model.gender==='Herr'" ng-src="http://pixabay.com/static/uploads/photo/2014/04/03/10/44/person-311292_640.png">
+                            <img ng-if="!(match.model.gender==='Herr' || match.model.gender==='Frau')" ng-src="http://us.123rf.com/450wm/arcady31/arcady311212/arcady31121200002/16708573-anonymous-vector-sign.jpg">
+-->
+
+    <script type="text/ng-template" id="basicDescriptionTemplate.html">
+        <a href="" style="font-family: verdana;">
+            <table>
+                <tr>
+                    <td style="vertical-align: center;">
+                        <strong><span title="{{match.model.id}}" bind-html-unsafe="(match.model.displayLabel || match.model.id) | typeaheadHighlight:query"></span></strong>
+                    </td>
+                </tr>
+            </table>
+        </a>
+    </script>
+
+    <script type="text/ng-template" id="subjectTemplate.html">
+        <a href="" style="font-family: verdana; font-size: 80%;">
+            <h6><span title="{{match.model.id}}" bind-html-unsafe="(match.model.displayLabel || match.model.id) | typeaheadHighlight:query"></span></h6>
+        </a>
+    </script>
+<!--             <span bind-html-unsafe="match.displayLabel | typeaheadHighlight:query"></span> -->
+
+
+    <script type="text/javascript">
+        // Create the global 'jassa' object
+        jassa = new Jassa(Promise, $.ajax);
+
+        var vocab = jassa.vocab;
+        var rdf = jassa.rdf;
+        var sparql = jassa.sparql;
+        var service = jassa.service;
+        var sponate = jassa.sponate;
+        var facete = jassa.facete;
+
+        angular.module('FacetTypeaheadDemo', ['ui.bootstrap', 'ui.jassa.facet-typeahead', 'ui.jassa', 'ngSanitize'])
+
+        .controller('AppCtrl', ['$scope', '$q', '$timeout', function($scope, $q, $timeout) {
+
+            $scope.jassa = jassa;
+
+            // Create the SPARQL concept that identifies datasets
+            var baseConcept = new sparql.ConceptUtils.createTypeConcept('http://xmlns.com/foaf/0.1/Person');
+
+            // Create a facetTreeConfig with the dataset config as its base
+            var facetConfig = new facete.FacetConfig();
+            facetConfig.setBaseConcept(baseConcept);
+
+
+            // Init the sparql service (and wrap it with a cache and pagination)
+            var sparqlService = new service.SparqlServiceBuilder
+                .http('http://odple-virtuoso.eccenca.com/', ['https://odple-ckan.eccenca.com/'])
+                .cache()
+                .paginate(1000)
+                .pageExpand(50)
+                .create();
+
+            /*
+             * Set up the Sponate mapping for the data we are interested in
+             */
+            var store = new sponate.StoreFacade(sparqlService, {
+                'rdf': 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+                'rdfs': 'http://www.w3.org/2000/01/rdf-schema#',
+                'dbpedia-owl': 'http://dbpedia.org/ontology/',
+                'foaf': 'http://xmlns.com/foaf/0.1/',
+                'geo': 'http://www.w3.org/2003/01/geo/wgs84_pos#',
+                'dcterms': 'http://purl.org/dc/terms/',
+                'skos': 'http://www.w3.org/2004/02/skos/core#',
+                'org': 'http://www.w3.org/ns/org#',
+                'vcard': 'http://www.w3.org/2006/vcard/ns#',
+                'sioc': 'http://rdfs.org/sioc/ns#'
+            });
+
+            $scope.langs = ['de', 'en', ''];
+            $scope.props = [ jassa.vocab.rdfs.label, jassa.rdf.NodeFactory.createUri('firstName') ];
+
+            var labelConfig = new sparql.BestLabelConfig($scope.langs, $scope.props);
+            var labelTemplateFn = function() { return sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig); };
+//            var commentTemplateFn = function() { sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [rdf.NodeFactory.createUri('http://dbpedia.org/ontology/abstract')])); };
+
+            store.addMap({
+                name: 'people',
+                template: [{
+                    id: '?s',
+                    firstName: '?f',
+                    lastName: '?l',
+                    gender: '?g',
+                    tel: '?l',
+                    role: '?r',
+                    displayLabel: { $ref: { target: labelTemplateFn, attr: 'displayLabel' }},
+					basedAt: { $ref: { target: 'sites', on: '?b' } }
+                }],
+                from: '?s a foaf:Person ; foaf:firstName ?f ; foaf:lastName ?l . Optional { ?s foaf:gender ?g } . Optional { ?s vcard:tel ?t } . Optional { ?s vcard:role ?r } . Optional { ?s org:basedAt ?b }'
+            });
+
+            store.addMap({
+                name: 'sites',
+                template: [{
+                    id: '?s | node',
+                    postalCode: '?p',
+                    streetAddress: '?a',
+                    displayLabel: { $ref: { target: labelTemplateFn, attr: 'displayLabel' } },
+                }],
+                from: '?s a org:Site ; <http://www.w3.org/2006/vcard/ns#postal-code> ?p ; <http://www.w3.org/2006/vcard/ns#street-address> ?a'
+            });
+
+
+            store.addMap({
+                name: 'basicDescriptions',
+                template: [{
+                    id: '?l | node',
+                    //displayLabel: { $ref: { target: labelTemplateFn, attr: 'displayLabel' } }
+                    displayLabel: '?l'
+                }],
+                from: '?s ?x ?l'
+            });
+
+
+
+
+
+            $scope.data = {};
+			$scope.loading = {};
+
+            // Set up the facet typeahead config (ftac)
+            $scope.ftac = {
+                sparqlService: sparqlService,
+                facetConfig: facetConfig,
+                store: store,
+                search: function(searchString) {
+                    var relation = sparql.LabelUtils.createRelationPrefLabels(labelConfig);
+                    var r = sparql.KeywordSearchUtils.createConceptRegex(relation, searchString, true);
+                    return r;
+                }
+            };
+
+            $scope.listFacetConfig = null;
+
+            var refresh = function() {
+                if($scope.listFacetConfig) {
+                    var facetValueConceptService = new facete.FacetValueConceptServiceExact($scope.listFacetConfig);
+
+                    var promise = facetValueConceptService.prepareConcept(new facete.Path()).then(function(concept) {
+                        console.log('Concept: ' + concept);
+                        var ls = store.people.getListService();
+                        var r = ls.fetchItems(concept, 10);
+                        return r;
+                    });
+
+                    $q.when(promise).then(function(items) {
+                        $timeout(function() {
+                            console.log('Items: ', items);
+                            $scope.items = items.map(function(item) { return item.val; });
+                        });
+                    });
+                }
+            };
+
+            $scope.$watch('listFacetConfig', function() {
+                refresh();
+            });
+
+            $scope.$watchCollection('langs', function() {
+                refresh();
+            });
+
+            $scope.$watch('ftac.getConstraints(true)', function(constraints) {
+                listFacetConfig = new facete.FacetConfig();
+                listFacetConfig.setBaseConcept(baseConcept);
+                if(constraints) {
+                    listFacetConfig.getConstraintManager().addConstraints(constraints);
+                }
+
+                $scope.listFacetConfig = listFacetConfig;
+            }, true);
+        }])
+
+    </script>
+</head>
+<body ng-controller="AppCtrl">
+
+<div class="container">
+
+<div class="row">
+<div class="col-md-12">
+<h3><img src="logo-eccenca.png" style="max-width: 64px; max-height: 64px"> People Finder</h3>
+</div>
+</div>
+
+<div class="row">
+<div class="col-md-3">
+
+<div class="alert alert-info" role="alert">
+<form role="form">
+
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="data.firstName"
+                facet-typeahead="ftac"
+                facet-typeahead-path="'http://xmlns.com/foaf/0.1/firstName'"
+                facet-typeahead-suggestions="'basicDescriptions'"
+                facet-typeahead-label="displayLabel"
+                facet-typeahead-model="id"
+                typeahead-template-url="basicDescriptionTemplate.html"
+                typeahead-loading="loading.firstName"
+                type="text"
+                class="form-control"
+                placeholder="First Name"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="data.firstName == null || data.firstName===''" ng-click="data.firstName=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="loading.firstName ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="data.lastName"
+                facet-typeahead="ftac"
+                facet-typeahead-path="'http://xmlns.com/foaf/0.1/lastName'"
+                facet-typeahead-suggestions="'basicDescriptions'"
+                facet-typeahead-label="displayLabel"
+                facet-typeahead-model="id"
+                typeahead-template-url="basicDescriptionTemplate.html"
+                typeahead-loading="loading.lastName"
+                type="text"
+                class="form-control"
+                placeholder="Last Name"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="data.lastName == null || data.lastName===''" ng-click="data.lastName=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="loading.lastName ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="data.siteName"
+                facet-typeahead="ftac"
+                facet-typeahead-path="'http://www.w3.org/ns/org#basedAt http://www.w3.org/2000/01/rdf-schema#label'"
+                facet-typeahead-suggestions="'basicDescriptions'"
+                facet-typeahead-label="displayLabel"
+                facet-typeahead-model="id"
+                typeahead-template-url="basicDescriptionTemplate.html"
+                typeahead-loading="loading.siteName"
+                type="text"
+                class="form-control"
+                placeholder="Site Name"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="data.siteName == null || data.siteName===''" ng-click="data.siteName=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="loading.siteName ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="data.streetAddress"
+                facet-typeahead="ftac"
+                facet-typeahead-path="'http://www.w3.org/ns/org#basedAt http://www.w3.org/2006/vcard/ns#street-address'"
+                facet-typeahead-suggestions="'basicDescriptions'"
+                facet-typeahead-label="displayLabel"
+                facet-typeahead-model="id"
+                typeahead-template-url="basicDescriptionTemplate.html"
+                typeahead-loading="loading.streetAddress"
+                type="text"
+                class="form-control"
+                placeholder="Street Address"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="data.streetAddress == null || data.streetAddress===''" ng-click="data.streetAddress=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="loading.streetAddress ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="input-group">
+            <input
+                ng-model="data.postalCode"
+                facet-typeahead="ftac"
+                facet-typeahead-path="'http://www.w3.org/ns/org#basedAt http://www.w3.org/2006/vcard/ns#postal-code'"
+                facet-typeahead-suggestions="'basicDescriptions'"
+                facet-typeahead-label="displayLabel"
+                facet-typeahead-model="id"
+                typeahead-template-url="basicDescriptionTemplate.html"
+                typeahead-loading="loading.postalCode"
+                type="text"
+                class="form-control"
+                placeholder="Postal Code"
+            >
+            <span class="input-group-btn">
+                <button ng-disabled="data.postalCode == null || data.postalCode===''" ng-click="data.postalCode=''" class="btn btn-default" type="button">
+                    <span class="glyphicon" ng-class="loading.postalCode ? 'glyphicon-refresh' : 'glyphicon-remove-circle'"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+</form>
+</div>
+
+</div>
+
+<div class="col-md-9">
+<div class="alert alert-success" role="alert">
+
+    <div>
+        <ul class="list-inline">
+            <li><span>Language Settings: </span></li>
+            <li><lang-select langs="langs"></lang-select></li>
+        </ul>
+    </div>
+
+
+    <table class="table table-striped">
+    <tr ng-repeat="item in items">
+        <td ng-init="match={model: item}">
+            <div ng-include="'personTemplate.html'"></div>
+        </td>
+    </tr>
+    </table>
+</div>
+</div>
+
+</div>
+</div>
+
+</body>
+</html>
