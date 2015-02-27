@@ -38,3 +38,4 @@ deploy:
          branch: master
          basedir: dist
          tag: bower
+         tag_overwrite: true
