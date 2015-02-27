@@ -24,12 +24,12 @@ build:
 deploy:
   steps:
     - leipert/git-push:
-         gh_token: $GH_TOKEN
+         gh_oauth: $GH_TOKEN
          gh_pages: true
          basedir: docs
          discard_history: true
     - leipert/git-push:
-         gh_token: $GH_TOKEN
+         gh_oauth: $GH_TOKEN
          host: github.com
          repo: GeoKnow/Jassa-Bower
          branch: master
