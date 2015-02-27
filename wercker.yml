@@ -20,6 +20,9 @@ build:
     - script:
         name: Generate docs
         code: gulp docs
+    - script:
+        name: Remove unneeded files
+        code: ls -A | grep -v dist | grep -v docs | xargs rm -rf
 
 deploy:
   steps:
