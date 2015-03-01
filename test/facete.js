@@ -65,6 +65,33 @@ function prettifyFacetTree(node) {
 // tests
 describe('Facete Basics', function() {
 
+    it('#Facete - Fetch related items', function() {
+        var sparqlService = service.SparqlServiceBuilder
+           .http('http://dbpedia.org/sparql', ['http://dbpedia.org'])
+           .create();
+
+        var sourceConcept = sparql.ConceptUtils.createTypeConcept('http://schema.org/Person');
+        var path = facete.Path.parse('http://dbpedia.org/ontology/birthPlace http://www.w3.org/2000/01/rdf-schema#label');
+
+        var relation = facete.PathUtils.createRelation(path);
+
+        var listService = service.ListServiceUtils.createTargetListService(sparqlService, sourceConcept, relation);
+
+//        var targetConcept = sparql.ConceptUtils.createTargetConcept(sourceConcept, relation);
+//
+//
+//        console.log('Target concept: ' + targetConcept);
+//
+//        var query = sparql.ConceptUtils.createQueryList(targetConcept);
+//        var listService = new service.ListServiceSparqlQuery(sparqlService, query, targetConcept.getVar());
+
+
+        result = listService.fetchItems(null, 10).then(function(entries) {
+            console.log('Entries: ', entries);
+        });
+
+        return result;
+    });
 
     it('#Facete - Declared Properties', function() {
 
