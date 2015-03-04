@@ -47,6 +47,24 @@ describe('Basics', function() {
         triple.getSubject().isVariable().should.be.true;
     });
 
+    it('#Add and remove a triple from a graph', function() {
+        var graph = new rdf.GraphImpl();
+
+        var s = rdf.NodeFactory.createVar('s');
+        var p = vocab.rdf.type;
+        var o = rdf.NodeFactory.createUri('http://example.org/ontology/MyClass');
+
+        var triple = new rdf.Triple(s, p, o);
+
+        graph.add(triple);
+
+        var pattern = new rdf.Triple(s, null, null);
+
+        graph.removeMatch(pattern);
+
+        graph.isEmpty().should.be.equal(true);
+    });
+
     it('#Query.toString() should match Select * {?s ?p ?o}  Limit 10', function() {
         var query = new sparql.Query();
         var s = rdf.NodeFactory.createVar('s');
