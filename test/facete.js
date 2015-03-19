@@ -10,9 +10,10 @@ var ajax = function(param) {
         json: true,
         form: param.data,
     }).then(function(res) {
-        return new Promise(function(resolve) {
-            resolve(res[0].body);
-        });
+        return res[0].body;
+//        return new Promise(function(resolve) {
+//            resolve(res[0].body);
+//        });
     });
 };
 
@@ -164,15 +165,20 @@ describe('Facete Basics', function() {
         facetConfig.getConstraintManager().addConstraint(new facete.ConstraintEquals(cpath, rdf.NodeFactory.createUri('http://fp7-pp.publicdata.eu/ontology/Project')));
 
 
-        var facetValueService = new facete.FacetValueService(sparqlService, facetConfig, 5000000);
+        var facetValueService = facete.FacetValueServiceBuilder.core(sparqlService, facetConfig, 5000000).labelConfig().create();
+        //labelConfig()
+
         var path = facete.Path.parse('http://fp7-pp.publicdata.eu/ontology/funding http://fp7-pp.publicdata.eu/ontology/partner http://fp7-pp.publicdata.eu/ontology/address http://fp7-pp.publicdata.eu/ontology/country');
         facetValueService.prepareTableService(path, false).then(function(ls) {
 
-            var bestLabelConfig = new sparql.BestLabelConfig();
-            var labelRelation = sparql.LabelUtils.createRelationPrefLabels(bestLabelConfig);
-            var filterConcept = sparql.KeywordSearchUtils.createConceptRegex(labelRelation, 'Germany', true);
+            //var bestLabelConfig = new sparql.BestLabelConfig();
+            //var labelRelation = sparql.LabelUtils.createRelationPrefLabels(bestLabelConfig);
+            //var filterConcept = sparql.KeywordSearchUtils.createConceptRegex(labelRelation, 'Germany', true);
 
-            return ls.fetchItems(filterConcept, 10);
+            return ls.fetchItems('Germany', 10);
+        }, function(e) {
+            console.log('FAILED');
+            throw new Error(e);
         }).then(function(items) {
             console.log('FACET VALUES\n ' + JSON.stringify(items, null, 4));
             items[0].val.countInfo.count.should.equal(1094);

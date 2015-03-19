@@ -27,22 +27,22 @@ describe('Services', function() {
     it('#Paginate and Page expansion should work as expected', function() {
         var sparqlService = jassa.service.SparqlServiceBuilder
             .http('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org'])
-            .log()
+            //.log()
             .paginate(100)
-            //.pageExpand(200)
+            .pageExpand(200)
             .create();
 
         var attrQuery = new sparql.Query();
 
         attrQuery.getProject().add(sparql.VarUtils.s);
         attrQuery.setQueryPattern(new sparql.ElementTriplesBlock([new rdf.Triple(sparql.VarUtils.s, vocab.rdfs.label, sparql.VarUtils.o)]));
-        attrQuery.setLimit(400);
+        attrQuery.setLimit(350);
 
 
         return sparqlService.createQueryExecution(attrQuery).execSelect().then(function(rs) {
             var l = rs.getBindings().length;
-            console.log('Length: ' + l);
-            l.should.equal(400);
+            //console.log('Length: ' + l);
+            l.should.equal(350);
         });
     }),
 

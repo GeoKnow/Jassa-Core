@@ -67,8 +67,8 @@ describe('Sponate tests', function() {
         agg.add('nameL', '?l');
         agg.add('yaaaay', '"xxx"');
 
-        var blc = new sparql.BestLabelConfig(['ja', 'ko', 'en', '']);
-        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(blc);
+        var blc = new sparql.LiteralPreference(['ja', 'ko', 'en', '']);
+        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptLiteralPreference(blc);
 
         agg.add('foooo', { $ref: { target: function() { return mappedConcept; }, on: '?s' } });
 
@@ -188,8 +188,8 @@ describe('Sponate tests', function() {
         // [] -> array
         // [[]] -> map
         // [[[ ]]] -> hashmap
-        var blc = new sparql.BestLabelConfig(['ja', 'ko', 'en', '']);
-        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptBestLabel(blc);
+        var blc = new sparql.LiteralPreference(['ja', 'ko', 'en', '']);
+        var mappedConcept = sponate.MappedConceptUtils.createMappedConceptLiteralPreference(blc);
 
         linkStore.addTemplate({
             name: 'spo',

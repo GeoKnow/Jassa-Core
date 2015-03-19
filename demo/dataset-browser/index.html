@@ -67,9 +67,9 @@
 
         $scope.langs = ['de', 'en', ''];
 
-        var labelConfig = new sparql.BestLabelConfig($scope.langs);
-        var labelTemplateFn = function() { return sponate.MappedConceptUtils.createMappedConceptBestLabel(labelConfig); };
-        var commentTemplateFn = function() { return sponate.MappedConceptUtils.createMappedConceptBestLabel(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment])); };
+        var labelConfig = new sparql.LiteralPreference($scope.langs);
+        var labelTemplateFn = function() { return sponate.MappedConceptUtils.createMappedConceptLiteralPreference(labelConfig); };
+        var commentTemplateFn = function() { return sponate.MappedConceptUtils.createMappedConceptLiteralPreference(new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment])); };
 
         var template = [{
             id: '?s',
@@ -129,7 +129,7 @@
         $scope.listService = store.primaryDatasets.getListService();
 
         $scope.listService = new service.ListServiceTransformConceptMode($scope.listService, function() {
-            var searchConfig = new sparql.BestLabelConfig($scope.langs, [vocab.rdfs.comment, vocab.rdfs.label]);
+            var searchConfig = new sparql.LiteralPreference($scope.langs, [vocab.rdfs.comment, vocab.rdfs.label]);
             var labelRelation = sparql.LabelUtils.createRelationPrefLabels(searchConfig);
             return labelRelation;
         });
