@@ -92,9 +92,21 @@
         var sponate = jassa.sponate;
         var facete = jassa.facete;
 
-        var app = angular.module('FacetTypeaheadDemo', ['ui.bootstrap', 'ui.jassa.facet-typeahead', 'ui.jassa', 'ngSanitize', 'pascalprecht.translate'])
+		angular.module('FacetTypeaheadDemo', ['ui.bootstrap', 'ui.jassa.facet-typeahead', 'ui.jassa', 'ngSanitize', 'pascalprecht.translate'])
 
-        .controller('AppCtrl', ['$scope', '$q', '$timeout', function($scope, $q, $timeout) {
+		.config(['$translateProvider', function ($translateProvider) {
+            // add translation tables
+			$translateProvider.translations('en', translationsEN);
+			$translateProvider.translations('de', translationsDE);
+			$translateProvider.preferredLanguage('de');
+			$translateProvider.fallbackLanguage('en');
+		}])
+
+        .controller('AppCtrl', ['$scope', '$q', '$timeout', '$translate', function($scope, $q, $timeout, $translate) {
+
+			$scope.changeLanguage = function (langKey) {
+				$translate.use(langKey);
+			};
 
             $scope.jassa = jassa;
 
@@ -108,7 +120,7 @@
 
             // Init the sparql service (and wrap it with a cache and pagination)
             var sparqlService = new service.SparqlServiceBuilder
-                .http('http://odple-virtuoso.eccenca.com/', ['https://odple-ckan.eccenca.com/'])
+                .http('http://odple-virtuoso.eccenca.com/', ['https://odple-ckan.eccenca.com/'], { type: 'POST' })
                 .cache()
                 .paginate(1000)
                 .pageExpand(50)
@@ -231,11 +243,15 @@
             }, true);
         }])
 
+		;
+
     </script>
 
     <script src="translate.js"></script>
 
 </head>
+
+
 <body ng-controller="AppCtrl">
 
 <div class="container">
@@ -385,7 +401,6 @@
             <li><lang-select langs="langs"></lang-select></li>
         </ul>
     </div>
-
 
     <table class="table table-striped">
     <tr ng-repeat="item in items">

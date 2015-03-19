@@ -21,18 +21,4 @@ var translationsDE= {
   BUTTON_LANG_DE: 'deutsch',
   BUTTON_LANG_EN: 'englisch'
 };
- 
-app.config(['$translateProvider', function ($translateProvider) {
-  // add translation tables
-  $translateProvider.translations('en', translationsEN);
-  $translateProvider.translations('de', translationsDE);
-  $translateProvider.preferredLanguage('de');
-  $translateProvider.fallbackLanguage('en');
-}]);
 
-
-app.controller('AppCtrl', ['$translate', '$scope', function ($translate, $scope) {
-  $scope.changeLanguage = function (langKey) {
-    $translate.use(langKey);
-  };
-}]);
