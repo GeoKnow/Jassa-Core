@@ -19,9 +19,16 @@
 
     <script src="http://js.geoknow.eu/libs/jassa-ui-angular/latest/jassa-ui-angular-tpls.js"></script>
 
-
+    <!-- translation stuff -->
+    <script src="http://rawgithub.com/angular/bower-angular-cookies/master/angular-cookies.min.js"></script>
+    <script src="http://rawgithub.com/angular-translate/bower-angular-translate/master/angular-translate.min.js"></script>
+    <script src="http://rawgithub.com/angular-translate/bower-angular-translate-interpolation-messageformat/master/angular-translate-interpolation-messageformat.min.js"></script>
+    <script src="http://rawgithub.com/angular-translate/bower-angular-translate-storage-cookie/master/angular-translate-storage-cookie.min.js"></script>
+    <script src="http://rawgithub.com/angular-translate/bower-angular-translate-storage-local/master/angular-translate-storage-local.min.js"></script>
+    <script src="http://rawgithub.com/angular-translate/bower-angular-translate-loader-static-files/master/angular-translate-loader-static-files.min.js"></script>
+    <script src="http://rawgithub.com/angular-translate/bower-angular-translate-handler-log/master/angular-translate-handler-log.min.js"></script>
+    
     <script src="facet-typeahead.js"></script>
-
 
     <script type="text/ng-template" id="personTemplate.html">
         <a href="" style="font-family: verdana;">
@@ -85,7 +92,7 @@
         var sponate = jassa.sponate;
         var facete = jassa.facete;
 
-        angular.module('FacetTypeaheadDemo', ['ui.bootstrap', 'ui.jassa.facet-typeahead', 'ui.jassa', 'ngSanitize'])
+        var app = angular.module('FacetTypeaheadDemo', ['ui.bootstrap', 'ui.jassa.facet-typeahead', 'ui.jassa', 'ngSanitize', 'pascalprecht.translate'])
 
         .controller('AppCtrl', ['$scope', '$q', '$timeout', function($scope, $q, $timeout) {
 
@@ -168,9 +175,6 @@
             });
 
 
-
-
-
             $scope.data = {};
 			$scope.loading = {};
 
@@ -228,6 +232,9 @@
         }])
 
     </script>
+
+    <script src="translate.js"></script>
+
 </head>
 <body ng-controller="AppCtrl">
 
@@ -235,7 +242,7 @@
 
 <div class="row">
 <div class="col-md-12">
-<h3><img src="logo-eccenca.png" style="max-width: 64px; max-height: 64px"> People Finder</h3>
+<h3><img src="logo-eccenca.png" style="max-width: 64px; max-height: 64px">{{'HEADLINE' | translate}}</h3>
 </div>
 </div>
 
@@ -258,7 +265,7 @@
                 typeahead-loading="loading.firstName"
                 type="text"
                 class="form-control"
-                placeholder="First Name"
+                placeholder="{{'FIRST_NAME' | translate}}"
             >
             <span class="input-group-btn">
                 <button ng-disabled="data.firstName == null || data.firstName===''" ng-click="data.firstName=''" class="btn btn-default" type="button">
@@ -281,7 +288,7 @@
                 typeahead-loading="loading.lastName"
                 type="text"
                 class="form-control"
-                placeholder="Last Name"
+                placeholder="{{'LAST_NAME' | translate}}"
             >
             <span class="input-group-btn">
                 <button ng-disabled="data.lastName == null || data.lastName===''" ng-click="data.lastName=''" class="btn btn-default" type="button">
@@ -305,7 +312,7 @@
                 typeahead-loading="loading.siteName"
                 type="text"
                 class="form-control"
-                placeholder="Site Name"
+                placeholder="{{'SITE_NAME' | translate}}"
             >
             <span class="input-group-btn">
                 <button ng-disabled="data.siteName == null || data.siteName===''" ng-click="data.siteName=''" class="btn btn-default" type="button">
@@ -329,7 +336,7 @@
                 typeahead-loading="loading.streetAddress"
                 type="text"
                 class="form-control"
-                placeholder="Street Address"
+                placeholder="{{'STREET_ADDRESS' | translate}}"
             >
             <span class="input-group-btn">
                 <button ng-disabled="data.streetAddress == null || data.streetAddress===''" ng-click="data.streetAddress=''" class="btn btn-default" type="button">
@@ -353,7 +360,7 @@
                 typeahead-loading="loading.postalCode"
                 type="text"
                 class="form-control"
-                placeholder="Postal Code"
+                placeholder="{{'POSTAL_CODE' | translate}}"
             >
             <span class="input-group-btn">
                 <button ng-disabled="data.postalCode == null || data.postalCode===''" ng-click="data.postalCode=''" class="btn btn-default" type="button">
@@ -363,6 +370,8 @@
         </div>
     </div>
 </form>
+<button ng-click="changeLanguage('de')" translate="BUTTON_LANG_DE"></button>
+<button ng-click="changeLanguage('en')" translate="BUTTON_LANG_EN"></button>
 </div>
 
 </div>
@@ -372,7 +381,7 @@
 
     <div>
         <ul class="list-inline">
-            <li><span>Language Settings: </span></li>
+            <li><span>{{'LANG_SETTINGS' | translate}}: </span></li>
             <li><lang-select langs="langs"></lang-select></li>
         </ul>
     </div>
