@@ -1,0 +1,188 @@
+/* Force pointer cursor on 'a' elements - even without href attribute */
+a {
+    cursor: pointer
+}
+
+.thumbnail-center {
+    display: table;
+    border-spacing: 1px;
+    border-collapse: separate;
+}
+
+.thumbnail-wrapper {
+    display:table-cell;
+    vertical-align:middle;
+}
+
+.thumbnail-wrapper > img {
+    width:100%;
+}
+
+
+
+.no-border-radius {
+    border-radius: 0px !important;
+}
+
+.lang-item {
+    cursor: move;
+    min-width: 20px;
+    min-height: 1em;
+}
+
+.lang-sortable-placeholder {
+    width: 25px;
+    height: 0.9em;
+    border: 2px dotted #aaaaaa;
+}
+
+.lang-borderless,
+.lang-boderless:active,
+.lang-borderless:focus {
+    border: none;
+    outline: none;
+    outline-offset: 0;
+    border-color: transparent;
+}
+
+.preserve-whitespace {
+    white-space: pre;
+}
+
+
+.pagination {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.image {
+        max-width: 144px;
+        max-height: 144px;
+    vertical-align: middle;
+}
+
+.facet-row:hover {
+    background-color: #bbccff;
+}
+
+
+.highlite {
+    /*background-color: #ddeeff;*/
+    background-color: #ddddff;
+}
+
+input[type=text] .btn-xs, input[type=password] .btn-xs {
+       height: 14px !important;
+   }
+
+.portlet-frame {
+    border: 1px;
+    border-collapse: true;
+    border-style: solid;
+    border-color: #cccccc;
+    padding-right: 0px;
+    margin: 3px;
+    padding: 3px;
+}
+
+.frame {
+    border: 1px;
+    border-collapse: true;
+    border-style: solid;
+    border-color: #cccccc;
+    padding-right: 0px;
+/* 		padding-bottom: 16px; */
+        margin-top: 3px;
+        margin-bottom: 3px;
+/*  		background-color: #eeeeee; */
+/* 		background-color: #EEEEEE; */
+}
+
+a {
+    cursor: pointer
+}
+
+.image-frame {
+    display: table;
+
+    width: 150px;
+    height: 150px;
+    line-height: 150px; /* should match height */
+    text-align: center;
+
+    border: 1px;
+    border-collapse: true;
+    border-style: solid;
+    border-color: #CCCCCC;
+    background-color: #EEEEEE;
+}
+
+.navbar-inner {
+    background-color: #CCCCFA;
+       background-image: linear-gradient(to bottom, #CCCCFF, #EEEEFF);
+   }
+
+   .nav-tabs {
+    background-color: #eeeeff;
+   }
+
+   .modal {
+       display: block;
+       height: 0;
+       overflow: visible;
+   }
+
+   .modal-header {
+       background-color: #FFFFFF !important;
+   }
+
+   .modal-body {
+       background-color: #FFFFFF !important;
+   }
+
+   .layout-table {
+    width: 100%;
+    min-height: 100%;
+    border:none;
+    border-collapse: collapse;
+}
+
+.layout-table > tbody > tr > td {
+    padding: 0px;
+    border-left: 5px solid #1c3048;
+    border-right: 5px solid #1c3048;
+    vertical-align: top;
+}
+
+.visible-on-hover {
+    visibility: hidden;
+}
+
+.visible-on-hover:hover {
+    visibility: visible;
+}
+
+
+   /* Not working yet, as openlayers positions the element programmatically */
+.olControlPanZoomBar {
+    right: 10px;
+/* 		position: absolute; */
+/* 		top: 10px; */
+/* 		left: 10px; */
+}
+
+.inactive {
+    color: #aaaaaa;
+}
+
+.tabset-small > .nav > li > a {
+       display: block;
+       padding: 3px 15px;
+       position: relative;
+}
+
+.pagination-tiny > li > a, .pagination-tiny > li > span {
+       font-size: 10px;
+       padding: 5px;
+}
+
