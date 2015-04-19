@@ -65,6 +65,26 @@ function prettifyFacetTree(node) {
 
 // tests
 describe('Facete Basics', function() {
+    it('#Facete - Fetch path labels', function() {
+        var sparqlService = service.SparqlServiceBuilder
+           .http('http://dbpedia.org/sparql', ['http://dbpedia.org'])
+           .create();
+
+        var path = jassa.facete.Path.parse('http://dbpedia.org/ontology/areaCode <http://dbpedia.org/ontology/areaTotal');
+
+        var labelFn = jassa.facete.PathUtils.createLabelFn('Items', '^<', ', ');
+        var lsNodes = jassa.sponate.LookupServiceUtils.createLookupServiceNodeLabels(sparqlService);
+
+        var lsPaths = new jassa.facete.LookupServicePathLabels(lsNodes, labelFn);
+        lsPaths.lookup([path]).then(function(pathToLabel) {
+
+            var label = pathToLabel.get(path);
+            console.log('pathLabel: ' + label);
+
+            label.should.equal('area code -1:area total (m2)');
+        });
+
+    });
 
     it('#Facete - Fetch related items', function() {
         var sparqlService = service.SparqlServiceBuilder
