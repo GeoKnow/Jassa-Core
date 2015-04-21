@@ -26,6 +26,23 @@ var service = jassa.service;
 
 // tests
 describe('Concept Operations', function() {
+    it('#Simple concept test', function() {
+        var concept = new jassa.sparql.Concept(
+                jassa.sparql.ElementString.create('?s a <http://dbpedia.org/ontology/Person>'),
+                jassa.rdf.NodeFactory.createVar('s'));
+
+        var sparqlService = jassa.service.SparqlServiceBuilder
+        .http('http://dbpedia.org/sparql', ['http://dbpedia.org'], {type: 'POST'})
+        .create();
+
+        jassa.service.ServiceUtils.fetchItemsConcept(sparqlService, concept, 10).then(function(nodes) {
+            console.log('People:', JSON.stringify(nodes));
+        }, function() {
+            console.log('Fail');
+        });
+    });
+
+
     it('#Keyword Search Concept with Regex', function() {
 /*
         var relation = sparql.KeywordSearchUtils.createConceptRegex();
