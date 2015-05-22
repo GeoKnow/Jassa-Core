@@ -26,7 +26,8 @@ var service = jassa.service;
 describe('Services', function() {
     it('#Paginate and Page expansion should work as expected', function() {
         var sparqlService = jassa.service.SparqlServiceBuilder
-            .http('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org'])
+            //.http('http://linkedgeodata.org/sparql', ['http://linkedgeodata.org'])
+            .http('http://fp7-pp.publicdata.eu/sparql', ['http://fp7-pp.publicdata.eu/'])
             .log()
             .paginate(100)
             .pageExpand(200)
