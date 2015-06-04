@@ -119,9 +119,10 @@
 
 
         $scope.$watchCollection('[offset, numItems]', function() {
-            $q.when(linkStore.links.find().limit($scope.numItems).skip($scope.offset).list().then(function(items) {
-                return items.map(function(item) {
-                    return item.val;
+//            $q.when(linkStore.links.find().limit($scope.numItems).skip($scope.offset).list().then(function(items) {
+              $q.when(linkStore.links.getListService().fetchItems(null, $scope.numItems, $scope.offset).then(function(entries) {
+                return entries.map(function(entry) {
+                    return entry.val;
                 });
             })).then(function(links) {
 
