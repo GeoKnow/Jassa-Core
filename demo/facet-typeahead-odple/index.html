@@ -120,7 +120,7 @@
 
             // Init the sparql service (and wrap it with a cache and pagination)
             var sparqlService = new service.SparqlServiceBuilder
-                .http('https://odple-virtuoso.eccenca.com/', ['https://odple-ckan.eccenca.com/'], { type: 'POST' })
+                .http('###SPARQL_ENDPOINT###', ['###BWW_GRAPH###'], { type: 'POST' })
                 .cache()
                 .paginate(1000)
                 .pageExpand(50)
