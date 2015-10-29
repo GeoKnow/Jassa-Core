@@ -1,6 +1,6 @@
 {
   "name": "jassa-core",
-  "version": "0.9.0",
+  "version": "0.9.1-SNAPSHOT",
   "description": "JAvascript Suite for Sparql Access Core",
   "main": "./lib/index.js",
   "scripts": {
