@@ -81,7 +81,7 @@ describe('Facete Basics', function() {
             var label = pathToLabel.get(path);
             console.log('pathLabel: ' + label);
 
-            label.should.equal('area code <area total (m2)');
+            label.should.equal('area code, <area total (m2)');
         });
 
     });
