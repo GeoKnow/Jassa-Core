@@ -1,0 +1,5 @@
+The next step of jassa would be to integrate rxjs.
+Probably we can stay backward compatible by just adding additional methods that make use of it, and keep the old promise based versions for now.
+ 
+bower install --save-dev rxjs
+
