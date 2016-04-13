@@ -14,3 +14,5 @@ coverage/
 dist
 index.html
 .buildpath
+
+gulp/npm-debug.log

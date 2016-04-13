@@ -19,7 +19,7 @@ var ajax = function(param) {
 };
 
 // lib
-var jassa = require('../lib')(Promise, ajax);
+var jassa = require('../../lib')(Promise, ajax);
 // namespaces
 var rdf = jassa.rdf;
 var vocab = jassa.vocab;
