@@ -76,7 +76,7 @@ This specifies a sequence
 ### Value references
 
 
-
+```js
 context.add({
     name: 'projects',
     template: [{
@@ -91,7 +91,7 @@ context.add({
     }],
     from: '?s a fp7o:Project ; rdfs:label ?l ; fp7o:funding [ fp7o:partner [ rdfs:label ?pl ] ; fp7o:amount ?a ]'
 });
-
+```
 
 
 ## Programmatic API
